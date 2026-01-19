@@ -273,6 +273,7 @@ tfoot td { border-top: 2px solid #333; font-weight: bold; padding-top: 15px; fon
         gap: 10px !important;
     }
 
+
     /* 5. TABELLA COMPATTA "NO-SCROLL" (Tutto in una schermata) */
     table {
         table-layout: fixed !important;  /* Forza colonne rigide */
@@ -281,6 +282,49 @@ tfoot td { border-top: 2px solid #333; font-weight: bold; padding-top: 15px; fon
         overflow-x: hidden !important;   /* Niente scroll orizzontale */
         font-size: 13px !important;      /* Font leggermente più piccolo */
     }
+
+    /* --- FIX BALANCE GRID (Statistiche Verticali) --- */
+    
+    /* 1. Mantiene i 3 box affiancati sulla stessa riga (non colonna!) */
+    .balance-grid {
+        display: flex !important;       /* Usa flex invece di grid */
+        flex-direction: row !important; /* Forza riga orizzontale */
+        justify-content: space-between !important;
+        gap: 5px !important;            /* Spazio minimo tra i box */
+        width: 100% !important;
+    }
+
+    /* 2. Configura ogni card per avere testo sopra e numero sotto */
+    .balance-card {
+        flex: 1 !important;             /* Si dividono lo spazio in 3 parti uguali */
+        padding: 8px 4px !important;    /* Padding ridotto */
+        display: flex !important;
+        flex-direction: column !important; /* Etichetta sopra, numero sotto */
+        align-items: center !important;    /* Centrato orizzontalmente */
+        justify-content: center !important;
+        min-height: 70px !important;
+    }
+
+    /* 3. Stile Etichetta (Entrate/Uscite/Saldo) */
+    .balance-card span, 
+    .balance-card .stat-label {
+        font-size: 11px !important;     /* Testo piccolo */
+        margin-bottom: 4px !important;  /* Spazio tra testo e numero */
+        text-transform: uppercase !important;
+        white-space: nowrap !important; /* Vietato andare a capo */
+    }
+
+    /* 4. Stile Numero (Importo) */
+    .balance-card strong, 
+    .balance-card .stat-value,
+    .balance-card div:last-child {      /* Selettore generico per il numero */
+        font-size: 14px !important;     /* Numero leggibile ma non gigante */
+        font-weight: bold !important;
+        white-space: nowrap !important;
+        word-break: normal !important;  /* Non spezzare i numeri */
+    }
+
+
 
     th, td {
         padding: 8px 4px !important;     /* Padding laterale minimo */
