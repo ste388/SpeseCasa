@@ -2,7 +2,7 @@
 <html lang="it">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Bilancio Casa (Ste & Vale)</title>
     <style>
     /* STILE CONFIGURAZIONE FONDI */
@@ -228,6 +228,142 @@
 .search-clear-btn:hover {
     background: #999; /* Più scuro al passaggio */
 }
+
+
+/* --- INIZIO VERSIONE MOBILE (BLOCCO UNICO) --- */
+@media screen and (max-width: 600px) {
+
+
+    /* FIX BOTTONI MESI AFFIANCATI */
+    /* Seleziona il contenitore dove ci sono i bottoni Mese Scorso/Corr. */
+    /* (Adatta il selettore se il tuo div ha un altro nome/ID, es: #filtriMesi) */
+    .btn-container, .filter-bar { 
+        display: flex !important;
+        flex-direction: row !important; /* Forza la riga orizzontale, non colonna */
+        flex-wrap: wrap !important;     /* Se non ci stanno, vanno a capo ordinatamente */
+        justify-content: space-between !important; /* Spazio in mezzo */
+        gap: 10px !important;
+        width: 100% !important;
+        padding: 0 5px !important; /* Un po' di aria ai lati */
+        box-sizing: border-box !important;
+    }
+
+    /* I bottoni specifici dentro quel contenitore */
+    .btn-container button, .filter-bar button {
+        flex: 1 !important;        /* Si dividono lo spazio equamente (50% e 50%) */
+        width: auto !important;    /* Resetta il width: 100% che avevamo messo */
+        min-width: 0 !important;   /* Evita che esplodano se il testo è lungo */
+        font-size: 14px !important; /* Testo leggermente più piccolo per farci stare tutto */
+        white-space: nowrap !important; /* Testo su una riga */
+        padding: 10px 5px !important;
+        margin-bottom: 0 !important; /* Toglie margine sotto inutile */
+    }
+
+
+    /* 1. CREIAMO SPAZIO IN ALTO E IN BASSO NEL CORPO */
+    body {
+        padding-top: 80px !important; /* Spazio vuoto in alto per la barra dei menu */
+        padding-bottom: 120px !important; /* Spazio vuoto in basso per l'ultimo pulsante */
+        padding-left: 10px !important;
+        padding-right: 10px !important;
+    }
+
+        /* BARRA MENU SCORREVOLE */
+    .header-icons {
+        position: fixed !important;
+        top: 0 !important;
+        left: 0 !important;
+        width: 100% !important;
+        height: 70px !important; /* Un po' più alta */
+        
+        background-color: white !important;
+        border-bottom: 2px solid #ddd !important;
+        z-index: 99999 !important;
+        
+        display: flex !important;
+        align-items: center !important;
+        
+        /* QUESTO E' IL TRUCCO: */
+        justify-content: flex-start !important; /* Allinea a sinistra */
+        overflow-x: auto !important; /* Permette lo scroll orizzontale */
+        white-space: nowrap !important; /* Impedisce ai tasti di andare a capo */
+        padding: 0 10px !important;
+        gap: 15px !important; /* Spazio tra le icone */
+        
+        /* Nascondi la scrollbar brutta (opzionale ma elegante) */
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none; 
+    }
+
+
+    /* 3. STILE DEI BOTTONI DENTRO LA BARRA (Non devono essere giganti) */
+    .header-icons .icon-btn, 
+    .header-icons button {
+        width: auto !important;       /* Larghezza naturale */
+        height: auto !important;
+        background: transparent !important;
+        color: #333 !important;
+        font-size: 24px !important;   /* Icone belle grandi */
+        margin: 0 !important;
+        padding: 5px 10px !important;
+    }
+
+    /* 4. TUTTO IL RESTO IN COLONNA */
+    .form-grid, .balance-grid, .fuel-year-summary, .btn-container {
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 10px !important;
+    }
+
+    /* 5. CAMPI E BOTTONI DI INSERIMENTO (QUSTI SÌ, GRANDI) */
+    /* Nota: escludiamo .header-icons da questa regola usando :not */
+    #app input, #app select, .btn-container button, .card button {
+        width: 100% !important;
+        min-height: 45px !important;
+        font-size: 16px !important;
+        margin-bottom: 10px !important;
+    }
+    
+    /* 6. TABELLA SCORREVOLE */
+    table {
+        display: block;
+        width: 100%;
+        overflow-x: auto;
+        white-space: nowrap;
+    }
+	
+	
+	    /* FIX PANNELLI/MODALI SU MOBILE */
+    .panel-area, .info-panel, .modal-content {
+        position: fixed !important; /* Copre lo schermo in modo stabile */
+        top: 70px !important; /* Parte SOTTO alla barra menu */
+        left: 0 !important;
+        width: 100% !important;
+        height: calc(100% - 70px) !important; /* Occupa tutto il resto */
+        margin: 0 !important;
+        border-radius: 0 !important;
+        overflow-y: auto !important; /* Permette di scrollare il contenuto dentro */
+        z-index: 20000 !important; /* Sopra a tutto il resto */
+        padding-bottom: 50px !important;
+    }
+
+    /* TASTO CHIUDI EMERGENZA */
+    /* Aggiunge un bordo rosso in cima al pannello per chiuderlo facilmente se clicchi in alto */
+    .panel-area::before, .info-panel::before {
+        content: "CHIUDI ✖";
+        display: block;
+        text-align: center;
+        background: #dc3545;
+        color: white;
+        padding: 10px;
+        font-weight: bold;
+        margin: -20px -20px 20px -20px; /* Compensa il padding del pannello */
+        cursor: pointer;
+    }
+
+}
+/* --- FINE VERSIONE MOBILE --- */
+
 
 
     </style>
