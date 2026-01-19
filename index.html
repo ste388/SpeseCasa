@@ -267,12 +267,12 @@ tfoot td { border-top: 2px solid #333; font-weight: bold; padding-top: 15px; fon
     }
 
     /* 4. LAYOUT A COLONNA PER GRIGLIE */
-    .form-grid, .balance-grid, .fuel-year-summary, .btn-container {
+    /* Nota: ho tolto .balance-grid da qui per gestirlo separatamente sotto */
+    .form-grid, .fuel-year-summary, .btn-container {
         display: flex !important;
         flex-direction: column !important;
         gap: 10px !important;
     }
-
 
     /* 5. TABELLA COMPATTA "NO-SCROLL" (Tutto in una schermata) */
     table {
@@ -282,49 +282,6 @@ tfoot td { border-top: 2px solid #333; font-weight: bold; padding-top: 15px; fon
         overflow-x: hidden !important;   /* Niente scroll orizzontale */
         font-size: 13px !important;      /* Font leggermente più piccolo */
     }
-
-    /* --- FIX BALANCE GRID (Statistiche Verticali) --- */
-    
-    /* 1. Mantiene i 3 box affiancati sulla stessa riga (non colonna!) */
-    .balance-grid {
-        display: flex !important;       /* Usa flex invece di grid */
-        flex-direction: row !important; /* Forza riga orizzontale */
-        justify-content: space-between !important;
-        gap: 5px !important;            /* Spazio minimo tra i box */
-        width: 100% !important;
-    }
-
-    /* 2. Configura ogni card per avere testo sopra e numero sotto */
-    .balance-card {
-        flex: 1 !important;             /* Si dividono lo spazio in 3 parti uguali */
-        padding: 8px 4px !important;    /* Padding ridotto */
-        display: flex !important;
-        flex-direction: column !important; /* Etichetta sopra, numero sotto */
-        align-items: center !important;    /* Centrato orizzontalmente */
-        justify-content: center !important;
-        min-height: 70px !important;
-    }
-
-    /* 3. Stile Etichetta (Entrate/Uscite/Saldo) */
-    .balance-card span, 
-    .balance-card .stat-label {
-        font-size: 11px !important;     /* Testo piccolo */
-        margin-bottom: 4px !important;  /* Spazio tra testo e numero */
-        text-transform: uppercase !important;
-        white-space: nowrap !important; /* Vietato andare a capo */
-    }
-
-    /* 4. Stile Numero (Importo) */
-    .balance-card strong, 
-    .balance-card .stat-value,
-    .balance-card div:last-child {      /* Selettore generico per il numero */
-        font-size: 14px !important;     /* Numero leggibile ma non gigante */
-        font-weight: bold !important;
-        white-space: nowrap !important;
-        word-break: normal !important;  /* Non spezzare i numeri */
-    }
-
-
 
     th, td {
         padding: 8px 4px !important;     /* Padding laterale minimo */
@@ -361,6 +318,51 @@ tfoot td { border-top: 2px solid #333; font-weight: bold; padding-top: 15px; fon
         padding: 4px !important;
         margin: 0 !important;
         display: inline-block !important;
+    }
+
+    /* --- FIX BALANCE GRID (Etichette sopra, Numeri sotto) --- */
+    
+    /* 1. Mantiene i 3 box affiancati sulla stessa riga (non colonna!) */
+    .balance-grid {
+        display: flex !important;       /* Usa flex invece di grid */
+        flex-direction: row !important; /* Forza riga orizzontale */
+        justify-content: space-between !important;
+        gap: 5px !important;            /* Spazio minimo tra i box */
+        width: 100% !important;
+    }
+
+    /* 2. Configura ogni card per avere testo sopra e numero sotto */
+    .balance-card {
+        flex: 1 !important;             /* Si dividono lo spazio in 3 parti uguali */
+        padding: 8px 4px !important;    /* Padding ridotto */
+        display: flex !important;
+        flex-direction: column !important; /* Flex colonna INTERNO alla card */
+        align-items: center !important;    /* Centrato orizzontalmente */
+        justify-content: center !important;
+        min-height: 60px !important;
+    }
+
+    /* 3. Forza l'etichetta ad andare a capo e stare sopra */
+    .balance-card > *:first-child,
+    .balance-card span, 
+    .balance-card .stat-label {
+        display: block !important;
+        width: 100% !important;
+        font-size: 11px !important;     /* Testo piccolo */
+        margin-bottom: 4px !important;  /* Spazio tra testo e numero */
+        text-transform: uppercase !important;
+        white-space: nowrap !important; 
+    }
+
+    /* 4. Forza il numero ad andare a capo e stare sotto */
+    .balance-card > *:last-child,
+    .balance-card strong, 
+    .balance-card .stat-value {      
+        display: block !important;
+        width: 100% !important;
+        font-size: 13px !important;     /* Numero leggibile */
+        font-weight: bold !important;
+        white-space: nowrap !important;
     }
 
     /* 6. PANNELLI E MODALI (Scrollabili e non tagliati) */
@@ -423,29 +425,7 @@ tfoot td { border-top: 2px solid #333; font-weight: bold; padding-top: 15px; fon
 
     /* 8. FIX TASTINO X RICERCA (Piccolo e a destra) */
     body .search-wrapper .search-clear-btn,
-    .search-wrapper button.search-clear-btn {
-        display: flex !important;
-        width: 24px !important;
-        height: 24px !important;
-        min-height: 0 !important;
-        min-width: 0 !important;
-        
-        position: absolute !important;
-        top: 50% !important;
-        right: 8px !important;
-        transform: translateY(-50%) !important;
-        margin: 0 !important;
-        
-        background-color: #999 !important;
-        border-radius: 50% !important;
-        padding: 0 !important;
-        z-index: 100 !important;
-    }
-
-    .search-input-pro {
-        padding-right: 40px !important; /* Spazio per la X */
-    }
-}
+    .search-wrapper button.search-cl
 
 </style>
 
@@ -567,17 +547,26 @@ tfoot td { border-top: 2px solid #333; font-weight: bold; padding-top: 15px; fon
                 <h4 style="margin:0; color:#0d47a1;">🏦 Saldi Conti Attuali</h4>
                 <button onclick="document.getElementById('balancePanel').style.display='none'" style="background:transparent; border:none; color:#999; font-size:1.5em; cursor:pointer;">&times;</button>
             </div>
-            <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 20px;">
-                <div class="stat-box" style="background:#e3f2fd; padding:10px; border-radius:8px; text-align:center; border:1px solid #bbdefb;">
-                    <div style="font-size:0.8em; color:#1565c0; margin-bottom:5px;">Ste</div><div id="saldoSte" style="font-size:1.1em; font-weight:bold; color:#0d47a1;">€ 0,00</div>
-                </div>
-                <div class="stat-box" style="background:#fce4ec; padding:10px; border-radius:8px; text-align:center; border:1px solid #f8bbd0;">
-                    <div style="font-size:0.8em; color:#c2185b; margin-bottom:5px;">Vale</div><div id="saldoVale" style="font-size:1.1em; font-weight:bold; color:#880e4f;">€ 0,00</div>
-                </div>
-                <div class="stat-box" style="background:#fff3e0; padding:10px; border-radius:8px; text-align:center; border:1px solid #ffe0b2;">
-                    <div style="font-size:0.8em; color:#e65100; margin-bottom:5px;">CC</div><div id="saldoCC" style="font-size:1.1em; font-weight:bold; color:#ef6c00;">€ 0,00</div>
-                </div>
-            </div>
+<!-- GRIGLIA SALDI PULITA: Gli ID sono sui box esterni così il JS riempie tutto -->
+<div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 20px;">
+    
+    <!-- BOX STE -->
+    <div id="saldoSte" class="stat-box" style="background:#e3f2fd; padding:10px; border-radius:8px; text-align:center; border:1px solid #bbdefb; display:flex; flex-direction:column; justify-content:center;">
+        <!-- Il JS scriverà qui dentro: Titolo + Importo -->
+    </div>
+
+    <!-- BOX VALE -->
+    <div id="saldoVale" class="stat-box" style="background:#fce4ec; padding:10px; border-radius:8px; text-align:center; border:1px solid #f8bbd0; display:flex; flex-direction:column; justify-content:center;">
+        <!-- Il JS scriverà qui dentro: Titolo + Importo -->
+    </div>
+
+    <!-- BOX CC -->
+    <div id="saldoCC" class="stat-box" style="background:#fff3e0; padding:10px; border-radius:8px; text-align:center; border:1px solid #ffe0b2; display:flex; flex-direction:column; justify-content:center;">
+        <!-- Il JS scriverà qui dentro: Titolo + Importo -->
+    </div>
+
+</div>
+
             <div style="text-align:center; border-top:1px solid #eee; padding-top:15px;">
                 <button class="action-btn" onclick="togglePanel('initBalancePanel')" style="background:#607d8b; color:white; width:100%; padding:10px; border-radius:4px; font-size:0.9em; font-weight:bold;">⚙️ Imposta Saldi Iniziali</button>
             </div>
@@ -1148,37 +1137,43 @@ tfoot td { border-top: 2px solid #333; font-weight: bold; padding-top: 15px; fon
         else if(t==='benzina'){const v=document.getElementById('benDistributore').value;if(v)f.value=`Benzina ${v}`;}
     }
 
-        window.render = function(){
+            window.render = function(){
         const t=document.getElementById('listaDati'); if(!t) return; t.innerHTML=''; 
         
-        // 1. Lettura Input
+        // 1. Filtri
         const txt = document.getElementById('globalSearch') ? document.getElementById('globalSearch').value.toLowerCase().trim() : "";
         const s=document.getElementById('filterStart').value;
         const e=document.getElementById('filterEnd').value;
         
         let m=window.movimenti.slice(); 
         
-        // 2. LOGICA DI FILTRO (Priorità alla Ricerca)
         if(txt.length > 0) {
-            // MODALITÀ RICERCA GLOBALE: Ignora le date, cerca ovunque
-            m = m.filter(x => {
-                const fullString = (x.descrizione + " " + x.categoria + " " + x.conto + " " + x.importo).toLowerCase();
-                return fullString.includes(txt);
-            });
-            // Opzionale: Mostra un avviso visivo che le date sono ignorate? (Per ora no, semplice)
+            m = m.filter(x => (x.descrizione + " " + x.categoria + " " + x.conto + " " + x.importo).toLowerCase().includes(txt));
         } else {
-            // MODALITÀ NORMALE: Usa il filtro date
-            if(s && e) {
-                m = m.filter(x => x.data >= s && x.data <= e);
-            }
+            if(s && e) m = m.filter(x => x.data >= s && x.data <= e);
         }
         
-        // 3. Ordinamento e Calcolo Totali
-        let tot=0; 
+        // 2. Ordinamento
         m.sort((a,b)=>{const da=new Date(a.data).getTime(),db=new Date(b.data).getTime();return db!==da?db-da:b.id-a.id;});
         
+        // 3. CALCOLO TOTALI SEPARATI (Entrate vs Uscite)
+        let totSaldo=0; 
+        let sumEntrate = 0;
+        let sumUscite = 0;
+
         m.forEach(x=>{
-            if(x.rawCat!=='Ricarica CC'){ if(x.tipo==='entrata') tot+=x.importo; else tot-=x.importo; }
+            // Logica Calcoli
+            if(x.rawCat!=='Ricarica CC'){ 
+                if(x.tipo==='entrata') {
+                    totSaldo += x.importo;
+                    sumEntrate += x.importo;
+                } else {
+                    totSaldo -= x.importo;
+                    sumUscite += x.importo;
+                }
+            }
+            
+            // Logica Disegno Riga (uguale a prima)
             const tr=document.createElement('tr'); 
             if(window.idInModifica===x.id) tr.className='editing-row'; else if(x.rawCat==='Bolletta') tr.className='bolletta-row'; else if(x.rawCat==='Ricarica CC') tr.className='ricarica-row'; else if(x.rawCat==='Benzina') tr.className='benzina-row';
             const sg=x.tipo==='entrata'?'+':'-'; const cl=x.tipo==='entrata'?'positivo':(x.rawCat==='Ricarica CC'?'neutro':'negativo');
@@ -1192,9 +1187,15 @@ tfoot td { border-top: 2px solid #333; font-weight: bold; padding-top: 15px; fon
             t.appendChild(tr);
         });
         
-        const f=document.getElementById('totaleFooter'); if(f) { f.textContent=formatEuro(tot); f.className='importo-col '+(tot>=0?'positivo':'negativo'); }
-        const fh = document.getElementById('totaleHeader'); if(fh) { fh.textContent = formatEuro(tot); fh.style.color = (tot >= 0) ? '#28a745' : '#dc3545'; }
-    }
+        // 4. Aggiorna Totali Footer (Tabella)
+        const f=document.getElementById('totaleFooter'); if(f) { f.textContent=formatEuro(totSaldo); f.className='importo-col '+(totSaldo>=0?'positivo':'negativo'); }
+        const fh = document.getElementById('totaleHeader'); if(fh) { fh.textContent = formatEuro(totSaldo); fh.style.color = (totSaldo >= 0) ? '#28a745' : '#dc3545'; }
+
+        // 5. AGGIORNA DASHBOARD IN ALTO (Con la nuova funzione!)
+        aggiornaBoxTotaliDashboard(sumEntrate, sumUscite);
+
+    } // Fine Render
+
 
 
     window.mostraDettagliBenzina = function(id){
@@ -1205,7 +1206,46 @@ tfoot td { border-top: 2px solid #333; font-weight: bold; padding-top: 15px; fon
     window.getSaldiVirtuali = function() {
         let s={Ste:0,Vale:0,CC:0}; window.movimenti.forEach(m=>{ let c=m.conto; if(c==='CC Comune')c='CC';if(c==='Conto Ste')c='Ste';if(c==='Conto Vale')c='Vale'; if(m.rawCat==='Ricarica CC'){ if(c==='Ste')s.Ste-=m.importo;else if(c==='Vale')s.Vale-=m.importo; s.CC+=m.importo; } else { let v=(m.tipo==='entrata'?m.importo:-m.importo); if(c==='Ste')s.Ste+=v;else if(c==='Vale')s.Vale+=v;else if(c==='CC')s.CC+=v; } }); return s;
     }
-    window.calcolaSaldiGlobali = function() { const v=getSaldiVirtuali(); document.getElementById('saldoSte').textContent=formatEuro(v.Ste+(window.balanceOffsets.Ste||0)); document.getElementById('saldoVale').textContent=formatEuro(v.Vale+(window.balanceOffsets.Vale||0)); document.getElementById('saldoCC').textContent=formatEuro(v.CC+(window.balanceOffsets.CC||0)); }
+window.calcolaSaldiGlobali = function() { 
+    const v = getSaldiVirtuali(); 
+    
+    // Calcolo valori finali
+    const valSte = v.Ste + (window.balanceOffsets.Ste || 0);
+    const valVale = v.Vale + (window.balanceOffsets.Vale || 0);
+    const valCC = v.CC + (window.balanceOffsets.CC || 0);
+
+    // STAMPA HTML PERSONALIZZATO
+    
+    // --- STE (Blu) ---
+    const elSte = document.getElementById('saldoSte');
+    if (elSte) {
+        elSte.innerHTML = `
+            <div style="font-size:0.85em; color:#0d47a1; font-weight:bold; text-transform:uppercase; margin-bottom:2px;">Conto Ste</div>
+            <div style="font-weight:normal; font-size:1.2em; color:#333;">${formatEuro(valSte)}</div>
+        `;
+    }
+
+    // --- VALE (Rosa/Viola) ---
+    const elVale = document.getElementById('saldoVale');
+    if (elVale) {
+        elVale.innerHTML = `
+            <div style="font-size:0.85em; color:#880e4f; font-weight:bold; text-transform:uppercase; margin-bottom:2px;">Conto Vale</div>
+            <div style="font-weight:normal; font-size:1.2em; color:#333;">${formatEuro(valVale)}</div>
+        `;
+    }
+
+    // --- CC (Marrone) ---
+    const elCC = document.getElementById('saldoCC');
+    if (elCC) {
+        elCC.innerHTML = `
+            <div style="font-size:0.85em; color:#5d4037; font-weight:bold; text-transform:uppercase; margin-bottom:2px;">CC Comune</div>
+            <div style="font-weight:normal; font-size:1.2em; color:#333;">${formatEuro(valCC)}</div>
+        `;
+    }
+};
+
+
+
 
     window.salvaOffset = async function() {
         const v = getSaldiVirtuali(); 
@@ -1258,12 +1298,39 @@ tfoot td { border-top: 2px solid #333; font-weight: bold; padding-top: 15px; fon
             return true;
         });
 
-        // ... RESTO DELLA FUNZIONE IDENTICO (Ordinamento, Calcolo Totali, Render HTML) ...
-        m.sort((a,b) => new Date(b.data) - new Date(a.data));
-        let entr = 0, usc = 0; m.forEach(x => { if(x.rawCat !== 'Ricarica CC') { if(x.tipo === 'entrata') entr += x.importo; else usc += x.importo; } });
+               // ... codice precedente della funzione (filtri, calcoli, ecc) ...
+        
+        let entr = 0, usc = 0; 
+        m.forEach(x => { if(x.rawCat !== 'Ricarica CC') { if(x.tipo === 'entrata') entr += x.importo; else usc += x.importo; } });
         const saldo = entr - usc;
         
-        let html = `<div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; margin-bottom:20px; text-align:center;"><div class="stat-box" style="background:#e8f5e9; border:1px solid #c8e6c9;"><div style="font-size:0.8em; color:#2e7d32">Entrate</div><div style="font-weight:bold; color:#2e7d32">${formatEuro(entr)}</div></div><div class="stat-box" style="background:#ffebee; border:1px solid #ffcdd2;"><div style="font-size:0.8em; color:#c62828">Uscite</div><div style="font-weight:bold; color:#c62828">${formatEuro(usc)}</div></div><div class="stat-box" style="background:#e3f2fd; border:1px solid #bbdefb;"><div style="font-size:0.8em; color:#1565c0">Saldo</div><div style="font-weight:bold; color:${saldo>=0?'#1565c0':'#c62828'}">${formatEuro(saldo)}</div></div></div><h5 style="border-bottom:1px solid #eee; padding-bottom:5px; margin-top:20px;">Dettaglio Movimenti (${m.length})</h5>`;
+        // --- COSTRUZIONE HTML DEI BOX STATISTICHE (MODIFICATA) ---
+        let html = `
+        <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; margin-bottom:20px; text-align:center;">
+            
+            <!-- Box Entrate -->
+            <div class="stat-box" style="background:#e8f5e9; border:1px solid #c8e6c9; display:flex; flex-direction:column; justify-content:center; padding:10px 2px;">
+                <div style="font-size:0.8em; color:#2e7d32; text-transform:uppercase; margin-bottom:4px;">Entrate</div>
+                <div style="font-weight:bold; font-size:1.1em; color:#2e7d32; word-wrap:break-word;">${formatEuro(entr)}</div>
+            </div>
+
+            <!-- Box Uscite -->
+            <div class="stat-box" style="background:#ffebee; border:1px solid #ffcdd2; display:flex; flex-direction:column; justify-content:center; padding:10px 2px;">
+                <div style="font-size:0.8em; color:#c62828; text-transform:uppercase; margin-bottom:4px;">Uscite</div>
+                <div style="font-weight:bold; font-size:1.1em; color:#c62828; word-wrap:break-word;">${formatEuro(usc)}</div>
+            </div>
+
+            <!-- Box Saldo -->
+            <div class="stat-box" style="background:#e3f2fd; border:1px solid #bbdefb; display:flex; flex-direction:column; justify-content:center; padding:10px 2px;">
+                <div style="font-size:0.8em; color:#1565c0; text-transform:uppercase; margin-bottom:4px;">Saldo</div>
+                <div style="font-weight:bold; font-size:1.1em; color:${saldo>=0?'#1565c0':'#c62828'}; word-wrap:break-word;">${formatEuro(saldo)}</div>
+            </div>
+
+        </div>
+        <h5 style="border-bottom:1px solid #eee; padding-bottom:5px; margin-top:20px;">Dettaglio Movimenti (${m.length})</h5>`;
+        
+        // ... resto della funzione (tabella dettagli) ...
+
         
         if (m.length === 0) html += '<p style="text-align:center; color:#999;">Nessun movimento trovato con questi filtri.</p>'; 
         else { 
@@ -1573,6 +1640,38 @@ tfoot td { border-top: 2px solid #333; font-weight: bold; padding-top: 15px; fon
         // 6. Scrolla delicatamente in cima alla pagina
         window.scrollTo({ top: 0, behavior: 'smooth' });
     }
+/* --- NUOVA FUNZIONE DI SUPPORTO PER TOTALI DASHBOARD --- */
+window.aggiornaBoxTotaliDashboard = function(entrate, uscite) {
+    const saldo = entrate - uscite;
+
+    // Aggiorna BOX ENTRATE
+    const elEnt = document.getElementById('totEntrate') || document.getElementById('boxEntrate'); 
+    if(elEnt) {
+        elEnt.innerHTML = `
+            <div style="font-size: 0.75rem; text-transform: uppercase; color: #666; margin-bottom: 2px;">Entrate</div>
+            <div style="font-size: 1.1rem; font-weight: bold; color: #28a745;">${formatEuro(entrate)}</div>
+        `;
+    }
+
+    // Aggiorna BOX USCITE
+    const elUsc = document.getElementById('totUscite') || document.getElementById('boxUscite');
+    if(elUsc) {
+        elUsc.innerHTML = `
+            <div style="font-size: 0.75rem; text-transform: uppercase; color: #666; margin-bottom: 2px;">Uscite</div>
+            <div style="font-size: 1.1rem; font-weight: bold; color: #dc3545;">${formatEuro(uscite)}</div>
+        `;
+    }
+
+    // Aggiorna BOX SALDO
+    const elSal = document.getElementById('totSaldo') || document.getElementById('boxSaldo');
+    if(elSal) {
+        let colore = saldo >= 0 ? '#007bff' : '#dc3545';
+        elSal.innerHTML = `
+            <div style="font-size: 0.75rem; text-transform: uppercase; color: #666; margin-bottom: 2px;">Saldo</div>
+            <div style="font-size: 1.1rem; font-weight: bold; color: ${colore};">${formatEuro(saldo)}</div>
+        `;
+    }
+}
 
 </script>
 </body>
