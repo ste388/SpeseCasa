@@ -406,6 +406,32 @@
         z-index: 100 !important;
         opacity: 1 !important;
     }
+    /* ALLINEAMENTO PERFETTO BOTTONI MESI */
+    .filter-bar {
+        display: flex !important;
+        flex-direction: row !important; /* Forza riga orizzontale */
+        align-items: stretch !important; /* Stessa altezza per tutti */
+        justify-content: space-between !important;
+        gap: 8px !important; /* Spazio uguale tra i due */
+        width: 100% !important;
+        margin-bottom: 10px !important;
+    }
+
+    /* Seleziona specificamente i bottoni dentro la barra filtri */
+    .filter-bar button {
+        flex: 1 !important;        /* 50% larghezza esatta a testa */
+        width: 50% !important;     /* Rinforzo larghezza */
+        margin: 0 !important;      /* Rimuove margini strani */
+        min-height: 45px !important; /* Altezza identica fissa */
+        height: 45px !important;
+        
+        display: flex !important;  /* Centra il testo dentro il bottone */
+        align-items: center !important;
+        justify-content: center !important;
+        
+        font-size: 14px !important; /* Font uguale */
+        padding: 0 !important;
+    }
 
 
 /* --- FINE VERSIONE MOBILE --- */
