@@ -4,189 +4,176 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Bilancio Casa (Ste & Vale)</title>
-    <style>
-    /* STILE CONFIGURAZIONE FONDI */
-    .fondo-row { display: flex; align-items: center; background: #fff; border: 1px solid #ddd; padding: 8px 10px; border-radius: 6px; margin-bottom: 6px; transition: background 0.2s; }
-    .fondo-row:hover { background: #f9fafb; border-color: #bbb; }
-    .fondo-nome { flex: 1; font-weight: 600; color: #2c3e50; font-size: 0.95em; margin-right: 10px; }
-    .fondo-group { display: flex; flex-direction: column; margin-right: 10px; }
-    .fondo-label { font-size: 0.7em; color: #7f8c8d; text-transform: uppercase; margin-bottom: 2px; }
-    .fondo-input { padding: 6px 10px; border: 1px solid #ccc; border-radius: 4px; font-size: 1em; color: #333; width: 130px; background: #fff; }
-    .fondo-input:focus { border-color: #007bff; outline: none; background: #f0f8ff; }
-    .btn-del-mini { color: #dc3545; background: #fff0f0; border: 1px solid #ffcdd2; border-radius: 4px; width: 28px; height: 28px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
-    .btn-del-mini:hover { background: #dc3545; color: white; }
+<style>
+/* ============================================
+   STILI BASE DESKTOP
+   ============================================ */
 
-    /* STILE TABELLA PATRIMONIO */
-    .pat-table { width: 100%; border-collapse: collapse; font-size: 0.85em; white-space: nowrap; }
-    .th-date { background-color: #607d8b; color: white; border: 1px solid #546e7a; padding: 8px; }
-    .th-tot { background-color: #0d47a1; color: white; border: 1px solid #002171; padding: 8px; }
-    .th-liq { background-color: #00796b; color: white; border: 1px solid #004d40; padding: 8px; }
-    .th-fondi { background-color: #f5f5f5; color: #333; border: 1px solid #ddd; padding: 8px; text-align: center; border-left: 2px solid #ccc; }
-    .td-base { padding: 6px 8px; border-bottom: 1px solid #eee; }
-    .td-tot { font-weight: bold; color: #0d47a1; background-color: #e3f2fd; border-bottom: 1px solid #bbdefb; }
-    .td-liq { font-weight: bold; color: #00695c; background-color: #e0f2f1; border-bottom: 1px solid #b2dfdb; border-right: 2px solid #ccc; }
-    .td-fondo-val { border-left: 1px solid #eee; padding-left: 8px; }
+/* STILE CONFIGURAZIONE FONDI */
+.fondo-row { display: flex; align-items: center; background: #fff; border: 1px solid #ddd; padding: 8px 10px; border-radius: 6px; margin-bottom: 6px; transition: background 0.2s; }
+.fondo-row:hover { background: #f9fafb; border-color: #bbb; }
+.fondo-nome { flex: 1; font-weight: 600; color: #2c3e50; font-size: 0.95em; margin-right: 10px; }
+.fondo-group { display: flex; flex-direction: column; margin-right: 10px; }
+.fondo-label { font-size: 0.7em; color: #7f8c8d; text-transform: uppercase; margin-bottom: 2px; }
+.fondo-input { padding: 6px 10px; border: 1px solid #ccc; border-radius: 4px; font-size: 1em; color: #333; width: 130px; background: #fff; }
+.fondo-input:focus { border-color: #007bff; outline: none; background: #f0f8ff; }
+.btn-del-mini { color: #dc3545; background: #fff0f0; border: 1px solid #ffcdd2; border-radius: 4px; width: 28px; height: 28px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+.btn-del-mini:hover { background: #dc3545; color: white; }
 
-    body { font-family: 'Segoe UI', sans-serif; padding: 20px; max-width: 600px; margin: 0 auto; background: #f4f4f9; color: #333; }
-    .card { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); margin-bottom: 20px; position: relative; }
-    
-    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-    .full-width { grid-column: span 2; }
+/* STILE TABELLA PATRIMONIO */
+.pat-table { width: 100%; border-collapse: collapse; font-size: 0.85em; white-space: nowrap; }
+.th-date { background-color: #607d8b; color: white; border: 1px solid #546e7a; padding: 8px; }
+.th-tot { background-color: #0d47a1; color: white; border: 1px solid #002171; padding: 8px; }
+.th-liq { background-color: #00796b; color: white; border: 1px solid #004d40; padding: 8px; }
+.th-fondi { background-color: #f5f5f5; color: #333; border: 1px solid #ddd; padding: 8px; text-align: center; border-left: 2px solid #ccc; }
+.td-base { padding: 6px 8px; border-bottom: 1px solid #eee; }
+.td-tot { font-weight: bold; color: #0d47a1; background-color: #e3f2fd; border-bottom: 1px solid #bbdefb; }
+.td-liq { font-weight: bold; color: #00695c; background-color: #e0f2f1; border-bottom: 1px solid #b2dfdb; border-right: 2px solid #ccc; }
+.td-fondo-val { border-left: 1px solid #eee; padding-left: 8px; }
 
-    input, select { padding: 10px; border: 1px solid #ccc; border-radius: 4px; font-size: 15px; width: 100%; box-sizing: border-box; }
-    input[readonly] { background-color: #e9ecef; color: #495057; cursor: not-allowed; border-color: #ced4da; }
+/* LAYOUT GENERALE */
+body { font-family: 'Segoe UI', sans-serif; padding: 20px; max-width: 600px; margin: 0 auto; background: #f4f4f9; color: #333; }
+.card { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); margin-bottom: 20px; position: relative; }
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.full-width { grid-column: span 2; }
 
-    .submenu-box { transition: all 0.3s ease; overflow: hidden; background: #f8f9fa; padding: 10px; border-radius: 4px; border: 1px dashed #ccc; margin-top:5px; }
-    .hidden { display: none; }
+/* INPUT E SELECT */
+input, select { padding: 10px; border: 1px solid #ccc; border-radius: 4px; font-size: 15px; width: 100%; box-sizing: border-box; }
+input[readonly] { background-color: #e9ecef; color: #495057; cursor: not-allowed; border-color: #ced4da; }
 
-    .btn-container { display: flex; gap: 10px; margin-top: 15px; }
-    button { flex: 1; padding: 12px; border: none; border-radius: 4px; color: white; font-weight: bold; cursor: pointer; font-size: 15px; transition: opacity 0.3s, background-color 0.3s; }
-    
-    .btn-entrata { background: #28a745; }
-    .btn-uscita { background: #dc3545; }
-    .btn-transfer { background: #17a2b8; color: white; } 
-    .btn-offset { background: #6f42c1; color: white; }
-    .btn-scadenza { background: #fd7e14; color: white; }
-    .btn-nota { background: #20c997; color: white; }
+/* SUBMENU E UTILITY */
+.submenu-box { transition: all 0.3s ease; overflow: hidden; background: #f8f9fa; padding: 10px; border-radius: 4px; border: 1px dashed #ccc; margin-top: 5px; }
+.hidden { display: none; }
 
-    button:disabled { background: #e9ecef; color: #adb5bd; cursor: not-allowed; opacity: 1; border: 1px solid #dee2e6; }
-    .btn-salva-modifica { background: #007bff; display: none; }
-    
-    .header-icons { position: absolute; top: 20px; right: 20px; display: flex; gap: 10px; align-items: center; }
-    .icon-btn { background: transparent; color: #666; font-size: 1.5em; padding: 0; width: auto; flex: none; border: none; cursor: pointer; position: relative; }
-    .icon-btn:hover { color: #007bff; }
-    
-    .alert-badge { position: absolute; top: -2px; right: -2px; background: #dc3545; color: white; border-radius: 50%; width: 16px; height: 16px; font-size: 10px; font-weight: bold; display: none; justify-content: center; align-items: center; border: 2px solid white; z-index: 10; }
-    .header-separator { width: 1px; background-color: #ddd; height: 24px; margin: 0 2px; }
-    
-    .panel-area, .info-panel { border-top: 1px solid #eee; margin-top: 20px; padding-top: 20px; display: none; background: #f8f9fa; padding: 20px; border-bottom: 4px solid #ddd; border-radius: 8px; margin-bottom: 35px; box-shadow: 0 8px 15px -5px rgba(0,0,0,0.1); }
-    
-    .balance-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; text-align: center; margin-bottom: 10px; }
-    .balance-card { background: #fff; padding: 10px; border-radius: 6px; border: 1px solid #eee; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
-    .tag-container { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
-    .tag { background: #fff; border: 1px solid #ddd; padding: 5px 8px; border-radius: 15px; font-size: 0.9em; display: flex; align-items: center; gap: 4px; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
-    .tag-btn { cursor: pointer; padding: 0 4px; font-weight: bold; user-select: none; }
-    .tag-move { color: #888; font-size: 0.8em; }
-    .tag-del { color: #dc3545; margin-left: 6px; font-size: 1.1em; line-height: 1; }
-    
-    .add-box { display: flex; gap: 5px; margin-top: 10px; }
-    .section-title { font-weight: bold; margin-top: 20px; margin-bottom: 5px; color: #007bff; font-size: 0.9em; text-transform: uppercase; }
+/* BOTTONI */
+.btn-container { display: flex; gap: 10px; margin-top: 15px; }
+button { flex: 1; padding: 12px; border: none; border-radius: 4px; color: white; font-weight: bold; cursor: pointer; font-size: 15px; transition: opacity 0.3s, background-color 0.3s; }
+.btn-entrata { background: #28a745; }
+.btn-uscita { background: #dc3545; }
+.btn-transfer { background: #17a2b8; color: white; } 
+.btn-offset { background: #6f42c1; color: white; }
+.btn-scadenza { background: #fd7e14; color: white; }
+.btn-nota { background: #20c997; color: white; }
+button:disabled { background: #e9ecef; color: #adb5bd; cursor: not-allowed; opacity: 1; border: 1px solid #dee2e6; }
+.btn-salva-modifica { background: #007bff; display: none; }
+.btn-export { background: #17a2b8; color: white; margin-top: 10px; }
+.btn-import { background: #6f42c1; color: white; margin-top: 10px; }
+.btn-reset { flex: 0 0 auto; background: #6c757d; padding: 6px 12px; height: 35px; margin-top: 0; font-size: 0.9em; }
 
-    .action-cell { white-space: nowrap; text-align: right; min-width: 80px; }
-    .action-btn { background: transparent; padding: 5px; font-size: 1.1em; cursor: pointer; border: none; display: inline-block; margin: 0 2px; }
-    .btn-del { color: #dc3545; }
-    .btn-edit { color: #ffc107; }
-    .btn-fuel { color: #6610f2; font-size: 1.2em; }
-    
-    .link-pdf { color: #007bff; text-decoration: none; font-size: 1.2em; vertical-align: middle; margin-left: 5px; }
-    .link-pdf:hover { color: #0056b3; }
+/* HEADER E ICONE */
+.header-icons { position: absolute; top: 20px; right: 20px; display: flex; gap: 10px; align-items: center; }
+.icon-btn { background: transparent; color: #666; font-size: 1.5em; padding: 0; width: auto; flex: none; border: none; cursor: pointer; position: relative; }
+.icon-btn:hover { color: #007bff; }
+.alert-badge { position: absolute; top: -2px; right: -2px; background: #dc3545; color: white; border-radius: 50%; width: 16px; height: 16px; font-size: 10px; font-weight: bold; display: none; justify-content: center; align-items: center; border: 2px solid white; z-index: 10; }
+.header-separator { width: 1px; background-color: #ddd; height: 24px; margin: 0 2px; }
 
-    table { width: 100%; border-collapse: collapse; }
-    th { text-align: left; border-bottom: 2px solid #ddd; padding: 10px; color: #666; font-size: 0.9em; }
-    td { padding: 12px 8px; border-bottom: 1px solid #eee; vertical-align: top; }
-    
-    .editing-row { background-color: #ffe0b2 !important; } 
-    .bolletta-row { background-color: #fff9c4; } 
-    .ricarica-row { background-color: #e3f2fd; } 
-    .benzina-row { background-color: #f3e5f5; }
+/* PANNELLI */
+.panel-area, .info-panel { border-top: 1px solid #eee; margin-top: 20px; padding-top: 20px; display: none; background: #f8f9fa; padding: 20px; border-bottom: 4px solid #ddd; border-radius: 8px; margin-bottom: 35px; box-shadow: 0 8px 15px -5px rgba(0,0,0,0.1); }
 
-    .badge { font-size: 0.75em; padding: 3px 8px; border-radius: 4px; font-weight: bold; margin-right: 4px; display: inline-block; border: 1px solid transparent; }
-    .badge-cc { background: #efebe9; color: #5d4037; border-color: #d7ccc8; } 
-    .badge-ste { background: #e3f2fd; color: #0d47a1; border-color: #bbdefb; }
-    .badge-vale { background: #fce4ec; color: #880e4f; border-color: #f8bbd0; }
-    .badge-altro { background: #e0e0e0; color: #333; border-color: #ccc; }
-    
-    tfoot td { border-top: 2px solid #333; font-weight: bold; padding-top: 15px; font-size: 1.1em; background: #fafafa; }
-    .importo-col { text-align: right; white-space: nowrap; font-weight: bold; }
-    .positivo { color: #28a745; }
-    .negativo { color: #dc3545; }
-    .neutro { color: #17a2b8; }
-    .data-small { font-size: 0.85em; color: #888; display: block; margin-bottom: 4px; }
-    .data-control { margin-bottom: 10px; }
-    .data-control label { font-size: 0.85em; color: #666; display: block; margin-bottom: 3px; }
-    .btn-export { background: #17a2b8; color: white; margin-top: 10px; }
-    .btn-import { background: #6f42c1; color: white; margin-top: 10px; }
-    
-    .stat-box { display: flex; justify-content: space-between; margin-bottom: 15px; background: #fff; padding: 15px; border-radius: 8px; border: 1px solid #eee; }
-    .filter-bar { display: flex; gap: 10px; align-items: flex-end; margin-bottom: 15px; padding-bottom: 15px; border-bottom: 1px solid #eee; }
-    .filter-item { flex: 1; }
-    .filter-item label { font-size: 0.8em; color: #666; display: block; margin-bottom: 3px; }
-    .filter-item input { padding: 6px; font-size: 0.9em; }
-    .btn-reset { flex: 0 0 auto; background: #6c757d; padding: 6px 12px; height: 35px; margin-top: 0; font-size: 0.9em; }
+/* BALANCE E TAG */
+.balance-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; text-align: center; margin-bottom: 10px; }
+.balance-card { background: #fff; padding: 10px; border-radius: 6px; border: 1px solid #eee; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+.tag-container { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+.tag { background: #fff; border: 1px solid #ddd; padding: 5px 8px; border-radius: 15px; font-size: 0.9em; display: flex; align-items: center; gap: 4px; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
+.tag-btn { cursor: pointer; padding: 0 4px; font-weight: bold; user-select: none; }
+.tag-move { color: #888; font-size: 0.8em; }
+.tag-del { color: #dc3545; margin-left: 6px; font-size: 1.1em; line-height: 1; }
+.add-box { display: flex; gap: 5px; margin-top: 10px; }
+.section-title { font-weight: bold; margin-top: 20px; margin-bottom: 5px; color: #007bff; font-size: 0.9em; text-transform: uppercase; }
 
-    .fuel-year-summary { background: #6610f2; color: white; padding: 15px; border-radius: 8px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; text-align: center; margin-bottom: 20px; }
-    .fuel-stat-val { font-size: 1.4em; font-weight: bold; display: block; }
-    .fuel-stat-lbl { font-size: 0.8em; opacity: 0.8; text-transform: uppercase; }
-    .fuel-table { width: 100%; font-size: 0.9em; margin-bottom: 10px; }
+/* AZIONI TABELLA */
+.action-cell { white-space: nowrap; text-align: right; min-width: 80px; }
+.action-btn { background: transparent; padding: 5px; font-size: 1.1em; cursor: pointer; border: none; display: inline-block; margin: 0 2px; }
+.btn-del { color: #dc3545; }
+.btn-edit { color: #ffc107; }
+.btn-fuel { color: #6610f2; font-size: 1.2em; }
+.link-pdf { color: #007bff; text-decoration: none; font-size: 1.2em; vertical-align: middle; margin-left: 5px; }
+.link-pdf:hover { color: #0056b3; }
 
-    .deadlines-list { margin-top: 15px; }
-    .scad-card { background: #fff; border: 1px solid #ddd; border-left: 6px solid #ccc; border-radius: 5px; padding: 8px; margin-bottom: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); transition: transform 0.2s; }
-    .scad-card:hover { transform: translateY(-1px); box-shadow: 0 2px 6px rgba(0,0,0,0.1); }
-    .scad-status-red { border-left-color: #dc3545; background-color: #fff5f5; }
-    .scad-status-yellow { border-left-color: #ffc107; background-color: #fff9db; }
-    .scad-status-blue { border-left-color: #17a2b8; background-color: #e0f7fa; }
-    .scad-row { display: flex; align-items: center; gap: 6px; margin-bottom: 4px; }
-    
-    .note-card { background: #fff; border: 1px solid #ddd; border-left: 6px solid #20c997; border-radius: 5px; padding: 8px; margin-bottom: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
-    .s-date { width: 110px; padding: 4px; font-size: 0.85em; font-weight: bold; border: 1px solid #ccc; border-radius: 3px; }
-    .s-desc { flex: 1; padding: 4px; font-size: 0.9em; border: 1px solid #ccc; border-radius: 3px; color: #333; }
-    .s-btn-group { display: flex; gap: 2px; }
-    .s-btn { padding: 4px 6px; font-size: 0.75em; border: 1px solid #ccc; background: white; border-radius: 3px; cursor: pointer; font-weight: bold; color: #555; }
-    .s-btn:hover { background: #eee; color: #000; }
-    .s-btn-del { color: #dc3545; border-color: #f5c6cb; }
-    .s-btn-del:hover { background: #f8d7da; }
-    .s-amount { width: 70px; text-align: right; padding: 4px; font-weight: bold; font-size: 0.9em; border: 1px solid #ccc; border-radius: 3px; color: #333; }
+/* TABELLE */
+table { width: 100%; border-collapse: collapse; }
+th { text-align: left; border-bottom: 2px solid #ddd; padding: 10px; color: #666; font-size: 0.9em; }
+td { padding: 12px 8px; border-bottom: 1px solid #eee; vertical-align: top; }
+.editing-row { background-color: #ffe0b2 !important; } 
+.bolletta-row { background-color: #fff9c4; } 
+.ricarica-row { background-color: #e3f2fd; } 
+.benzina-row { background-color: #f3e5f5; }
+tfoot td { border-top: 2px solid #333; font-weight: bold; padding-top: 15px; font-size: 1.1em; background: #fafafa; }
 
-    .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: none; justify-content: center; align-items: center; z-index: 1000; }
-    .modal-content { background: white; padding: 25px; border-radius: 10px; width: 90%; max-width: 400px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); animation: fadeIn 0.2s; }
-    .modal-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #eee; }
-    .modal-label { font-weight: bold; color: #555; }
-    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+/* BADGE */
+.badge { font-size: 0.75em; padding: 3px 8px; border-radius: 4px; font-weight: bold; margin-right: 4px; display: inline-block; border: 1px solid transparent; }
+.badge-cc { background: #efebe9; color: #5d4037; border-color: #d7ccc8; } 
+.badge-ste { background: #e3f2fd; color: #0d47a1; border-color: #bbdefb; }
+.badge-vale { background: #fce4ec; color: #880e4f; border-color: #f8bbd0; }
+.badge-altro { background: #e0e0e0; color: #333; border-color: #ccc; }
 
-/* STILE RICERCA "TOOLBAR" (Compatto) */
-.search-wrapper {
-    position: relative;
-    margin-bottom: 8px; /* Molto meno spazio sotto */
-    width: 100%;
-}
+/* UTILITY CLASSI */
+.importo-col { text-align: right; white-space: nowrap; font-weight: bold; }
+.positivo { color: #28a745; }
+.negativo { color: #dc3545; }
+.neutro { color: #17a2b8; }
+.data-small { font-size: 0.85em; color: #888; display: block; margin-bottom: 4px; }
 
+/* STATISTICHE E FILTRI */
+.stat-box { display: flex; justify-content: space-between; margin-bottom: 15px; background: #fff; padding: 15px; border-radius: 8px; border: 1px solid #eee; }
+.filter-bar { display: flex; gap: 10px; align-items: flex-end; margin-bottom: 15px; padding-bottom: 15px; border-bottom: 1px solid #eee; }
+.filter-item { flex: 1; }
+.filter-item label { font-size: 0.8em; color: #666; display: block; margin-bottom: 3px; }
+.filter-item input { padding: 6px; font-size: 0.9em; }
+.data-control { margin-bottom: 10px; }
+.data-control label { font-size: 0.85em; color: #666; display: block; margin-bottom: 3px; }
+
+/* BENZINA */
+.fuel-year-summary { background: #6610f2; color: white; padding: 15px; border-radius: 8px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; text-align: center; margin-bottom: 20px; }
+.fuel-stat-val { font-size: 1.4em; font-weight: bold; display: block; }
+.fuel-stat-lbl { font-size: 0.8em; opacity: 0.8; text-transform: uppercase; }
+.fuel-table { width: 100%; font-size: 0.9em; margin-bottom: 10px; }
+
+/* SCADENZE */
+.deadlines-list { margin-top: 15px; }
+.scad-card { background: #fff; border: 1px solid #ddd; border-left: 6px solid #ccc; border-radius: 5px; padding: 8px; margin-bottom: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); transition: transform 0.2s; }
+.scad-card:hover { transform: translateY(-1px); box-shadow: 0 2px 6px rgba(0,0,0,0.1); }
+.scad-status-red { border-left-color: #dc3545; background-color: #fff5f5; }
+.scad-status-yellow { border-left-color: #ffc107; background-color: #fff9db; }
+.scad-status-blue { border-left-color: #17a2b8; background-color: #e0f7fa; }
+.scad-row { display: flex; align-items: center; gap: 6px; margin-bottom: 4px; }
+.s-date { width: 110px; padding: 4px; font-size: 0.85em; font-weight: bold; border: 1px solid #ccc; border-radius: 3px; }
+.s-desc { flex: 1; padding: 4px; font-size: 0.9em; border: 1px solid #ccc; border-radius: 3px; color: #333; }
+.s-btn-group { display: flex; gap: 2px; }
+.s-btn { padding: 4px 6px; font-size: 0.75em; border: 1px solid #ccc; background: white; border-radius: 3px; cursor: pointer; font-weight: bold; color: #555; }
+.s-btn:hover { background: #eee; color: #000; }
+.s-btn-del { color: #dc3545; border-color: #f5c6cb; }
+.s-btn-del:hover { background: #f8d7da; }
+.s-amount { width: 70px; text-align: right; padding: 4px; font-weight: bold; font-size: 0.9em; border: 1px solid #ccc; border-radius: 3px; color: #333; }
+
+/* NOTE */
+.note-card { background: #fff; border: 1px solid #ddd; border-left: 6px solid #20c997; border-radius: 5px; padding: 8px; margin-bottom: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+
+/* MODALI */
+.modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: none; justify-content: center; align-items: center; z-index: 1000; }
+.modal-content { background: white; padding: 25px; border-radius: 10px; width: 90%; max-width: 400px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); animation: fadeIn 0.2s; }
+.modal-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #eee; }
+.modal-label { font-weight: bold; color: #555; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+/* RICERCA COMPATTA */
+.search-wrapper { position: relative; margin-bottom: 8px; width: 100%; }
 .search-input-pro {
     width: 100%;
-    height: 30px !important;       /* Altezza ridotta al minimo */
+    height: 30px !important;
     line-height: 30px !important;
-    padding: 0 30px 0 30px !important; /* Spazio laterale per icone */
-    
+    padding: 0 30px 0 30px !important;
     border: 1px solid #ced4da;
-    border-radius: 4px !important;  /* Squadrato (leggermente smussato) */
-    font-size: 13px !important;     /* Testo più piccolo */
-    background-color: #f8f9fa;      /* Grigino leggero (meno impatto visivo) */
+    border-radius: 4px !important;
+    font-size: 13px !important;
+    background-color: #f8f9fa;
     color: #495057;
-    box-shadow: none !important;    /* Nessuna ombra = meno ingombro */
+    box-shadow: none !important;
     transition: all 0.2s;
 }
-
-.search-input-pro:focus {
-    background-color: #fff;        /* Diventa bianco quando scrivi */
-    border-color: #80bdff;
-    outline: none;
-}
-
-.search-input-pro::placeholder {
-    color: #adb5bd;
-    font-size: 12px;
-}
-
-/* Icone ridimensionate per stare in 30px */
-.search-icon-left {
-    position: absolute;
-    left: 8px;
-    top: 50%;
-    transform: translateY(-50%);
-    font-size: 12px;
-    color: #6c757d;
-}
-
-/* BOTTONE CHIUDI (X DISEGNATA A MANO) */
+.search-input-pro:focus { background-color: #fff; border-color: #80bdff; outline: none; }
+.search-input-pro::placeholder { color: #adb5bd; font-size: 12px; }
+.search-icon-left { position: absolute; left: 8px; top: 50%; transform: translateY(-50%); font-size: 12px; color: #6c757d; }
 .search-clear-btn {
     position: absolute;
     right: 8px;
@@ -194,251 +181,193 @@
     transform: translateY(-50%);
     width: 18px;
     height: 18px;
-    
-    background: #ccc; /* Sfondo grigio */
+    background: #ccc;
     border-radius: 50%;
     border: none;
     cursor: pointer;
     padding: 0;
-    
-    display: none; /* Gestito da JS */
+    display: none;
     align-items: center;
     justify-content: center;
-    
-    /* Rimuove testo vecchio se presente */
-    color: transparent; 
+    color: transparent;
     overflow: hidden;
 }
-
-/* Disegna la stanghetta 1 */
-.search-clear-btn::before, 
-.search-clear-btn::after {
+.search-clear-btn::before, .search-clear-btn::after {
     content: '';
     position: absolute;
-    width: 10px;  /* Lunghezza stanghetta */
-    height: 2px;  /* Spessore stanghetta */
-    background-color: white; /* Colore X */
+    width: 10px;
+    height: 2px;
+    background-color: white;
     border-radius: 1px;
 }
-
-/* Ruota per fare la croce */
 .search-clear-btn::before { transform: rotate(45deg); }
 .search-clear-btn::after { transform: rotate(-45deg); }
-
-.search-clear-btn:hover {
-    background: #999; /* Più scuro al passaggio */
-}
+.search-clear-btn:hover { background: #999; }
 
 
-/* --- INIZIO VERSIONE MOBILE (BLOCCO UNICO) --- */
+/* ============================================
+   RESPONSIVE MOBILE
+   ============================================ */
 @media screen and (max-width: 600px) {
 
-
-    /* FIX BOTTONI MESI AFFIANCATI */
-    /* Seleziona il contenitore dove ci sono i bottoni Mese Scorso/Corr. */
-    /* (Adatta il selettore se il tuo div ha un altro nome/ID, es: #filtriMesi) */
-    .btn-container, .filter-bar { 
-        display: flex !important;
-        flex-direction: row !important; /* Forza la riga orizzontale, non colonna */
-        flex-wrap: wrap !important;     /* Se non ci stanno, vanno a capo ordinatamente */
-        justify-content: space-between !important; /* Spazio in mezzo */
-        gap: 10px !important;
-        width: 100% !important;
-        padding: 0 5px !important; /* Un po' di aria ai lati */
-        box-sizing: border-box !important;
-    }
-
-    /* I bottoni specifici dentro quel contenitore */
-    .btn-container button, .filter-bar button {
-        flex: 1 !important;        /* Si dividono lo spazio equamente (50% e 50%) */
-        width: auto !important;    /* Resetta il width: 100% che avevamo messo */
-        min-width: 0 !important;   /* Evita che esplodano se il testo è lungo */
-        font-size: 14px !important; /* Testo leggermente più piccolo per farci stare tutto */
-        white-space: nowrap !important; /* Testo su una riga */
-        padding: 10px 5px !important;
-        margin-bottom: 0 !important; /* Toglie margine sotto inutile */
-    }
-
-    .panel-area, .info-panel, #statistichePanel {
-        height: auto !important; /* Altezza automatica in base al contenuto */
-        min-height: 100% !important;
-        overflow: visible !important; /* Non nascondere nulla che esce */
-        padding-bottom: 100px !important;
-		
-		}
-		
-    /* 1. CREIAMO SPAZIO IN ALTO E IN BASSO NEL CORPO */
+    /* LAYOUT CORPO */
     body {
-        padding-top: 80px !important; /* Spazio vuoto in alto per la barra dei menu */
-        padding-bottom: 150px !important; /* Spazio vuoto in basso per l'ultimo pulsante */
+        padding-top: 80px !important;
+        padding-bottom: 150px !important;
         padding-left: 10px !important;
         padding-right: 10px !important;
-		overflow-y: auto !important; /* Forza lo scroll sempre attivo */
+        overflow-y: auto !important;
     }
 
-        /* BARRA MENU SCORREVOLE */
+    /* BARRA MENU FISSA IN ALTO */
     .header-icons {
         position: fixed !important;
         top: 0 !important;
         left: 0 !important;
         width: 100% !important;
-        height: 70px !important; /* Un po' più alta */
-        
+        height: 70px !important;
         background-color: white !important;
         border-bottom: 2px solid #ddd !important;
         z-index: 99999 !important;
-        
         display: flex !important;
         align-items: center !important;
-        
-        /* QUESTO E' IL TRUCCO: */
-        justify-content: flex-start !important; /* Allinea a sinistra */
-        overflow-x: auto !important; /* Permette lo scroll orizzontale */
-        white-space: nowrap !important; /* Impedisce ai tasti di andare a capo */
+        justify-content: flex-start !important;
+        overflow-x: auto !important;
+        white-space: nowrap !important;
         padding: 0 10px !important;
-        gap: 15px !important; /* Spazio tra le icone */
-        
-        /* Nascondi la scrollbar brutta (opzionale ma elegante) */
+        gap: 15px !important;
         -webkit-overflow-scrolling: touch;
-        scrollbar-width: none; 
+        scrollbar-width: none;
     }
 
-
-    /* 3. STILE DEI BOTTONI DENTRO LA BARRA (Non devono essere giganti) */
-    .header-icons .icon-btn, 
-    .header-icons button {
-        width: auto !important;       /* Larghezza naturale */
+    .header-icons .icon-btn, .header-icons button {
+        width: auto !important;
         height: auto !important;
         background: transparent !important;
         color: #333 !important;
-        font-size: 24px !important;   /* Icone belle grandi */
+        font-size: 24px !important;
         margin: 0 !important;
         padding: 5px 10px !important;
     }
 
-    /* 4. TUTTO IL RESTO IN COLONNA */
-    .form-grid, .balance-grid, .fuel-year-summary, .btn-container {
+    /* LAYOUT A COLONNA */
+    .form-grid, .balance-grid, .fuel-year-summary {
         display: flex !important;
         flex-direction: column !important;
         gap: 10px !important;
     }
 
-    /* 5. CAMPI E BOTTONI DI INSERIMENTO (QUSTI SÌ, GRANDI) */
-    /* Nota: escludiamo .header-icons da questa regola usando :not */
-    #app input, #app select, .btn-container button, .card button {
+    /* CONTENITORE BOTTONI (Flessibile per gestire sia righe che colonne) */
+    .btn-container {
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 10px !important;
+    }
+
+    /* CAMPI E BOTTONI GRANDI (TOUCH-FRIENDLY) */
+    #app input, #app select, .card button {
         width: 100% !important;
         min-height: 45px !important;
         font-size: 16px !important;
         margin-bottom: 10px !important;
     }
-    
-    /* 6. TABELLA SCORREVOLE */
+
+    /* TABELLE SCORREVOLI */
     table {
         display: block;
         width: 100%;
         overflow-x: auto;
         white-space: nowrap;
     }
-	
-	
-	
-    /* FIX PANNELLI/MODALI SU MOBILE - VERSIONE SBLOCCATA */
-    
-    /* 1. Il contenitore diventa un blocco normale che scende all'infinito */
+
+    /* PANNELLI E MODALI */
     .panel-area, .info-panel {
-        position: absolute !important; /* Non fixed! Così scrolla con la pagina */
-        top: 70px !important; 
+        position: absolute !important;
+        top: 70px !important;
         left: 0 !important;
         width: 100% !important;
-        
-        /* Altezza automatica = lungo quanto il contenuto */
         height: auto !important;
         min-height: calc(100vh - 70px) !important;
-        
-        /* IMPORTANTE: Niente overflow qui, lasciamo scrollare il body */
-        overflow: visible !important; 
-        
+        overflow: visible !important;
         margin: 0 !important;
         border-radius: 0 !important;
         z-index: 20000 !important;
-        background: #f8f9fa !important; /* Copre quello che c'è sotto */
-        
-        /* Spazio vitale in fondo */
-        padding-bottom: 200px !important; 
+        background: #f8f9fa !important;
+        padding-bottom: 200px !important;
     }
 
-    /* 2. Le modali vere (piccole finestre al centro) restano fixed ma centrate */
     .modal-content {
-        position: relative !important; /* Dentro l'overlay */
+        position: relative !important;
         width: 90% !important;
         max-height: 80vh !important;
         overflow-y: auto !important;
-        margin: 10% auto !important; /* Centrato */
+        margin: 10% auto !important;
     }
 
-    /* FIX CRITICO X RICERCA MOBILE */
-    /* Usiamo una catena di selettori lunga per vincere su tutto */
+    /* FILTRI E DATE (Layout a due piani) */
+    .filter-bar {
+        display: flex !important;
+        flex-wrap: wrap !important;
+        justify-content: space-between !important;
+        gap: 10px !important;
+        width: 100% !important;
+        padding: 0 !important;
+        margin-bottom: 15px !important;
+    }
+
+    .filter-item {
+        flex: 0 0 48% !important;
+        width: 48% !important;
+        margin: 0 !important;
+    }
+
+    .filter-item input {
+        width: 100% !important;
+        margin: 0 !important;
+    }
+
+    /* BOTTONI MESI (Sotto le date, affiancati) */
+    .filter-bar button {
+        flex: 0 0 48% !important;
+        width: 48% !important;
+        height: 45px !important;
+        margin: 0 !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        font-size: 14px !important;
+        padding: 0 !important;
+        white-space: nowrap !important;
+    }
+
+    /* FIX TASTINO X RICERCA */
     body .search-wrapper .search-clear-btn,
     #app .search-wrapper .search-clear-btn,
     .search-wrapper button.search-clear-btn {
-        
-        /* Forza dimensioni ridotte */
-        display: flex !important;    /* Per centrare la X dentro */
-        width: 24px !important;      
+        display: flex !important;
+        width: 24px !important;
         height: 24px !important;
-        min-height: 0 !important;    /* Annulla i 45px ereditati */
+        min-height: 0 !important;
         min-width: 0 !important;
-        
-        /* Posizione assoluta dentro la barra */
         position: absolute !important;
         top: 50% !important;
-        right: 8px !important;       /* Staccato dal bordo destro */
+        right: 8px !important;
         transform: translateY(-50%) !important;
-        margin: 0 !important;        /* Niente margini esterni */
-        
-        /* Reset grafico */
+        margin: 0 !important;
         background-color: #999 !important;
         border: none !important;
         border-radius: 50% !important;
         padding: 0 !important;
-        
-        /* Assicura visibilità sopra l'input */
         z-index: 100 !important;
         opacity: 1 !important;
     }
-    /* ALLINEAMENTO PERFETTO BOTTONI MESI */
-    .filter-bar {
-        display: flex !important;
-        flex-direction: row !important; /* Forza riga orizzontale */
-        align-items: stretch !important; /* Stessa altezza per tutti */
-        justify-content: space-between !important;
-        gap: 8px !important; /* Spazio uguale tra i due */
-        width: 100% !important;
-        margin-bottom: 10px !important;
+
+    .search-input-pro {
+        padding-right: 40px !important;
     }
+}
+</style>
 
-    /* Seleziona specificamente i bottoni dentro la barra filtri */
-    .filter-bar button {
-        flex: 1 !important;        /* 50% larghezza esatta a testa */
-        width: 50% !important;     /* Rinforzo larghezza */
-        margin: 0 !important;      /* Rimuove margini strani */
-        min-height: 45px !important; /* Altezza identica fissa */
-        height: 45px !important;
-        
-        display: flex !important;  /* Centra il testo dentro il bottone */
-        align-items: center !important;
-        justify-content: center !important;
-        
-        font-size: 14px !important; /* Font uguale */
-        padding: 0 !important;
-    }
-
-
-/* --- FINE VERSIONE MOBILE --- */
-
-
-
-    </style>
 </head>
 <body>
 
