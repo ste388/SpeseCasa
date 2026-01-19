@@ -1,0 +1,1361 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bilancio Casa (Ste & Vale)</title>
+    <style>
+    /* STILE CONFIGURAZIONE FONDI */
+    .fondo-row { display: flex; align-items: center; background: #fff; border: 1px solid #ddd; padding: 8px 10px; border-radius: 6px; margin-bottom: 6px; transition: background 0.2s; }
+    .fondo-row:hover { background: #f9fafb; border-color: #bbb; }
+    .fondo-nome { flex: 1; font-weight: 600; color: #2c3e50; font-size: 0.95em; margin-right: 10px; }
+    .fondo-group { display: flex; flex-direction: column; margin-right: 10px; }
+    .fondo-label { font-size: 0.7em; color: #7f8c8d; text-transform: uppercase; margin-bottom: 2px; }
+    .fondo-input { padding: 6px 10px; border: 1px solid #ccc; border-radius: 4px; font-size: 1em; color: #333; width: 130px; background: #fff; }
+    .fondo-input:focus { border-color: #007bff; outline: none; background: #f0f8ff; }
+    .btn-del-mini { color: #dc3545; background: #fff0f0; border: 1px solid #ffcdd2; border-radius: 4px; width: 28px; height: 28px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+    .btn-del-mini:hover { background: #dc3545; color: white; }
+
+    /* STILE TABELLA PATRIMONIO */
+    .pat-table { width: 100%; border-collapse: collapse; font-size: 0.85em; white-space: nowrap; }
+    .th-date { background-color: #607d8b; color: white; border: 1px solid #546e7a; padding: 8px; }
+    .th-tot { background-color: #0d47a1; color: white; border: 1px solid #002171; padding: 8px; }
+    .th-liq { background-color: #00796b; color: white; border: 1px solid #004d40; padding: 8px; }
+    .th-fondi { background-color: #f5f5f5; color: #333; border: 1px solid #ddd; padding: 8px; text-align: center; border-left: 2px solid #ccc; }
+    .td-base { padding: 6px 8px; border-bottom: 1px solid #eee; }
+    .td-tot { font-weight: bold; color: #0d47a1; background-color: #e3f2fd; border-bottom: 1px solid #bbdefb; }
+    .td-liq { font-weight: bold; color: #00695c; background-color: #e0f2f1; border-bottom: 1px solid #b2dfdb; border-right: 2px solid #ccc; }
+    .td-fondo-val { border-left: 1px solid #eee; padding-left: 8px; }
+
+    body { font-family: 'Segoe UI', sans-serif; padding: 20px; max-width: 600px; margin: 0 auto; background: #f4f4f9; color: #333; }
+    .card { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); margin-bottom: 20px; position: relative; }
+    
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .full-width { grid-column: span 2; }
+
+    input, select { padding: 10px; border: 1px solid #ccc; border-radius: 4px; font-size: 15px; width: 100%; box-sizing: border-box; }
+    input[readonly] { background-color: #e9ecef; color: #495057; cursor: not-allowed; border-color: #ced4da; }
+
+    .submenu-box { transition: all 0.3s ease; overflow: hidden; background: #f8f9fa; padding: 10px; border-radius: 4px; border: 1px dashed #ccc; margin-top:5px; }
+    .hidden { display: none; }
+
+    .btn-container { display: flex; gap: 10px; margin-top: 15px; }
+    button { flex: 1; padding: 12px; border: none; border-radius: 4px; color: white; font-weight: bold; cursor: pointer; font-size: 15px; transition: opacity 0.3s, background-color 0.3s; }
+    
+    .btn-entrata { background: #28a745; }
+    .btn-uscita { background: #dc3545; }
+    .btn-transfer { background: #17a2b8; color: white; } 
+    .btn-offset { background: #6f42c1; color: white; }
+    .btn-scadenza { background: #fd7e14; color: white; }
+    .btn-nota { background: #20c997; color: white; }
+
+    button:disabled { background: #e9ecef; color: #adb5bd; cursor: not-allowed; opacity: 1; border: 1px solid #dee2e6; }
+    .btn-salva-modifica { background: #007bff; display: none; }
+    
+    .header-icons { position: absolute; top: 20px; right: 20px; display: flex; gap: 10px; align-items: center; }
+    .icon-btn { background: transparent; color: #666; font-size: 1.5em; padding: 0; width: auto; flex: none; border: none; cursor: pointer; position: relative; }
+    .icon-btn:hover { color: #007bff; }
+    
+    .alert-badge { position: absolute; top: -2px; right: -2px; background: #dc3545; color: white; border-radius: 50%; width: 16px; height: 16px; font-size: 10px; font-weight: bold; display: none; justify-content: center; align-items: center; border: 2px solid white; z-index: 10; }
+    .header-separator { width: 1px; background-color: #ddd; height: 24px; margin: 0 2px; }
+    
+    .panel-area, .info-panel { border-top: 1px solid #eee; margin-top: 20px; padding-top: 20px; display: none; background: #f8f9fa; padding: 20px; border-bottom: 4px solid #ddd; border-radius: 8px; margin-bottom: 35px; box-shadow: 0 8px 15px -5px rgba(0,0,0,0.1); }
+    
+    .balance-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; text-align: center; margin-bottom: 10px; }
+    .balance-card { background: #fff; padding: 10px; border-radius: 6px; border: 1px solid #eee; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+    .tag-container { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+    .tag { background: #fff; border: 1px solid #ddd; padding: 5px 8px; border-radius: 15px; font-size: 0.9em; display: flex; align-items: center; gap: 4px; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
+    .tag-btn { cursor: pointer; padding: 0 4px; font-weight: bold; user-select: none; }
+    .tag-move { color: #888; font-size: 0.8em; }
+    .tag-del { color: #dc3545; margin-left: 6px; font-size: 1.1em; line-height: 1; }
+    
+    .add-box { display: flex; gap: 5px; margin-top: 10px; }
+    .section-title { font-weight: bold; margin-top: 20px; margin-bottom: 5px; color: #007bff; font-size: 0.9em; text-transform: uppercase; }
+
+    .action-cell { white-space: nowrap; text-align: right; min-width: 80px; }
+    .action-btn { background: transparent; padding: 5px; font-size: 1.1em; cursor: pointer; border: none; display: inline-block; margin: 0 2px; }
+    .btn-del { color: #dc3545; }
+    .btn-edit { color: #ffc107; }
+    .btn-fuel { color: #6610f2; font-size: 1.2em; }
+    
+    .link-pdf { color: #007bff; text-decoration: none; font-size: 1.2em; vertical-align: middle; margin-left: 5px; }
+    .link-pdf:hover { color: #0056b3; }
+
+    table { width: 100%; border-collapse: collapse; }
+    th { text-align: left; border-bottom: 2px solid #ddd; padding: 10px; color: #666; font-size: 0.9em; }
+    td { padding: 12px 8px; border-bottom: 1px solid #eee; vertical-align: top; }
+    
+    .editing-row { background-color: #ffe0b2 !important; } 
+    .bolletta-row { background-color: #fff9c4; } 
+    .ricarica-row { background-color: #e3f2fd; } 
+    .benzina-row { background-color: #f3e5f5; }
+
+    .badge { font-size: 0.75em; padding: 3px 8px; border-radius: 4px; font-weight: bold; margin-right: 4px; display: inline-block; border: 1px solid transparent; }
+    .badge-cc { background: #efebe9; color: #5d4037; border-color: #d7ccc8; } 
+    .badge-ste { background: #e3f2fd; color: #0d47a1; border-color: #bbdefb; }
+    .badge-vale { background: #fce4ec; color: #880e4f; border-color: #f8bbd0; }
+    .badge-altro { background: #e0e0e0; color: #333; border-color: #ccc; }
+    
+    tfoot td { border-top: 2px solid #333; font-weight: bold; padding-top: 15px; font-size: 1.1em; background: #fafafa; }
+    .importo-col { text-align: right; white-space: nowrap; font-weight: bold; }
+    .positivo { color: #28a745; }
+    .negativo { color: #dc3545; }
+    .neutro { color: #17a2b8; }
+    .data-small { font-size: 0.85em; color: #888; display: block; margin-bottom: 4px; }
+    .data-control { margin-bottom: 10px; }
+    .data-control label { font-size: 0.85em; color: #666; display: block; margin-bottom: 3px; }
+    .btn-export { background: #17a2b8; color: white; margin-top: 10px; }
+    .btn-import { background: #6f42c1; color: white; margin-top: 10px; }
+    
+    .stat-box { display: flex; justify-content: space-between; margin-bottom: 15px; background: #fff; padding: 15px; border-radius: 8px; border: 1px solid #eee; }
+    .filter-bar { display: flex; gap: 10px; align-items: flex-end; margin-bottom: 15px; padding-bottom: 15px; border-bottom: 1px solid #eee; }
+    .filter-item { flex: 1; }
+    .filter-item label { font-size: 0.8em; color: #666; display: block; margin-bottom: 3px; }
+    .filter-item input { padding: 6px; font-size: 0.9em; }
+    .btn-reset { flex: 0 0 auto; background: #6c757d; padding: 6px 12px; height: 35px; margin-top: 0; font-size: 0.9em; }
+
+    .fuel-year-summary { background: #6610f2; color: white; padding: 15px; border-radius: 8px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; text-align: center; margin-bottom: 20px; }
+    .fuel-stat-val { font-size: 1.4em; font-weight: bold; display: block; }
+    .fuel-stat-lbl { font-size: 0.8em; opacity: 0.8; text-transform: uppercase; }
+    .fuel-table { width: 100%; font-size: 0.9em; margin-bottom: 10px; }
+
+    .deadlines-list { margin-top: 15px; }
+    .scad-card { background: #fff; border: 1px solid #ddd; border-left: 6px solid #ccc; border-radius: 5px; padding: 8px; margin-bottom: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); transition: transform 0.2s; }
+    .scad-card:hover { transform: translateY(-1px); box-shadow: 0 2px 6px rgba(0,0,0,0.1); }
+    .scad-status-red { border-left-color: #dc3545; background-color: #fff5f5; }
+    .scad-status-yellow { border-left-color: #ffc107; background-color: #fff9db; }
+    .scad-status-blue { border-left-color: #17a2b8; background-color: #e0f7fa; }
+    .scad-row { display: flex; align-items: center; gap: 6px; margin-bottom: 4px; }
+    
+    .note-card { background: #fff; border: 1px solid #ddd; border-left: 6px solid #20c997; border-radius: 5px; padding: 8px; margin-bottom: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+    .s-date { width: 110px; padding: 4px; font-size: 0.85em; font-weight: bold; border: 1px solid #ccc; border-radius: 3px; }
+    .s-desc { flex: 1; padding: 4px; font-size: 0.9em; border: 1px solid #ccc; border-radius: 3px; color: #333; }
+    .s-btn-group { display: flex; gap: 2px; }
+    .s-btn { padding: 4px 6px; font-size: 0.75em; border: 1px solid #ccc; background: white; border-radius: 3px; cursor: pointer; font-weight: bold; color: #555; }
+    .s-btn:hover { background: #eee; color: #000; }
+    .s-btn-del { color: #dc3545; border-color: #f5c6cb; }
+    .s-btn-del:hover { background: #f8d7da; }
+    .s-amount { width: 70px; text-align: right; padding: 4px; font-weight: bold; font-size: 0.9em; border: 1px solid #ccc; border-radius: 3px; color: #333; }
+
+    .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: none; justify-content: center; align-items: center; z-index: 1000; }
+    .modal-content { background: white; padding: 25px; border-radius: 10px; width: 90%; max-width: 400px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); animation: fadeIn 0.2s; }
+    .modal-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #eee; }
+    .modal-label { font-weight: bold; color: #555; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+/* STILE RICERCA "TOOLBAR" (Compatto) */
+.search-wrapper {
+    position: relative;
+    margin-bottom: 8px; /* Molto meno spazio sotto */
+    width: 100%;
+}
+
+.search-input-pro {
+    width: 100%;
+    height: 30px !important;       /* Altezza ridotta al minimo */
+    line-height: 30px !important;
+    padding: 0 30px 0 30px !important; /* Spazio laterale per icone */
+    
+    border: 1px solid #ced4da;
+    border-radius: 4px !important;  /* Squadrato (leggermente smussato) */
+    font-size: 13px !important;     /* Testo più piccolo */
+    background-color: #f8f9fa;      /* Grigino leggero (meno impatto visivo) */
+    color: #495057;
+    box-shadow: none !important;    /* Nessuna ombra = meno ingombro */
+    transition: all 0.2s;
+}
+
+.search-input-pro:focus {
+    background-color: #fff;        /* Diventa bianco quando scrivi */
+    border-color: #80bdff;
+    outline: none;
+}
+
+.search-input-pro::placeholder {
+    color: #adb5bd;
+    font-size: 12px;
+}
+
+/* Icone ridimensionate per stare in 30px */
+.search-icon-left {
+    position: absolute;
+    left: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 12px;
+    color: #6c757d;
+}
+
+/* BOTTONE CHIUDI (X DISEGNATA A MANO) */
+.search-clear-btn {
+    position: absolute;
+    right: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 18px;
+    height: 18px;
+    
+    background: #ccc; /* Sfondo grigio */
+    border-radius: 50%;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    
+    display: none; /* Gestito da JS */
+    align-items: center;
+    justify-content: center;
+    
+    /* Rimuove testo vecchio se presente */
+    color: transparent; 
+    overflow: hidden;
+}
+
+/* Disegna la stanghetta 1 */
+.search-clear-btn::before, 
+.search-clear-btn::after {
+    content: '';
+    position: absolute;
+    width: 10px;  /* Lunghezza stanghetta */
+    height: 2px;  /* Spessore stanghetta */
+    background-color: white; /* Colore X */
+    border-radius: 1px;
+}
+
+/* Ruota per fare la croce */
+.search-clear-btn::before { transform: rotate(45deg); }
+.search-clear-btn::after { transform: rotate(-45deg); }
+
+.search-clear-btn:hover {
+    background: #999; /* Più scuro al passaggio */
+}
+
+
+    </style>
+</head>
+<body>
+
+<!-- SCHERMATA LOGIN (Copre tutto all'avvio) -->
+<div id="loginOverlay" style="position:fixed; top:0; left:0; width:100%; height:100%; background:#f4f4f9; z-index:9999; display:flex; flex-direction:column; align-items:center; justify-content:center;">
+    
+    <div style="background:white; padding:30px; border-radius:10px; box-shadow:0 4px 15px rgba(0,0,0,0.1); text-align:center; max-width:90%; width:350px;">
+        <h2 style="color:#007bff; margin-top:0;">🔐 Accesso Privato</h2>
+        
+        <input type="email" id="txtEmail" placeholder="Email" value="bilancio@casa.it" 
+               style="width:100%; padding:10px; margin-bottom:10px; border:1px solid #ccc; border-radius:5px;">
+        
+        <input type="password" id="txtPass" placeholder="Password" 
+               style="width:100%; padding:10px; margin-bottom:20px; border:1px solid #ccc; border-radius:5px;">
+        
+        <button onclick="eseguiLogin()" 
+                style="width:100%; background:#28a745; color:white; padding:12px; border:none; border-radius:5px; font-weight:bold; cursor:pointer;">
+            ENTRA
+        </button>
+        
+        <p id="msgErrore" style="color:red; font-size:0.9em; margin-top:10px; display:none;">Credenziali errate</p>
+    </div>
+
+</div>
+
+
+
+    <!-- MODALE DETTAGLI BENZINA -->
+    <div id="modalBenzina" class="modal-overlay" onclick="document.getElementById('modalBenzina').style.display='none'">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <h3 style="margin-top:0; color:#6610f2;">⛽ Dettaglio Rifornimento</h3>
+            <div id="modalContentBenzina"></div>
+            <button onclick="document.getElementById('modalBenzina').style.display='none'" style="background:#6c757d; margin-top:15px; width:100%">Chiudi</button>
+        </div>
+    </div>
+
+    <div class="card" id="formCard">
+<h3 style="margin-top:0; cursor:pointer;" 
+    id="titoloForm" 
+    onclick="window.resetTotale()" 
+    title="Clicca per resettare tutto (Home)">
+    Nuova Voce
+</h3>
+        
+        <div class="header-icons">
+            <button class="icon-btn" onclick="togglePanel('balancePanel')" title="Saldi Conti">💰</button>
+            <button class="icon-btn" onclick="togglePanel('transferPanel')" title="Ricarica CC">💸</button>
+            <button class="icon-btn" onclick="togglePanel('autoPanel'); renderFuelReport();" title="Report Auto">🚗</button>
+            <button class="icon-btn" onclick="togglePanel('statsPanel')" title="Statistiche">📊</button>
+            <button class="icon-btn" onclick="togglePanel('deadlinesPanel')" title="Scadenze">
+                ⏰ <span id="badgeScadenze" class="alert-badge">!</span>
+            </button>
+            <button class="icon-btn" onclick="togglePanel('notesPanel')" title="Note & Acquisti">📝</button>
+            <button class="icon-btn" onclick="toggleModalPatrimonio()" title="Patrimonio">🏛️</button>
+            <div class="header-separator"></div>
+            <button class="icon-btn" onclick="togglePanel('dataPanel')" title="Importa/Esporta Dati">📂</button>
+            <button class="icon-btn" onclick="togglePanel('settingsPanel')" title="Gestisci Categorie">⚙️</button>
+        </div>
+
+        <input type="hidden" id="editId">
+
+        <!-- PANNELLI -->
+        <div id="deadlinesPanel" class="panel-area">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 10px;">
+                <h4 style="margin:0; color:#fd7e14;">Gestione Scadenze</h4>
+                <button onclick="document.getElementById('deadlinesPanel').style.display='none'" style="background:transparent; border:none; color:#999; font-size:1.5em; cursor:pointer;">&times;</button>
+            </div>
+            <div style="background:#fff3e0; padding:10px; border-radius:5px; border:1px solid #ffe0b2;">
+                <div class="form-grid">
+                    <input type="date" id="scadDate">
+                    <select id="scadConto"><option value="CC">🏦 CC</option><option value="Ste">👤 Ste</option><option value="Vale">👤 Vale</option></select>
+                    <input type="number" id="scadImporto" step="0.01" placeholder="Importo (€)">
+                    <select id="scadCategoria" onchange="gestisciCatScadenza()"></select>
+                    <div class="full-width"><input type="text" id="scadDesc" placeholder="Descrizione..." autocomplete="off"></div>
+                    <div class="full-width" id="boxScadSub" style="display:none;"><select id="scadSub" onchange="autoDescScad()"></select></div>
+                    <div class="full-width"><input type="url" id="scadLink" placeholder="Link (opzionale)"></div>
+                </div>
+                <button class="btn-scadenza" onclick="salvaNuovaScadenza()" style="width:100%; margin-top:10px;">Salva Scadenza</button>
+            </div>
+            <div id="listScadenze" class="deadlines-list"></div>
+        </div>
+
+        <div id="notesPanel" class="panel-area">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 10px;">
+                <h4 style="margin:0; color:#20c997;">Note & Acquisti</h4>
+                <button onclick="document.getElementById('notesPanel').style.display='none'" style="background:transparent; border:none; color:#999; font-size:1.5em; cursor:pointer;">&times;</button>
+            </div>
+            <div style="background:#e6fffa; padding:10px; border-radius:5px; border:1px solid #b2f5ea;">
+                <h5 id="titoloBoxNote" style="margin:0 0 10px 0;">Nuova Nota</h5>
+                <div class="form-grid">
+                    <input type="date" id="noteDate">
+                    <input type="text" id="noteOggetto" placeholder="Oggetto" autocomplete="off">
+                    <div class="full-width"><input type="text" id="noteTesto" placeholder="Dettagli / Prezzo" autocomplete="off"></div>
+                </div>
+                <button id="btnSalvaNota" class="btn-nota" onclick="salvaNuovaNota()" style="width:100%; margin-top:10px;">Salva Nota</button>
+            </div>
+            <div id="listNote" class="deadlines-list"></div>
+        </div>
+
+        <div id="transferPanel" class="panel-area">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 10px;">
+                <h4 style="margin:0; color:#17a2b8;">Ricarica Conto Comune</h4>
+                <button onclick="document.getElementById('transferPanel').style.display='none'" style="background:transparent; border:none; color:#999; font-size:1.5em; cursor:pointer;">&times;</button>
+            </div>
+            <div class="form-grid">
+                <div class="data-control"><label>Data:</label><input type="date" id="transDate"></div>
+                <div class="data-control"><label>Chi ricarica?</label><select id="transUser"><option value="Ste">Ste</option><option value="Vale">Vale</option><option value="Altro">Altro (Esterno/Regalo)</option></select></div>
+                <div class="full-width"><label>Descrizione:</label><input type="text" id="transDesc" placeholder="Bonus, Regalo..."></div>
+                <div class="full-width"><label>Importo (€):</label><input type="number" id="transAmount" step="0.01" placeholder="Es: 150.00"></div>
+            </div>
+            <button class="btn-transfer" onclick="salvaRicarica()" style="width:100%; margin-top:10px;">💸 Esegui Ricarica CC</button>
+        </div>
+
+        <div id="balancePanel" class="info-panel" style="display:none;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 10px;">
+                <h4 style="margin:0; color:#0d47a1;">🏦 Saldi Conti Attuali</h4>
+                <button onclick="document.getElementById('balancePanel').style.display='none'" style="background:transparent; border:none; color:#999; font-size:1.5em; cursor:pointer;">&times;</button>
+            </div>
+            <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 20px;">
+                <div class="stat-box" style="background:#e3f2fd; padding:10px; border-radius:8px; text-align:center; border:1px solid #bbdefb;">
+                    <div style="font-size:0.8em; color:#1565c0; margin-bottom:5px;">Ste</div><div id="saldoSte" style="font-size:1.1em; font-weight:bold; color:#0d47a1;">€ 0,00</div>
+                </div>
+                <div class="stat-box" style="background:#fce4ec; padding:10px; border-radius:8px; text-align:center; border:1px solid #f8bbd0;">
+                    <div style="font-size:0.8em; color:#c2185b; margin-bottom:5px;">Vale</div><div id="saldoVale" style="font-size:1.1em; font-weight:bold; color:#880e4f;">€ 0,00</div>
+                </div>
+                <div class="stat-box" style="background:#fff3e0; padding:10px; border-radius:8px; text-align:center; border:1px solid #ffe0b2;">
+                    <div style="font-size:0.8em; color:#e65100; margin-bottom:5px;">CC</div><div id="saldoCC" style="font-size:1.1em; font-weight:bold; color:#ef6c00;">€ 0,00</div>
+                </div>
+            </div>
+            <div style="text-align:center; border-top:1px solid #eee; padding-top:15px;">
+                <button class="action-btn" onclick="togglePanel('initBalancePanel')" style="background:#607d8b; color:white; width:100%; padding:10px; border-radius:4px; font-size:0.9em; font-weight:bold;">⚙️ Imposta Saldi Iniziali</button>
+            </div>
+        </div>
+
+        <div id="initBalancePanel" class="info-panel" style="display:none; border-color:#607d8b;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 10px;">
+                <h4 style="margin:0; color:#455a64;">🔧 Inizializza Saldi</h4>
+                <button onclick="document.getElementById('initBalancePanel').style.display='none'" style="background:transparent; border:none; color:#999; font-size:1.5em; cursor:pointer;">&times;</button>
+            </div>
+            <div class="form-grid">
+                <div><label>Saldo Reale Ste</label><input type="number" id="offsetSte" step="0.01"></div>
+                <div><label>Saldo Reale Vale</label><input type="number" id="offsetVale" step="0.01"></div>
+                <div style="grid-column: span 2;"><label>Saldo Reale CC</label><input type="number" id="offsetCC" step="0.01"></div>
+            </div>
+            <button class="btn-offset" onclick="salvaOffset()" style="width:100%; margin-top:15px; background:#455a64;">💾 Salva e Allinea</button>
+        </div>
+
+        <div id="statsPanel" class="info-panel" style="display:none;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 15px; border-bottom:1px solid #eee; padding-bottom:10px;">
+                <h4 style="margin:0; color:#673ab7;">📊 Statistiche</h4>
+                <button onclick="document.getElementById('statsPanel').style.display='none'" style="background:transparent; border:none; color:#999; font-size:1.5em; cursor:pointer;">&times;</button>
+            </div>
+            <div class="form-grid" style="grid-template-columns: 1fr 1fr; margin-bottom: 10px;">
+                <div><label style="font-size:0.8em; color:#666;">Dal:</label><input type="date" id="statStart" style="padding:5px;"></div>
+                <div><label style="font-size:0.8em; color:#666;">Al:</label><input type="date" id="statEnd" style="padding:5px;"></div>
+            </div>
+            <div style="display:flex; gap:10px; align-items:flex-end; margin-bottom:20px;">
+                <div style="flex:1;">
+                    <label style="font-size:0.8em; color:#666; display:block; margin-bottom:3px;">Utente</label>
+                    <select id="statConto" style="width:100%; padding:6px; border:1px solid #ccc; border-radius:4px;">
+                        <option value="Tutti">Tutti</option><option value="Conto Ste">Ste</option><option value="Conto Vale">Vale</option><option value="CC Comune">CC</option>
+                    </select>
+                </div>
+<div style="flex:1;">
+    <label style="font-size:0.8em; color:#666; display:block; margin-bottom:3px;">Categoria</label>
+    
+    <!-- MENU CATEGORIA PRINCIPALE -->
+    <select id="statCat" onchange="gestisciStatBolletta()" style="width:100%; padding:6px; border:1px solid #ccc; border-radius:4px;">
+        <option value="Tutte">Tutte</option>
+        <!-- JS riempie il resto -->
+    </select>
+
+    <!-- NUOVO SOTTOMENU BOLLETTA (Nascosto di default) -->
+    <div id="divStatSub" style="display:none; margin-top:5px;">
+        <select id="statSub" style="width:100%; padding:6px; border:1px solid #007bff; border-radius:4px; background:#e3f2fd;">
+            <!-- JS riempirà con Enel, Gas, Tutte... -->
+        </select>
+    </div>
+</div>
+
+                <div style="display:flex; gap:5px;">
+                    <button onclick="calcolaStatistiche()" style="background:#673ab7; color:white; border:none; padding:0 15px; height:32px; border-radius:4px; cursor:pointer;">🔍</button>
+                    <button onclick="resetStatistiche()" style="background:#9e9e9e; color:white; border:none; padding:0 15px; height:32px; border-radius:4px; cursor:pointer;">✖</button>
+                </div>
+            </div>
+            <div id="statResults"></div>
+        </div>
+
+        <div id="autoPanel" class="info-panel" style="display:none;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 15px;">
+                <h4 style="margin:0; color: #6610f2;">⛽ Report Auto</h4>
+                <button onclick="document.getElementById('autoPanel').style.display='none'" style="background:transparent; border:none; color:#999; font-size:1.5em; cursor:pointer;">&times;</button>
+            </div>
+            <div style="background: #6610f2; color: white; padding: 20px; border-radius: 12px; margin-bottom: 25px;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 15px;">
+                    <div style="font-size:0.85em; text-transform:uppercase; letter-spacing:1px; opacity:0.9;">Spesa Carburante</div>
+                    <select id="fuelYearSelect" onchange="renderFuelReport()" style="background: white; color: #333; border: none; padding: 5px 12px; border-radius: 20px; font-weight: bold; cursor: pointer; outline:none; font-size:0.9em;"></select>
+                </div>
+                <div style="text-align:center; margin-bottom: 25px;">
+                    <div id="fuelSpesa_NEW" style="font-size: 2.8em; font-weight: 700; line-height: 1;">0 €</div>
+                    <div style="font-size: 0.9em; opacity: 0.8; margin-top: 5px;">Totale <span id="lblAnnoSpesa">Anno</span></div>
+                </div>
+                <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; background: rgba(0,0,0,0.2); border-radius: 8px; padding: 12px 0;">
+                    <div style="text-align:center; border-right: 1px solid rgba(255,255,255,0.2);">
+                        <div style="font-size: 0.75em; text-transform: uppercase; opacity: 0.8;">Km</div><div id="fuelKm_NEW" style="font-size: 1.1em; font-weight: bold;">0</div>
+                    </div>
+                    <div style="text-align:center; border-right: 1px solid rgba(255,255,255,0.2);">
+                        <div style="font-size: 0.75em; text-transform: uppercase; opacity: 0.8;">Litri</div><div id="fuelLitri_NEW" style="font-size: 1.1em; font-weight: bold;">0</div>
+                    </div>
+                    <div style="text-align:center;">
+                        <div style="font-size: 0.75em; text-transform: uppercase; opacity: 0.8;">Media</div><div id="fuelAvg_NEW" style="font-size: 1.1em; font-weight: bold;">-</div>
+                    </div>
+                </div>
+            </div>
+            <div style="overflow-x:auto; max-height: 400px; overflow-y: auto;">
+                <table style="width:100%; font-size:0.9em; border-collapse: collapse;">
+                    <thead><tr style="background:#f8f9fa; text-align:left; color:#666;"><th>Data</th><th>Ente</th><th>Km</th><th>Lt</th><th>€</th></tr></thead>
+                    <tbody id="fuelTableBody_NEW"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <div id="dataPanel" class="panel-area">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 10px;">
+                <h4 style="margin:0; color:#6f42c1;">Gestione Dati</h4>
+                <button onclick="document.getElementById('dataPanel').style.display='none'" style="background:transparent; border:none; color:#999; font-size:1.5em; cursor:pointer;">&times;</button>
+            </div>
+            <div class="form-grid">
+                <div class="data-control"><label>Dal:</label><input type="date" id="exportStart"></div>
+                <div class="data-control"><label>Al:</label><input type="date" id="exportEnd"></div>
+            </div>
+            <button class="btn-export" onclick="esportaDati()">⬇️ Esporta Backup</button>
+            <div style="margin-top:10px;">
+                <input type="file" id="fileInput" style="display:none" onchange="processaFile(this)">
+                <button class="btn-import" onclick="triggerImport()">⬆️ Importa Backup</button>
+            </div>
+            <hr style="margin: 20px 0; border:0; border-top:1px dashed #ccc;">
+            <div style="background:#fff5f5; border:1px solid #ffcdd2; padding:10px; border-radius:5px;">
+                <h5 style="margin:0 0 5px 0; color:#dc3545;">⚠️ Zona Pericolo</h5>
+                <button class="btn-uscita" onclick="eliminaMassivoPeriodo()" style="width:100%;">🗑️ Elimina Movimenti nel Periodo</button>
+            </div>
+        </div>
+
+        <div id="settingsPanel" class="panel-area">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 10px;">
+                <h4 style="margin:0;">Gestione Elenchi</h4>
+                <button onclick="document.getElementById('settingsPanel').style.display='none'" style="background:transparent; border:none; color:#999; font-size:1.5em; cursor:pointer;">&times;</button>
+            </div>
+            <div class="section-title">Categorie Principali</div><div class="tag-container" id="listCategorie"></div>
+            <div class="add-box"><input type="text" id="newCat" placeholder="Nuova..."><button onclick="aggiungiVoce('cat')" style="background:#007bff; width:auto;">+</button></div>
+            <div class="section-title">Tipi Bolletta</div><div class="tag-container" id="listBollette"></div>
+            <div class="add-box"><input type="text" id="newBoll" placeholder="Nuovo..."><button onclick="aggiungiVoce('boll')" style="background:#007bff; width:auto;">+</button></div>
+            <div class="section-title">Nomi Supermercati</div><div class="tag-container" id="listSuper"></div>
+            <div class="add-box"><input type="text" id="newSuper" placeholder="Nuovo..."><button onclick="aggiungiVoce('super')" style="background:#007bff; width:auto;">+</button></div>
+        </div>
+
+<!-- NUOVO SEPARATORE CON TAGLIO NETTO -->
+<div style="
+    display:flex; 
+    align-items:center; 
+    gap:10px; 
+    margin-top: 40px;          /* Spazio extra sopra */
+    padding-top: 20px;         /* Spazio interno sopra */
+    border-top: 2px dashed #ccc; /* LINEA DI TAGLIO TRATTEGGIATA */
+    margin-bottom: 20px; 
+    color:#007bff; 
+    position: relative;">
+    
+    <span style="font-size:1.2em;">📝</span>
+    <span style="font-weight:bold; font-size:0.9em; text-transform:uppercase; letter-spacing:1px;">
+        Inserimento Nuova Voce
+    </span>
+</div>
+
+
+        <!-- FORM PRINCIPALE -->
+        <div class="form-grid">
+            <div><label style="font-size:0.8em; color:#666; display:block; margin-bottom:4px;">📅 Data</label><input type="date" id="data"></div>
+            <div><label style="font-size:0.8em; color:#666; display:block; margin-bottom:4px;">👤 Chi Paga?</label><select id="conto"><option value="CC">🏦 CC</option><option value="Ste">👤 Ste</option><option value="Vale">👤 Vale</option></select></div>
+            <div><label style="font-size:0.8em; color:#666; display:block; margin-bottom:4px;">🏷️ Categoria</label><select id="categoria" onchange="gestisciCategoria()"></select></div>
+            <div><label style="font-size:0.8em; color:#666; display:block; margin-bottom:4px;">💰 Importo</label><input type="number" id="importo" step="0.01" placeholder="0.00" oninput="calcolaPrezzoBenzina()"></div>
+            
+            <div class="full-width">
+                <label style="font-size:0.8em; color:#666; display:block; margin-bottom:4px;">📝 Descrizione</label>
+                <input type="text" id="descrizione" list="listaSuggerimenti" placeholder="Es: Spesa settimanale..." autocomplete="off">
+                <datalist id="listaSuggerimenti"></datalist>
+            </div>
+            
+            <!-- SOTTOMENU BOLLETTA (NUOVO) -->
+            <div id="wrapper_bolletta_new" style="display:none; width:100%; grid-column: span 2; background:#f8f9fa; padding:10px; border:1px dashed #ccc; margin-top:5px; border-radius:4px;">
+                <label style="font-weight:bold; display:block; margin-bottom:5px;">Tipo Bolletta:</label>
+                <select id="sel_tipo_bolletta_new" onchange="window.logica_consumi_new()" style="width:100%; padding:8px; margin-bottom:10px; border:1px solid #ccc; border-radius:4px;"></select>
+                <div id="box_consumo_new" style="display:none; background:#e3f2fd; padding:10px; border:1px solid #2196f3; border-radius:4px; margin-bottom:10px;">
+                    <label id="lbl_consumo_new" style="font-weight:bold; color:#0d47a1; display:block; margin-bottom:5px;">Consumo:</label>
+                    <div style="display:flex; align-items:center;">
+                        <input type="number" id="inp_consumo_new" placeholder="0" oninput="window.logica_descrizione_new()" style="width:100px; padding:5px; border:1px solid #2196f3; font-weight:bold;">
+                        <span id="span_unit_new" style="font-weight:bold; margin-left:5px; color:#0d47a1;"></span>
+                    </div>
+                </div>
+                <label style="display:block; margin-bottom:5px;">Link PDF:</label>
+                <input type="url" id="inp_pdf_new" placeholder="https://..." style="width:100%; padding:8px; border:1px solid #ccc; border-radius:4px;">
+            </div>
+            
+            <div id="divSottoSuper" class="full-width hidden submenu-box">
+                <label>Quale Supermercato?</label><select id="selectSuper" onchange="autoCompilaDescrizione('super')"></select>
+            </div>
+            
+            <div id="divSottoBenzina" class="full-width hidden submenu-box">
+                <h5 style="margin:0 0 10px 0; color:#6610f2;">⛽ Dati Rifornimento</h5>
+                <div class="form-grid">
+                    <div><label>Distributore:</label><select id="benDistributore" onchange="autoCompilaDescrizione('benzina')"><option value="">-- Seleziona --</option><option value="Tamoil">Tamoil</option><option value="Eni">Eni</option><option value="Esso">Esso</option><option value="Q8">Q8</option><option value="IP">IP</option><option value="TotErg">TotErg</option><option value="Altro">Altro</option></select></div>
+                    <div><label>Km:</label><input type="number" id="benKm"></div>
+                    <div><label>Litri:</label><input type="number" id="benLitri" step="0.01" oninput="calcolaPrezzoBenzina()"></div>
+                    <div><label>€/L:</label><input type="number" id="benPrezzo" step="0.001" readonly></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="btn-container" id="btnDefault">
+            <button id="btnEntrata" class="btn-entrata" onclick="salvaNuovo('entrata')">+ Entrata</button>
+            <button id="btnUscita" class="btn-uscita" onclick="salvaNuovo('uscita')">- Uscita</button>
+        </div>
+        
+        <div class="btn-container" id="btnEdit" style="display:none;">
+            <button class="btn-salva-modifica" style="display:block" onclick="confermaModifica()">💾 Salva Modifiche</button>
+            <button onclick="annullaModifica()" style="background:#6c757d;">Annulla</button>
+        </div>
+    </div> 
+
+    <!-- LISTA MOVIMENTI -->
+    <div class="card">
+<!-- RICERCA GLOBALE COMPATTA -->
+<div class="search-wrapper">
+    <span class="search-icon-left">🔍</span>
+    <input type="text" id="globalSearch" class="search-input-pro" 
+           onkeyup="window.handleSearchInput()" 
+           placeholder="Cerca ovunque..." autocomplete="off">
+    <button id="btnEsceRicerca" class="search-clear-btn" onclick="pulisciRicerca()" title="Pulisci">✕</button>
+</div>
+
+<!-- FILTER BAR (Solo Date e Bottoni) -->
+<div class="filter-bar">
+    <div class="filter-item"><label>Vedi Dal:</label><input type="date" id="filterStart" onchange="resetBtnColore()"></div>
+    <div class="filter-item"><label>Al:</label><input type="date" id="filterEnd" onchange="resetBtnColore()"></div>
+    <button id="btnMeseScorso" class="btn-reset" onclick="impostaFiltroMese(-1)" style="background:#6c757d; margin-right:5px; font-size:0.8em;">Mese Scorso</button>
+    <button id="btnMeseCorr" class="btn-reset" onclick="impostaFiltroMese(0)" style="background:#007bff; font-size:0.8em;">Mese Corr.</button>
+</div>
+
+
+        <table>
+            <thead><tr><th style="width:60%">Dettagli</th><th class="importo-col">Importo <br><span id="totaleHeader" style="font-size:0.9em; font-weight:normal;">€ 0.00</span></th><th style="width:50px;"></th></tr></thead>
+            <tbody id="listaDati"></tbody>
+            <tfoot><tr><td>Totale (periodo)</td><td id="totaleFooter" class="importo-col">€ 0.00</td><td></td></tr></tfoot>
+        </table>
+    </div>
+
+    <!-- MODALE PATRIMONIO -->
+    <div id="modalPatrimonioMain" class="modal-overlay" style="z-index:2000;">
+        <div class="modal-content" style="max-width:900px; width:95%; max-height:90vh; overflow-y:auto; display:flex; flex-direction:column;" onclick="event.stopPropagation()">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; border-bottom:1px solid #eee; padding-bottom:10px; width:100%;">
+                <h3 style="margin:0; color:#2c3e50;">🏛️ Gestione Patrimonio</h3>
+                <button onclick="toggleModalPatrimonio()" style="background:transparent; color:#666; font-size:1.5em; padding:0; width:auto; line-height:1; cursor:pointer;">&times;</button>
+            </div>
+            <div style="flex:1; width:100%;">
+                <details style="background:#fff; border:1px solid #ddd; padding:10px; border-radius:5px; margin-bottom:10px; width:100%; box-sizing:border-box;">
+                    <summary style="font-weight:bold; cursor:pointer; color:#007bff;">⚙️ Configura Titoli / Fondi</summary>
+                    <div style="margin-top:10px;">
+                        <div id="listFondiConfig"></div>
+                        <div class="add-box" style="margin-top:10px; border-top:1px dashed #ccc; padding-top:10px;">
+                            <input type="text" id="newFondoNome" placeholder="Nome Titolo / ISIN" style="width:40%">
+                            <input type="number" id="newFondoInvestito" placeholder="Caricato Default (€)" step="0.01" style="width:25%">
+                            <input type="number" id="newFondoQuote" placeholder="N. Quote" step="0.001" style="width:25%">
+                            <button onclick="aggiungiFondo()" style="background:#28a745; width:auto; padding:5px 10px;">+</button>
+                        </div>
+                    </div>
+                </details>
+                <details id="boxRilevazione" style="background:#f1f8e9; border:1px solid #c5e1a5; padding:10px; border-radius:5px; margin-bottom:20px; width:100%; box-sizing:border-box;">
+                    <summary style="font-weight:bold; cursor:pointer; color:#33691e; display:flex; align-items:center;"><span style="margin-right:5px;">➕</span> Nuova Rilevazione</summary>
+                    <div style="margin-top:15px; border-top:1px solid #c5e1a5; padding-top:10px;">
+                        <div class="form-grid">
+                            <div class="data-control"><label>Data Rilevazione:</label><input type="date" id="patrimonioDate"></div>
+                            <div class="data-control"><label>Liquidità Ste (Auto):</label><input type="text" id="patrimonioLiq" readonly style="font-weight:bold; color:#007bff;"></div>
+                        </div>
+                        <div id="patrimonioInputsContainer" style="margin-top:10px;"></div>
+                        <button class="btn-offset" onclick="salvaRilevazionePatrimonio()" style="width:100%; margin-top:10px; background:#33691e;">💾 Salva Rilevazione</button>
+                    </div>
+                </details>
+                <div style="width:100%; overflow-x:auto;">
+                    <table style="font-size:0.85em; white-space:nowrap; width:100%;"><thead id="patrimonioThead"></thead><tbody id="patrimonioTbody"></tbody></table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getFirestore, collection, doc, getDocs, setDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    
+    // NUOVO: Importa l'autenticazione
+    import { getAuth, signInWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+    const firebaseConfig = {
+      // ... lascia la tua config qui ...
+      apiKey: "AIzaSyB0EUPyVx2E640yRoorVsEdj0syOwmjuWs",
+      authDomain: "spesacasa-56ad0.firebaseapp.com",
+      projectId: "spesacasa-56ad0",
+      storageBucket: "spesacasa-56ad0.firebasestorage.app",
+      messagingSenderId: "70762128846",
+      appId: "1:70762128846:web:6e069d2994ff2be7df779f"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const auth = getAuth(app); // Avvia Auth
+
+    // --- FUNZIONE LOGIN ---
+    window.eseguiLogin = function() {
+        const email = document.getElementById('txtEmail').value;
+        const pass = document.getElementById('txtPass').value;
+        const err = document.getElementById('msgErrore');
+
+        signInWithEmailAndPassword(auth, email, pass)
+            .then((userCredential) => {
+                // Login riuscito, la 'tenda' sparirà grazie al listener sotto
+                console.log("Login OK:", userCredential.user.email);
+            })
+            .catch((error) => {
+                console.error("Errore login:", error);
+                err.style.display = 'block';
+                err.textContent = "Errore: Password errata o utente non trovato.";
+            });
+    }
+
+    // --- LISTENER CHE CONTROLLA LO STATO (GUARDIANO) ---
+    // Questa funzione parte da sola appena apri la pagina
+    onAuthStateChanged(auth, (user) => {
+        const overlay = document.getElementById('loginOverlay');
+        
+        if (user) {
+            // UTENTE LOGGATO: Nascondi login e carica i dati
+            overlay.style.display = 'none';
+            
+            // IMPORTANTE: Carichiamo i dati SOLO ORA
+            // (Prima chiamavamo caricaTuttoDaFirebase() alla fine dello script, ora lo facciamo qui)
+            caricaTuttoDaFirebase(); 
+            
+        } else {
+            // UTENTE NON LOGGATO: Mostra login
+            overlay.style.display = 'flex';
+        }
+    });
+
+    // ... resto delle tue variabili (window.movimenti = []...)
+
+
+    window.movimenti = [];
+    window.scadenze = [];
+    window.note = [];
+    window.idNotaModifica = null;
+    window.patrimonioHistory = [];
+    window.fondiConfig = [];
+    window.balanceOffsets = { Ste: 0, Vale: 0, CC: 0 };
+    window.idPatrimonioModifica = null;
+    
+    const DEF_CAT = ["Stipendio", "Entrata", "Ricarica CC", "Bolletta", "Supermercato", "Benzina", "Casa", "Varie", "Pranzo - Cena", "Ape - Cola", "Farmacia", "Cura personale", "Vacanze", "Lorenzo", "Regali", "Anticipo", "PRELIEVO", "Bar", "Fondo"];
+    const DEF_BOL = ["Enel", "Gas", "Acqua", "Telefono", "Asilo", "Mutuo", "Telepass"];
+    const DEF_SUP = ["Italmark", "Conad", "Coop", "Lidl", "Eurospin", "Esselunga", "Carrefour", "MD"];
+    
+    window.categorie = DEF_CAT;
+    window.tipiBolletta = DEF_BOL;
+    window.nomiSuper = DEF_SUP;
+    window.idInModifica = null;
+
+    window.caricaTuttoDaFirebase = async function() {
+        console.log("⏳ Connessione a Firebase...");
+        try {
+            const snapMov = await getDocs(collection(db, "movimenti")); window.movimenti = snapMov.docs.map(d => d.data());
+            const snapSet = await getDocs(collection(db, "settings"));
+            if(!snapSet.empty) {
+                const s = snapSet.docs[0].data();
+                if(s.categorie) window.categorie = s.categorie;
+                if(s.tipiBolletta) window.tipiBolletta = s.tipiBolletta;
+                if(s.nomiSuper) window.nomiSuper = s.nomiSuper;
+                if(s.balanceOffsets) window.balanceOffsets = s.balanceOffsets;
+                if(s.fondiConfig) window.fondiConfig = s.fondiConfig;
+            } else await window.salvaSettingsSuFirebase();
+
+            const snapScad = await getDocs(collection(db, "scadenze")); window.scadenze = snapScad.docs.map(d => d.data());
+            const snapNote = await getDocs(collection(db, "note")); window.note = snapNote.docs.map(d => d.data());
+            const snapPat = await getDocs(collection(db, "patrimonio")); window.patrimonioHistory = snapPat.docs.map(d => d.data());
+
+            console.log(`✅ Dati caricati!`);
+            initUI(); 
+            if(typeof checkAlertScadenze === 'function') checkAlertScadenze();
+            if(typeof renderFuelReport === 'function') renderFuelReport(); 
+
+        } catch (err) { console.error("❌ Errore Firebase:", err); alert("Errore connessione DB"); }
+    }
+
+    window.salvaMovimentoSuFirebase = async function(mov) { await setDoc(doc(db, "movimenti", String(mov.id)), mov); }
+    window.eliminaMovimentoSuFirebase = async function(id) { await deleteDoc(doc(db, "movimenti", String(id))); }
+    window.salvaSettingsSuFirebase = async function() {
+        const obj = { categorie: window.categorie, tipiBolletta: window.tipiBolletta, nomiSuper: window.nomiSuper, balanceOffsets: window.balanceOffsets, fondiConfig: window.fondiConfig || [] };
+        await setDoc(doc(db, "settings", "main"), obj);
+    }
+    window.salvaScadenzaSuFirebase = async function(obj) { await setDoc(doc(db, "scadenze", String(obj.id)), obj); }
+    window.eliminaScadenzaSuFirebase = async function(id) { await deleteDoc(doc(db, "scadenze", String(id))); }
+    window.salvaNotaSuFirebase = async function(obj) { await setDoc(doc(db, "note", String(obj.id)), obj); }
+    window.eliminaNotaSuFirebase = async function(id) { await deleteDoc(doc(db, "note", String(id))); }
+    window.salvaPatrimonioSuFirebase = async function(obj) { await setDoc(doc(db, "patrimonio", String(obj.id)), obj); }
+    window.eliminaPatrimonioSuFirebase = async function(id) { await deleteDoc(doc(db, "patrimonio", String(id))); }
+
+    // --- NUOVA LOGICA CONSUMI ---
+    window.logica_consumi_new = function() {
+        const sel = document.getElementById('sel_tipo_bolletta_new');
+        const box = document.getElementById('box_consumo_new');
+        const lbl = document.getElementById('lbl_consumo_new');
+        const span = document.getElementById('span_unit_new');
+        const inp = document.getElementById('inp_consumo_new');
+        if(!sel || !box) return;
+        const val = sel.value.toLowerCase(); let unit = null;
+        if(val.includes('enel') || val.includes('luce') || val.includes('elett')) unit = 'kWh';
+        else if(val.includes('gas') || val.includes('metano')) unit = 'Smc';
+        else if(val.includes('acqua') || val.includes('idric')) unit = 'mc';
+        if(unit) { box.style.display = 'block'; lbl.innerText = 'Inserisci Consumo (' + unit + '):'; span.innerText = unit; inp.dataset.unit = unit; } 
+        else { box.style.display = 'none'; inp.value = ''; inp.dataset.unit = ''; }
+        window.logica_descrizione_new();
+    }
+    window.logica_descrizione_new = function() {
+        const sel = document.getElementById('sel_tipo_bolletta_new');
+        const inp = document.getElementById('inp_consumo_new');
+        const desc = document.getElementById('descrizione');
+        if(sel && desc) {
+            let testo = "Bolletta " + sel.value;
+            const cons = inp.value; const unit = inp.dataset.unit;
+            if(cons && unit) testo += " - (" + cons + " " + unit + ")";
+            desc.value = testo;
+        }
+    }
+
+    function initUI() {
+        popolaSelect('categoria', window.categorie);
+        popolaSelect('sel_tipo_bolletta_new', window.tipiBolletta, true); // USO NUOVO ID
+        popolaSelect('selectSuper', window.nomiSuper, true);
+        if(document.getElementById('scadCategoria')) popolaSelect('scadCategoria', window.categorie);
+        const statSelect = document.getElementById('statCat');
+        if(statSelect) { popolaSelect('statCat', window.categorie, false); const o=document.createElement('option'); o.value="Tutte"; o.text="Tutte"; statSelect.insertBefore(o, statSelect.firstChild); statSelect.value="Tutte"; }
+        impostaDataOggi(); initDateRange('exportStart', 'exportEnd'); initDateRange('statStart', 'statEnd');
+        impostaFiltroMese(0); calcolaSaldiGlobali();
+        if(window.renderSettings) window.renderSettings();
+        if(window.renderScadenze) window.renderScadenze();
+        if(window.renderNote) window.renderNote();
+        if(window.initPatrimonio) window.initPatrimonio();
+        if(window.checkAlertScadenze) window.checkAlertScadenze();
+    }
+
+    window.formatEuro = function(num) { let n=parseFloat(num); if(isNaN(n))n=0; return "€ "+n.toLocaleString('it-IT',{minimumFractionDigits:2,maximumFractionDigits:2}); }
+    window.formatLocalYMD = function(d) { const y=d.getFullYear(), m=String(d.getMonth()+1).padStart(2,'0'), dd=String(d.getDate()).padStart(2,'0'); return `${y}-${m}-${dd}`; }
+    window.impostaDataOggi = function() { document.getElementById('data').value = formatLocalYMD(new Date()); }
+    window.popolaSelect = function(id, arr, addEmpty) {
+        const sel = document.getElementById(id); if(!sel) return;
+        const val = sel.value; sel.innerHTML='';
+        if(addEmpty) { const o=document.createElement('option'); o.value=""; o.text="-- Seleziona --"; sel.appendChild(o); }
+        arr.forEach(x => { const o=document.createElement('option'); o.value=x; o.text=x; sel.appendChild(o); });
+        if(val && arr.includes(val)) sel.value=val;
+    }
+    window.initDateRange = function(s, e) {
+        const oggi=new Date(), p=new Date(oggi.getFullYear(), oggi.getMonth(), 1), u=new Date(oggi.getFullYear(), oggi.getMonth()+1, 0);
+        document.getElementById(s).value = formatLocalYMD(p); document.getElementById(e).value = formatLocalYMD(u);
+    }
+    window.impostaFiltroMese = function(off) {
+        const oggi=new Date(), p=new Date(oggi.getFullYear(), oggi.getMonth()+off, 1), u=new Date(oggi.getFullYear(), oggi.getMonth()+off+1, 0);
+        document.getElementById('filterStart').value = formatLocalYMD(p); document.getElementById('filterEnd').value = formatLocalYMD(u);
+        const bS=document.getElementById('btnMeseScorso'), bC=document.getElementById('btnMeseCorr');
+        if(bS&&bC){ if(off===-1){bS.style.backgroundColor='#007bff';bC.style.backgroundColor='#6c757d';} else {bS.style.backgroundColor='#6c757d';bC.style.backgroundColor='#007bff';} }
+        render();
+    }
+    window.resetBtnColore = function() {
+        const bS = document.getElementById('btnMeseScorso'); const bC = document.getElementById('btnMeseCorr');
+        if(bS) bS.style.backgroundColor = '#6c757d'; if(bC) bC.style.backgroundColor = '#6c757d';
+        render();
+    }
+	
+	
+	    // --- GESTIONE SOTTOMENU STATISTICHE ---
+    window.gestisciStatBolletta = function() {
+        const cat = document.getElementById('statCat').value;
+        const div = document.getElementById('divStatSub');
+        const sub = document.getElementById('statSub');
+
+        if (cat === 'Bolletta') {
+            div.style.display = 'block';
+            
+            // Svuota e aggiunge "Tutte"
+            sub.innerHTML = '<option value="Tutte">Tutte le Bollette</option>';
+            
+            // Aggiunge le voci (Enel, Gas, ecc.)
+            window.tipiBolletta.forEach(x => {
+                const opt = document.createElement('option');
+                opt.value = x;
+                opt.text = x;
+                sub.appendChild(opt);
+            });
+        } else {
+            div.style.display = 'none';
+            sub.value = 'Tutte'; // Reset
+        }
+    }
+
+	
+    window.togglePanel = function(id) {
+        const p = document.getElementById(id); if(!p) return;
+        const open = p.style.display === 'block'; closeAllPanels();
+        if(id === 'balancePanel') calcolaSaldiGlobali();
+        if(id === 'deadlinesPanel') { if(window.renderScadenze) renderScadenze(); document.getElementById('scadDate').value = formatLocalYMD(new Date()); }
+        if(id === 'notesPanel') { if(window.renderNote) renderNote(); if(document.getElementById('noteDate')) document.getElementById('noteDate').value = formatLocalYMD(new Date()); }
+        if(id === 'autoPanel' && window.renderFuelReport) renderFuelReport();
+        if(id === 'transferPanel') document.getElementById('transDate').value = formatLocalYMD(new Date());
+        if(id === 'initBalancePanel') { const v = getSaldiVirtuali(); const o = window.balanceOffsets; document.getElementById('offsetSte').value = (v.Ste + (o.Ste || 0)).toFixed(2); document.getElementById('offsetVale').value = (v.Vale + (o.Vale || 0)).toFixed(2); document.getElementById('offsetCC').value = (v.CC + (o.CC || 0)).toFixed(2); }
+        if(!open) p.style.display = 'block';
+    }
+    window.closeAllPanels = function() { ['statsPanel','settingsPanel','dataPanel','balancePanel','transferPanel','initBalancePanel','fuelReportPanel','deadlinesPanel','notesPanel', 'autoPanel'].forEach(i => { const el=document.getElementById(i); if(el) el.style.display='none'; }); }
+
+    window.salvaNuovo = async function(t, movimentoGiaPronto){
+        let mov;
+        if(movimentoGiaPronto) mov = movimentoGiaPronto;
+        else { const d = getDatiForm(); if(!d) return alert("Dati mancanti"); mov = { id: Date.now(), tipo:t, ...d }; resetForm(); }
+        window.movimenti.push(mov); render(); calcolaSaldiGlobali(); await salvaMovimentoSuFirebase(mov);
+    }
+    window.elimina = async function(id){
+        if(confirm("Eliminare?")){ window.movimenti = window.movimenti.filter(x=>x.id!==id); render(); calcolaSaldiGlobali(); await eliminaMovimentoSuFirebase(id); }
+    }
+    window.preparaModifica = function(id){
+        const m = window.movimenti.find(x => String(x.id) === String(id)); if(!m) return alert("Errore");
+        window.idInModifica = m.id;
+        document.getElementById('data').value = m.data; document.getElementById('importo').value = m.importo; document.getElementById('descrizione').value = (m.descrizione === "Nessuna descrizione" ? "" : m.descrizione);
+        if(m.rawCat && window.categorie.includes(m.rawCat)) document.getElementById('categoria').value = m.rawCat; else document.getElementById('categoria').value = window.categorie[0];
+        gestisciCategoria(); 
+
+        if(m.rawCat === 'Bolletta'){
+            document.getElementById('sel_tipo_bolletta_new').value = m.rawSub || ''; // NUOVO ID
+            if(m.linkPdf) document.getElementById('inp_pdf_new').value = m.linkPdf; // NUOVO ID
+            window.logica_consumi_new(); // Controllo
+        }
+        else if(m.rawCat === 'Supermercato'){ document.getElementById('selectSuper').value = m.rawSub || ''; }
+        else if(m.rawCat === 'Benzina' && m.datiBenzina){ document.getElementById('benLitri').value = m.datiBenzina.litri || ''; document.getElementById('benKm').value = m.datiBenzina.km || ''; document.getElementById('benPrezzo').value = m.datiBenzina.prezzo || ''; document.getElementById('benDistributore').value = m.datiBenzina.distributore || ''; }
+        document.getElementById('conto').value = m.conto;
+        document.getElementById('titoloForm').textContent = "Modifica Voce"; document.getElementById('titoloForm').style.color = "#ffc107"; document.getElementById('btnDefault').style.display = 'none'; document.getElementById('btnEdit').style.display = 'flex';
+        closeAllPanels(); window.scrollTo({top: 0, behavior: 'smooth'}); render();
+    }
+    window.confermaModifica = async function(){
+        if(!window.idInModifica) return; const d = getDatiForm(); if(!d) return alert("Dati non validi");
+        const i = window.movimenti.findIndex(x => String(x.id) === String(window.idInModifica)); 
+        if(i !== -1) { window.movimenti[i] = { ...window.movimenti[i], ...d }; render(); calcolaSaldiGlobali(); await salvaMovimentoSuFirebase(window.movimenti[i]); annullaModifica(); }
+    }
+    window.annullaModifica = function(){
+        window.idInModifica = null; resetForm(); 
+        document.getElementById('titoloForm').textContent = "Nuova Voce"; document.getElementById('titoloForm').style.color = "#007bff"; document.getElementById('btnDefault').style.display = 'flex'; document.getElementById('btnEdit').style.display = 'none'; render();
+    }
+    window.getDatiForm = function(){
+        const desc=document.getElementById('descrizione').value.trim(), imp=parseFloat(document.getElementById('importo').value), dt=document.getElementById('data').value, cat=document.getElementById('categoria').value, c=document.getElementById('conto').value;
+        const subB=document.getElementById('sel_tipo_bolletta_new') ? document.getElementById('sel_tipo_bolletta_new').value : ""; // NUOVO ID
+        const pdf=document.getElementById('inp_pdf_new') ? document.getElementById('inp_pdf_new').value.trim() : ""; // NUOVO ID
+        const subS=document.getElementById('selectSuper').value;
+        const bL=document.getElementById('benLitri').value, bK=document.getElementById('benKm').value, bP=document.getElementById('benPrezzo').value, bD=document.getElementById('benDistributore').value;
+        if(isNaN(imp)||imp<=0||!dt)return null;
+        let cf=cat, sv=null, eb=null;
+        if(cat==='Bolletta'&&subB){cf=`${cat} - ${subB}`;sv=subB;} else if(cat==='Supermercato'&&subS){cf=`${cat} - ${subS}`;sv=subS;} else if(cat==='Benzina'){eb={litri:bL,km:bK,prezzo:bP,distributore:bD};}
+        return {descrizione:desc||"Nessuna descrizione",importo:imp,data:dt,categoria:cf,conto:c,rawCat:cat,rawSub:sv,linkPdf:pdf,datiBenzina:eb};
+    }
+    window.resetForm = function(){
+        document.getElementById('descrizione').value=''; document.getElementById('importo').value=''; document.getElementById('categoria').value=window.categorie[0];
+        document.getElementById('sel_tipo_bolletta_new').value=''; document.getElementById('inp_pdf_new').value=''; // RESET NUOVI ID
+        document.getElementById('selectSuper').value=''; document.getElementById('benLitri').value=''; document.getElementById('benKm').value=''; document.getElementById('benPrezzo').value=''; document.getElementById('benDistributore').value='';
+        gestisciCategoria(); impostaDataOggi();
+    }
+    window.gestisciCategoria = function(){
+        const c = document.getElementById('categoria').value;
+        const bE = document.getElementById('btnEntrata'), bU = document.getElementById('btnUscita');
+        const wrapB = document.getElementById('wrapper_bolletta_new'); // NUOVO
+        const d2 = document.getElementById('divSottoSuper'), d3 = document.getElementById('divSottoBenzina');
+        if(c==='Stipendio'||c==='Entrata'){ bE.disabled=false; bU.disabled=true; } else { bE.disabled=true; bU.disabled=false; }
+        
+        if(wrapB) wrapB.style.display = 'none';
+        d2.classList.add('hidden'); d3.classList.add('hidden');
+        
+        if(c==='Bolletta') {
+            if(wrapB) { wrapB.style.display = 'block'; window.logica_consumi_new(); }
+        } else if(c==='Supermercato') d2.classList.remove('hidden');
+        else if(c==='Benzina') d3.classList.remove('hidden');
+        if(typeof aggiornaSuggerimentiDescrizione === 'function') aggiornaSuggerimentiDescrizione();
+    }
+    window.calcolaPrezzoBenzina = function(){ const i=parseFloat(document.getElementById('importo').value), l=parseFloat(document.getElementById('benLitri').value); if(!isNaN(i)&&!isNaN(l)&&l>0)document.getElementById('benPrezzo').value=(i/l).toFixed(3); else document.getElementById('benPrezzo').value=''; }
+    window.autoCompilaDescrizione = function(t){
+        const f=document.getElementById('descrizione');
+        if(t==='super'){const v=document.getElementById('selectSuper').value;if(v)f.value=`Spesa ${v}`;}
+        else if(t==='benzina'){const v=document.getElementById('benDistributore').value;if(v)f.value=`Benzina ${v}`;}
+    }
+
+        window.render = function(){
+        const t=document.getElementById('listaDati'); if(!t) return; t.innerHTML=''; 
+        
+        // 1. Lettura Input
+        const txt = document.getElementById('globalSearch') ? document.getElementById('globalSearch').value.toLowerCase().trim() : "";
+        const s=document.getElementById('filterStart').value;
+        const e=document.getElementById('filterEnd').value;
+        
+        let m=window.movimenti.slice(); 
+        
+        // 2. LOGICA DI FILTRO (Priorità alla Ricerca)
+        if(txt.length > 0) {
+            // MODALITÀ RICERCA GLOBALE: Ignora le date, cerca ovunque
+            m = m.filter(x => {
+                const fullString = (x.descrizione + " " + x.categoria + " " + x.conto + " " + x.importo).toLowerCase();
+                return fullString.includes(txt);
+            });
+            // Opzionale: Mostra un avviso visivo che le date sono ignorate? (Per ora no, semplice)
+        } else {
+            // MODALITÀ NORMALE: Usa il filtro date
+            if(s && e) {
+                m = m.filter(x => x.data >= s && x.data <= e);
+            }
+        }
+        
+        // 3. Ordinamento e Calcolo Totali
+        let tot=0; 
+        m.sort((a,b)=>{const da=new Date(a.data).getTime(),db=new Date(b.data).getTime();return db!==da?db-da:b.id-a.id;});
+        
+        m.forEach(x=>{
+            if(x.rawCat!=='Ricarica CC'){ if(x.tipo==='entrata') tot+=x.importo; else tot-=x.importo; }
+            const tr=document.createElement('tr'); 
+            if(window.idInModifica===x.id) tr.className='editing-row'; else if(x.rawCat==='Bolletta') tr.className='bolletta-row'; else if(x.rawCat==='Ricarica CC') tr.className='ricarica-row'; else if(x.rawCat==='Benzina') tr.className='benzina-row';
+            const sg=x.tipo==='entrata'?'+':'-'; const cl=x.tipo==='entrata'?'positivo':(x.rawCat==='Ricarica CC'?'neutro':'negativo');
+            const [y,mm,d]=x.data.split('-');
+            let l=x.conto; if(l==='CC Comune')l='CC';if(l==='Conto Ste')l='Ste';if(l==='Conto Vale')l='Vale';
+            let b='badge-cc';if(l==='Ste')b='badge-ste';if(l==='Vale')b='badge-vale';if(l==='Altro')b='badge-altro';
+            let dh=x.descrizione==="Nessuna descrizione"?`<span style="color:#aaa;font-style:italic;">${x.descrizione}</span>`:`<span style="font-weight:500;">${x.descrizione}</span>`; 
+            if(x.linkPdf) dh+=`<a href="${x.linkPdf}" target="_blank" class="link-pdf">🔗</a>`;
+            let bn=''; if(x.rawCat==='Benzina' && x.datiBenzina) bn=`<button class="action-btn btn-fuel" onclick="mostraDettagliBenzina(${x.id})">⛽</button>`;
+            tr.innerHTML=`<td><span class="data-small">${d}/${mm}/${y}</span><div style="margin-bottom:4px;">${dh}</div><div><span class="badge ${b}">${l}</span> <span style="font-size:0.85em;color:#666;">• ${x.categoria}</span></div></td><td class="importo-col ${cl}">${x.rawCat==='Ricarica CC'?'➡':sg} ${formatEuro(x.importo)}</td><td class="action-cell">${bn}<button class="action-btn btn-edit" onclick="preparaModifica(${x.id})">✏️</button><button class="action-btn btn-del" onclick="elimina(${x.id})">🗑️</button></td>`;
+            t.appendChild(tr);
+        });
+        
+        const f=document.getElementById('totaleFooter'); if(f) { f.textContent=formatEuro(tot); f.className='importo-col '+(tot>=0?'positivo':'negativo'); }
+        const fh = document.getElementById('totaleHeader'); if(fh) { fh.textContent = formatEuro(tot); fh.style.color = (tot >= 0) ? '#28a745' : '#dc3545'; }
+    }
+
+
+    window.mostraDettagliBenzina = function(id){
+        const m=window.movimenti.find(x=>x.id===id); if(!m||!m.datiBenzina) return; const d=m.datiBenzina;
+        const html = `<div class="modal-row"><span class="modal-label">Distributore:</span><span>${d.distributore||'-'}</span></div><div class="modal-row"><span class="modal-label">€ Totale:</span><span>${formatEuro(m.importo)}</span></div><div class="modal-row"><span class="modal-label">Litri:</span><span>${d.litri||'-'}</span></div><div class="modal-row"><span class="modal-label">€/Litro:</span><span>${d.prezzo||'-'}</span></div><div class="modal-row"><span class="modal-label">Km Attuali:</span><span>${d.km||'-'}</span></div>`;
+        document.getElementById('modalContentBenzina').innerHTML = html; document.getElementById('modalBenzina').style.display='flex';
+    }
+    window.getSaldiVirtuali = function() {
+        let s={Ste:0,Vale:0,CC:0}; window.movimenti.forEach(m=>{ let c=m.conto; if(c==='CC Comune')c='CC';if(c==='Conto Ste')c='Ste';if(c==='Conto Vale')c='Vale'; if(m.rawCat==='Ricarica CC'){ if(c==='Ste')s.Ste-=m.importo;else if(c==='Vale')s.Vale-=m.importo; s.CC+=m.importo; } else { let v=(m.tipo==='entrata'?m.importo:-m.importo); if(c==='Ste')s.Ste+=v;else if(c==='Vale')s.Vale+=v;else if(c==='CC')s.CC+=v; } }); return s;
+    }
+    window.calcolaSaldiGlobali = function() { const v=getSaldiVirtuali(); document.getElementById('saldoSte').textContent=formatEuro(v.Ste+(window.balanceOffsets.Ste||0)); document.getElementById('saldoVale').textContent=formatEuro(v.Vale+(window.balanceOffsets.Vale||0)); document.getElementById('saldoCC').textContent=formatEuro(v.CC+(window.balanceOffsets.CC||0)); }
+
+    window.salvaOffset = async function() {
+        const v = getSaldiVirtuali(); 
+        let inputSte = document.getElementById('offsetSte').value, inputVale = document.getElementById('offsetVale').value, inputCC = document.getElementById('offsetCC').value;
+        const newOffsetSte = inputSte !== "" ? (parseFloat(inputSte) - v.Ste) : (window.balanceOffsets.Ste || 0);
+        const newOffsetVale = inputVale !== "" ? (parseFloat(inputVale) - v.Vale) : (window.balanceOffsets.Vale || 0);
+        const newOffsetCC = inputCC !== "" ? (parseFloat(inputCC) - v.CC) : (window.balanceOffsets.CC || 0);
+        window.balanceOffsets = { Ste: newOffsetSte, Vale: newOffsetVale, CC: newOffsetCC };
+        calcolaSaldiGlobali(); closeAllPanels(); await salvaSettingsSuFirebase(); alert("Saldi allineati!");
+    }
+
+    // STATISTICHE
+        window.calcolaStatistiche = function() {
+        const s = document.getElementById('statStart').value;
+        const e = document.getElementById('statEnd').value;
+        const filterCat = document.getElementById('statCat').value;
+        const filterConto = document.getElementById('statConto').value;
+        
+        // NUOVO: Leggi il sottomenu
+        const filterSub = document.getElementById('statSub') ? document.getElementById('statSub').value : "Tutte";
+        
+        const div = document.getElementById('statResults'); if(!div) return;
+        
+        let m = window.movimenti.filter(x => {
+            // 1. Filtro Data
+            if (x.data < s || x.data > e) return false;
+            
+            // 2. Filtro Utente
+            if (filterConto !== "Tutti") {
+                let cn = x.conto, fn = filterConto;
+                if(cn==='Conto Ste')cn='Ste';if(cn==='Conto Vale')cn='Vale';if(cn==='CC Comune')cn='CC';
+                if(fn==='Conto Ste')fn='Ste';if(fn==='Conto Vale')fn='Vale';if(fn==='CC Comune')fn='CC';
+                if(cn !== fn) return false;
+            }
+            
+            // 3. Filtro Categoria
+            if (filterCat !== "Tutte") {
+                if (x.rawCat !== filterCat) return false;
+                
+                // 4. NUOVO: Filtro Sottocategoria (Solo se siamo in Bolletta e non è "Tutte")
+                if (filterCat === 'Bolletta' && filterSub !== "Tutte") {
+                    // Controllo robusto: controlla rawSub OPPURE se la descrizione categoria contiene la parola
+                    const subReale = x.rawSub || "";
+                    // Se non corrisponde al rawSub E la stringa categoria non contiene la parola (es "Bolletta - Enel")
+                    if (subReale !== filterSub && !x.categoria.includes(filterSub)) {
+                        return false;
+                    }
+                }
+            }
+            return true;
+        });
+
+        // ... RESTO DELLA FUNZIONE IDENTICO (Ordinamento, Calcolo Totali, Render HTML) ...
+        m.sort((a,b) => new Date(b.data) - new Date(a.data));
+        let entr = 0, usc = 0; m.forEach(x => { if(x.rawCat !== 'Ricarica CC') { if(x.tipo === 'entrata') entr += x.importo; else usc += x.importo; } });
+        const saldo = entr - usc;
+        
+        let html = `<div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; margin-bottom:20px; text-align:center;"><div class="stat-box" style="background:#e8f5e9; border:1px solid #c8e6c9;"><div style="font-size:0.8em; color:#2e7d32">Entrate</div><div style="font-weight:bold; color:#2e7d32">${formatEuro(entr)}</div></div><div class="stat-box" style="background:#ffebee; border:1px solid #ffcdd2;"><div style="font-size:0.8em; color:#c62828">Uscite</div><div style="font-weight:bold; color:#c62828">${formatEuro(usc)}</div></div><div class="stat-box" style="background:#e3f2fd; border:1px solid #bbdefb;"><div style="font-size:0.8em; color:#1565c0">Saldo</div><div style="font-weight:bold; color:${saldo>=0?'#1565c0':'#c62828'}">${formatEuro(saldo)}</div></div></div><h5 style="border-bottom:1px solid #eee; padding-bottom:5px; margin-top:20px;">Dettaglio Movimenti (${m.length})</h5>`;
+        
+        if (m.length === 0) html += '<p style="text-align:center; color:#999;">Nessun movimento trovato con questi filtri.</p>'; 
+        else { 
+            html += `<table style="width:100%; border-collapse:collapse; font-size:0.85em;"><thead style="background:#f5f5f5; color:#666;"><tr><th style="padding:8px;">Data</th><th style="padding:8px;">Utente</th><th style="padding:8px;">Desc</th><th style="padding:8px; text-align:right;">€</th></tr></thead><tbody>`; 
+            m.forEach(x => { const [y,mm,d] = x.data.split('-'); let l=x.conto;if(l==='CC Comune')l='CC';if(l==='Conto Ste')l='Ste';if(l==='Conto Vale')l='Vale'; let b='badge-cc';if(l==='Ste')b='badge-ste';if(l==='Vale')b='badge-vale';if(l==='Altro')b='badge-altro'; const cl = x.tipo === 'entrata' ? 'positivo' : (x.rawCat==='Ricarica CC'?'neutro':'negativo'); const sg = x.tipo === 'entrata' ? '+' : ''; html += `<tr style="border-bottom:1px solid #eee;"><td style="padding:8px;">${d}/${mm}</td><td style="padding:8px;"><span class="badge ${b}">${l}</span></td><td style="padding:8px;">${x.descrizione}</td><td style="padding:8px; text-align:right;" class="importo-col ${cl}">${sg} ${formatEuro(x.importo)}</td></tr>`; }); 
+            html += `</tbody></table>`; 
+        }
+        div.innerHTML = html;
+    }
+
+        window.resetStatistiche = function() {
+        document.getElementById('statConto').value = "Tutti";
+        document.getElementById('statCat').value = "Tutte";
+        
+        // RESET NUOVO MENU
+        const divSub = document.getElementById('divStatSub');
+        if(divSub) divSub.style.display = 'none';
+        
+        initDateRange('statStart', 'statEnd');
+        document.getElementById('statResults').innerHTML = '';
+    }
+
+
+    window.renderSettings = function(){ renderTagList('listCategorie',window.categorie,'cat'); renderTagList('listBollette',window.tipiBolletta,'boll'); renderTagList('listSuper',window.nomiSuper,'super'); }
+    window.renderTagList = function(d,a,t){ const el=document.getElementById(d); if(!el)return; el.innerHTML=a.map((x,i)=>`<div class="tag"><span class="tag-btn tag-move" onclick="spostaVoce('${t}',${i},-1)">❮</span>${x}<span class="tag-btn tag-move" onclick="spostaVoce('${t}',${i},1)">❯</span><span class="tag-btn tag-del" onclick="rimuoviVoce('${t}','${x}')">&times;</span></div>`).join(''); }
+    window.aggiungiVoce = async function(t){ let id,a,k,s; if(t==='cat'){id='newCat';a=window.categorie;s='categoria';}else if(t==='boll'){id='newBoll';a=window.tipiBolletta;s='sel_tipo_bolletta_new';}else{id='newSuper';a=window.nomiSuper;s='selectSuper';} const v=document.getElementById(id).value.trim(); if(!v)return; a.push(v); if(t==='cat')popolaSelect(s,a);else popolaSelect(s,a,true); renderSettings(); document.getElementById(id).value=''; await salvaSettingsSuFirebase(); }
+    window.rimuoviVoce = async function(t,v){ if(!confirm("Del?"))return; if(t==='cat')window.categorie=window.categorie.filter(x=>x!==v); else if(t==='boll')window.tipiBolletta=window.tipiBolletta.filter(x=>x!==v); else window.nomiSuper=window.nomiSuper.filter(x=>x!==v); renderSettings(); initUI(); await salvaSettingsSuFirebase(); }
+    window.spostaVoce = async function(t,i,o){ let a; if(t==='cat')a=window.categorie;else if(t==='boll')a=window.tipiBolletta;else a=window.nomiSuper; const n=i+o; if(n<0||n>=a.length)return; [a[i],a[n]]=[a[n],a[i]]; renderSettings(); initUI(); await salvaSettingsSuFirebase(); }
+
+    window.salvaNuovaScadenza = async function() {
+        const dt = document.getElementById('scadDate').value, c = document.getElementById('scadConto').value, imp = parseFloat(document.getElementById('scadImporto').value), cat = document.getElementById('scadCategoria').value, dsc = document.getElementById('scadDesc').value.trim(), lnk = document.getElementById('scadLink').value.trim();
+        let sub = null; if(!dt || isNaN(imp) || imp <= 0) return alert("Dati mancanti");
+        if(cat === 'Bolletta' || cat === 'Supermercato') sub = document.getElementById('scadSub').value;
+        const obj = { id: Date.now(), data: dt, conto: c, importo: imp, categoria: cat, rawSub: sub, descrizione: dsc||cat, link: lnk };
+        window.scadenze.push(obj); renderScadenze(); checkAlertScadenze(); document.getElementById('scadImporto').value=''; document.getElementById('scadDesc').value=''; await salvaScadenzaSuFirebase(obj); alert("Salvata!");
+    }
+    window.eliminaScadenza = async function(id) { if(confirm("Eliminare?")) { window.scadenze = window.scadenze.filter(x => x.id !== id); renderScadenze(); checkAlertScadenze(); await eliminaScadenzaSuFirebase(id); } }
+    window.pagaRinnova = async function(id, mesi) {
+        const s = window.scadenze.find(x => x.id === id); if(!s) return;
+        let cc = s.categoria; if(s.rawSub) cc = `${s.categoria} - ${s.rawSub}`;
+        const mov = { id: Date.now(), tipo: 'uscita', data: s.data, importo: parseFloat(s.importo), categoria: cc, rawCat: s.categoria, rawSub: s.rawSub || null, descrizione: s.descrizione, conto: s.conto, linkPdf: s.link || "" };
+        await salvaNuovo('uscita', mov);
+        const [y,m,d] = s.data.split('-'); const dt = new Date(y, m-1, d);
+        if(mesi === 12) dt.setFullYear(dt.getFullYear() + 1); else dt.setMonth(dt.getMonth() + mesi);
+        s.data = formatLocalYMD(dt); renderScadenze(); checkAlertScadenze(); await salvaScadenzaSuFirebase(s); alert("Pagato e Rinnovato!");
+    }
+    window.renderScadenze = function() {
+        const div = document.getElementById('listScadenze'); if(!div) return; div.innerHTML = '';
+        window.scadenze.sort((a,b) => new Date(a.data) - new Date(b.data)); if(window.scadenze.length === 0) { div.innerHTML = '<p style="color:#888; text-align:center;">Nessuna scadenza.</p>'; return; }
+        const oggi = new Date(); oggi.setHours(0,0,0,0);
+        window.scadenze.forEach(s => {
+            const [y, m, d] = s.data.split('-'); const scadDt = new Date(y, m-1, d); scadDt.setHours(0,0,0,0); const diff = Math.ceil((scadDt - oggi) / (86400000));
+            let st = diff<0?'scad-status-red':(diff<=2?'scad-status-yellow':(diff<=5?'scad-status-blue':''));
+            let cc = s.categoria; if(s.rawSub) cc += ` (${s.rawSub})`;
+            div.innerHTML += `<div class="scad-card ${st}"><div class="scad-row"><input type="date" class="s-date" value="${s.data}" onchange="aggiornaCampoScadenza(${s.id},'data',this.value)"><input type="text" class="s-desc" value="${s.descrizione}" onchange="aggiornaCampoScadenza(${s.id},'descrizione',this.value)"></div><div class="scad-row" style="margin-top:5px; background:#f8f9fa; padding:4px;"><span style="font-weight:bold;margin-right:5px;">${s.conto}</span><span style="color:#555;">${cc}</span></div><div class="scad-row"><input type="text" class="s-desc" value="${s.link||''}" onchange="aggiornaCampoScadenza(${s.id},'link',this.value)" placeholder="Link"><input type="number" class="s-amount" value="${s.importo}" onchange="aggiornaCampoScadenza(${s.id},'importo',this.value)"></div><div class="scad-row" style="margin-top:8px;"><div class="s-btn-group"><button class="s-btn" onclick="pagaRinnova(${s.id},1)">+1M</button><button class="s-btn" onclick="pagaRinnova(${s.id},2)">+2M</button><button class="s-btn" onclick="pagaRinnova(${s.id},12)">+1A</button></div><button class="s-btn s-btn-del" onclick="eliminaScadenza(${s.id})">🗑</button></div></div>`;
+        });
+    }
+    window.checkAlertScadenze = function(){ const b = document.getElementById('badgeScadenze'); if(!b)return; const oggi=new Date(); oggi.setHours(0,0,0,0); const dom=new Date(oggi); dom.setDate(dom.getDate()+1); const has = window.scadenze.some(s => { const [y,m,d]=s.data.split('-'); return new Date(y,m-1,d) <= dom; }); b.style.display = has ? 'flex' : 'none'; }
+    window.gestisciCatScadenza = function(){ const c=document.getElementById('scadCategoria').value, b=document.getElementById('boxScadSub'), s=document.getElementById('scadSub'); s.innerHTML=''; if(c==='Bolletta'){b.style.display='block';popolaSelect('scadSub',window.tipiBolletta);} else if(c==='Supermercato'){b.style.display='block';popolaSelect('scadSub',window.nomiSuper);} else b.style.display='none'; }
+    window.salvaNuovaNota = async function() {
+        const dt = document.getElementById('noteDate').value, obj = document.getElementById('noteOggetto').value.trim(), txt = document.getElementById('noteTesto').value.trim(); if(!dt || !obj) return alert("Dati mancanti");
+        const n = { id: window.idNotaModifica || Date.now(), data: dt, oggetto: obj, testo: txt };
+        if(window.idNotaModifica) { const i = window.note.findIndex(x=>x.id===window.idNotaModifica); if(i!==-1) window.note[i]=n; } else window.note.push(n);
+        renderNote(); resetFormNota(); await salvaNotaSuFirebase(n);
+    }
+    window.eliminaNota = async function(id) { if(confirm("Del?")){ window.note=window.note.filter(x=>x.id!==id); renderNote(); await eliminaNotaSuFirebase(id); } }
+    window.renderNote = function() {
+        const div = document.getElementById('listNote'); if(!div) return; div.innerHTML = '';
+        window.note.sort((a,b) => new Date(b.data) - new Date(a.data)); if(window.note.length === 0){ div.innerHTML='<p style="color:#888; text-align:center;">Nessuna nota.</p>'; return; }
+        window.note.forEach(n => { const [y, m, d] = n.data.split('-'); div.innerHTML += `<div class="note-card"><div style="display:flex; justify-content:space-between;"><div><span style="font-weight:bold;">${d}/${m}</span> <span style="color:#20c997; font-weight:600;">${n.oggetto}</span></div><div><button class="action-btn btn-edit" onclick="preparaModificaNota(${n.id})">✏️</button><button class="action-btn btn-del" onclick="eliminaNota(${n.id})">🗑</button></div></div><div style="font-size:0.9em; margin-top:4px;">${n.testo||''}</div></div>`; });
+    }
+    window.preparaModificaNota = function(id) {
+        const n = window.note.find(x => x.id === id); if(!n) return; window.idNotaModifica = id;
+        document.getElementById('noteDate').value = n.data; document.getElementById('noteOggetto').value = n.oggetto; document.getElementById('noteTesto').value = n.testo;
+        document.getElementById('btnSalvaNota').innerHTML = "💾 Aggiorna Nota"; document.getElementById('btnSalvaNota').style.background = "#ffc107"; document.getElementById('btnSalvaNota').style.color="black";
+        document.getElementById('titoloBoxNote').textContent = "Modifica Nota"; document.getElementById('notesPanel').scrollTop = 0;
+    }
+    window.resetFormNota = function() { window.idNotaModifica = null; document.getElementById('noteOggetto').value=''; document.getElementById('noteTesto').value=''; document.getElementById('noteDate').value=formatLocalYMD(new Date()); document.getElementById('btnSalvaNota').innerHTML="Salva Nota"; document.getElementById('btnSalvaNota').style.background="#20c997"; document.getElementById('btnSalvaNota').style.color="white"; document.getElementById('titoloBoxNote').textContent="Nuova Nota"; }
+
+    window.initPatrimonio = function(){ renderFondiConfig(); if(document.getElementById('patrimonioDate'))document.getElementById('patrimonioDate').value=formatLocalYMD(new Date()); renderPatrimonioTable(); }
+    window.toggleModalPatrimonio = function() { const m=document.getElementById('modalPatrimonioMain'); if(m.style.display==='none'||m.style.display===''){ m.style.display='flex'; renderFondiConfig(); aggiornaLiquiditaSte(); renderPatrimonioTable(); } else m.style.display='none'; }
+    window.renderFondiConfig = function() {
+        const div = document.getElementById('listFondiConfig'); if(!div) return;
+        if(!window.fondiConfig || window.fondiConfig.length === 0) { div.innerHTML = '<div style="color:#999; text-align:center;">Nessun titolo.</div>'; renderPatrimonioInputs(); return; }
+        div.innerHTML = window.fondiConfig.map(f => `<div class="fondo-row"><div class="fondo-nome">${f.nome}</div><div class="fondo-group"><label class="fondo-label">Caricato (€)</label><input type="number" step="0.01" class="fondo-input" value="${f.investito}" onchange="aggiornaConfigFondo('${f.id}','investito',this.value)"></div><div class="fondo-group"><label class="fondo-label">Quote</label><input type="number" step="0.001" class="fondo-input" value="${f.quote}" onchange="aggiornaConfigFondo('${f.id}','quote',this.value)"></div><button class="btn-del-mini" onclick="rimuoviFondo('${f.id}')">&times;</button></div>`).join('');
+        renderPatrimonioInputs();
+    }
+    window.aggiornaConfigFondo = async function(id, campo, val) { const f = window.fondiConfig.find(x => x.id === id); if(!f) return; f[campo] = parseFloat(val) || 0; if(campo==='investito') renderPatrimonioInputs(); await salvaSettingsSuFirebase(); }
+    window.aggiungiFondo = async function() {
+        const n = document.getElementById('newFondoNome').value.trim(), i = parseFloat(document.getElementById('newFondoInvestito').value) || 0, q = parseFloat(document.getElementById('newFondoQuote').value) || 0; if(!n) return;
+        if(!window.fondiConfig) window.fondiConfig = []; window.fondiConfig.push({ id: 'f'+Date.now(), nome: n, investito: i, quote: q });
+        document.getElementById('newFondoNome').value = ''; renderFondiConfig(); await salvaSettingsSuFirebase();
+    }
+    window.rimuoviFondo = async function(id) { if(confirm("Del?")){ window.fondiConfig=window.fondiConfig.filter(x=>x.id!==id); renderFondiConfig(); await salvaSettingsSuFirebase(); } }
+        window.renderPatrimonioInputs = function() {
+        const c = document.getElementById('patrimonioInputsContainer'); 
+        if(!c) return; 
+        c.innerHTML = '';
+        
+        (window.fondiConfig || []).forEach(f => {
+            c.innerHTML += `
+            <div style="margin-bottom:10px; padding:10px; background:white; border:1px solid #ddd; border-radius:5px;">
+                <div style="font-weight:bold; font-size:0.9em; margin-bottom:5px; color:#2c3e50;">${f.nome}</div>
+                
+                <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px;">
+                    <!-- CAMPO ATTUALE -->
+                    <div>
+                        <label style="font-size:0.7em; color:#666;">Attuale</label>
+                        <input type="number" step="0.01" id="val_${f.id}" 
+                               oninput="calcolaFruttiInput('${f.id}')" 
+                               placeholder="Totale">
+                    </div>
+
+                    <!-- CAMPO CARICATO (INVESTITO) -->
+                    <div>
+                        <label style="font-size:0.7em; color:#666;">Caricato</label>
+                        <input type="number" step="0.01" id="quote_${f.id}" 
+                               value="${f.investito}" 
+                               oninput="calcolaFruttiInput('${f.id}')"> <!-- Ricalcola se cambi l'investito -->
+                    </div>
+
+                    <!-- CAMPO FRUTTI (ORA EDITABILE: "MAIL") -->
+                    <div>
+                        <label style="font-size:0.7em; color:#666;">Diff / Mail</label>
+                        <input type="number" step="0.01" id="numQuote_${f.id}" 
+                               oninput="calcolaAttualeDaFrutti('${f.id}')" 
+                               placeholder="+/- €" 
+                               style="background:#fff; border:1px solid #ccc; font-weight:bold;">
+                    </div>
+                </div>
+            </div>`;
+        });
+        aggiornaLiquiditaSte();
+    }
+
+    // Caso B: Scrivo la DIFFERENZA (Mail) -> Calcolo il totale Attuale
+    window.calcolaAttualeDaFrutti = function(fid) {
+        const diffInserita = parseFloat(document.getElementById('numQuote_'+fid).value);
+        const caricato = parseFloat(document.getElementById('quote_'+fid).value) || 0;
+        const elAttuale = document.getElementById('val_'+fid);
+        const elDiff = document.getElementById('numQuote_'+fid);
+
+        // Colora subito il testo mentre scrivi (+ verde, - rosso)
+        if(!isNaN(diffInserita)) {
+            elDiff.style.color = diffInserita >= 0 ? '#28a745' : '#dc3545';
+        } else {
+            elDiff.style.color = '#333';
+            // Se cancelli la differenza, potresti voler pulire l'attuale? 
+            // Per ora lasciamo stare per non cancellare dati per sbaglio.
+            return;
+        }
+
+        // FORMULA: Attuale = Caricato + Guadagno(Mail)
+        const nuovoAttuale = caricato + diffInserita;
+        
+        elAttuale.value = nuovoAttuale.toFixed(2);
+    }
+
+
+
+    window.calcolaFruttiInput = function(fid){ const v=parseFloat(document.getElementById('val_'+fid).value)||0, c=parseFloat(document.getElementById('quote_'+fid).value)||0, diff=v-c, el=document.getElementById('numQuote_'+fid); el.value=diff.toFixed(2); el.style.color=diff>=0?'green':'red'; }
+    window.aggiornaLiquiditaSte = function() { const v=getSaldiVirtuali(), s=v.Ste+(window.balanceOffsets.Ste||0), el=document.getElementById('patrimonioLiq'); if(el){ el.value=formatEuro(s); el.dataset.value=s; } }
+    window.salvaRilevazionePatrimonio = async function() {
+        const dt = document.getElementById('patrimonioDate').value, liqIn = document.getElementById('patrimonioLiq'); if(!dt) return alert("Data!");
+        let liq = window.idPatrimonioModifica ? parseFloat(liqIn.value) : parseFloat(liqIn.dataset.value);
+        const dett = {}; let tot = liq; (window.fondiConfig || []).forEach(f => { const v = parseFloat(document.getElementById('val_' + f.id).value) || 0; const c = parseFloat(document.getElementById('quote_' + f.id).value) || 0; dett[f.id] = { val: v, quoteVal: c, numQuote: v - c }; tot += v; });
+        const obj = { id: window.idPatrimonioModifica || Date.now(), data: dt, liquidita: liq, totale: tot, dettagliFondi: dett };
+        if(window.idPatrimonioModifica) { const i = window.patrimonioHistory.findIndex(x=>x.id===window.idPatrimonioModifica); if(i!==-1) window.patrimonioHistory[i]=obj; } else window.patrimonioHistory.push(obj);
+        renderPatrimonioTable(); window.idPatrimonioModifica = null; 
+        (window.fondiConfig||[]).forEach(f => { if(document.getElementById('val_'+f.id)) document.getElementById('val_'+f.id).value=''; });
+        aggiornaLiquiditaSte(); liqIn.setAttribute('readonly', true); liqIn.style.border="";
+        const btn=document.querySelector("button[onclick='salvaRilevazionePatrimonio()']"); if(btn){btn.textContent="💾 Salva Rilevazione"; btn.style.background="#33691e"; btn.style.color="white";}
+        await salvaPatrimonioSuFirebase(obj);
+    }
+    window.renderPatrimonioTable = function() {
+        const tb = document.getElementById('patrimonioTbody'), th = document.getElementById('patrimonioThead'); if(!tb) return; tb.innerHTML = '';
+        window.patrimonioHistory.sort((a,b) => new Date(b.data) - new Date(a.data));
+        let hRow = `<tr><th class="th-date">Data</th><th class="th-tot">Totale</th><th class="th-liq">Liq. Ste</th>`;
+        (window.fondiConfig || []).forEach(f => { hRow += `<th colspan="3" class="th-fondi"><div style="font-weight:bold">${f.nome}</div><div style="font-size:0.75em;">Att | Car | Fru</div></th>`; }); hRow += `<th></th></tr>`; th.innerHTML = hRow;
+        window.patrimonioHistory.forEach(r => {
+            const [y,m,d] = r.data.split('-');
+            let h = `<tr><td class="td-base">${d}/${m}/${y}</td><td class="td-base td-tot">${formatEuro(r.totale)}</td><td class="td-base td-liq">${formatEuro(r.liquidita)}</td>`;
+            (window.fondiConfig || []).forEach(f => { const d = r.dettagliFondi[f.id] || {val:0, quoteVal:0, numQuote:0}; const c = d.numQuote >= 0 ? '#2e7d32' : '#c62828'; h += `<td class="td-base td-fondo-val">${formatEuro(d.val)}</td><td class="td-base" style="color:#666;">${formatEuro(d.quoteVal)}</td><td class="td-base" style="color:${c}; font-weight:bold;">${formatEuro(d.numQuote)}</td>`; });
+            h += `<td class="td-base"><button class="action-btn btn-edit" onclick="preparaModificaPatrimonio(${r.id})">✏️</button><button class="action-btn btn-del" onclick="eliminaPatrimonio(${r.id})">🗑</button></td></tr>`; tb.innerHTML += h;
+        });
+    }
+    window.eliminaPatrimonio = async function(id){ if(confirm("Del?")){ window.patrimonioHistory=window.patrimonioHistory.filter(x=>x.id!==id); renderPatrimonioTable(); await eliminaPatrimonioSuFirebase(id); } }
+    window.preparaModificaPatrimonio = function(id) {
+        const rec = window.patrimonioHistory.find(x => x.id == id); if(!rec) return; window.idPatrimonioModifica = rec.id;
+        const box = document.getElementById('boxRilevazione'); if(box) box.open = true; renderPatrimonioInputs();
+        document.getElementById('patrimonioDate').value = rec.data;
+        const liqIn = document.getElementById('patrimonioLiq'); if(liqIn) { liqIn.value = rec.liquidita; liqIn.dataset.value = rec.liquidita; liqIn.removeAttribute('readonly'); liqIn.style.border = "2px solid #ffc107"; }
+        (window.fondiConfig || []).forEach(f => { const d = rec.dettagliFondi[f.id]; if(d) { document.getElementById('val_' + f.id).value = d.val; document.getElementById('quote_' + f.id).value = d.quoteVal; calcolaFruttiInput(f.id); } });
+        const btn = document.querySelector("button[onclick='salvaRilevazionePatrimonio()']"); if(btn) { btn.innerHTML = "💾 <b>AGGIORNA</b>"; btn.style.background = "#ffc107"; btn.style.color = "black"; }
+    }
+    window.aggiornaSuggerimentiDescrizione = function() {
+        const cat = document.getElementById('categoria').value, dl = document.getElementById('listaSuggerimenti'); if(!dl) return; dl.innerHTML = '';
+        const pertinenti = window.movimenti.filter(x => x.rawCat === cat || x.categoria === cat); pertinenti.sort((a,b) => new Date(b.data) - new Date(a.data));
+        const unici = new Set(), finale = [];
+        for(const m of pertinenti) { const d = (m.descrizione || "").trim(); if(d && d !== "Nessuna descrizione" && !unici.has(d)) { unici.add(d); finale.push(d); } if(finale.length >= 4) break; }
+        finale.forEach(d => { const o = document.createElement('option'); o.value = d; dl.appendChild(o); });
+    }
+    window.aggiornaCampoScadenza = async function(id, campo, valore) { const i = window.scadenze.findIndex(x => x.id === id); if(i === -1) return; window.scadenze[i][campo] = (campo==='importo')?parseFloat(valore):valore; if(campo === 'data') checkAlertScadenze(); await salvaScadenzaSuFirebase(window.scadenze[i]); }
+
+    // IMPORT EXPORT
+    window.triggerImport = function() { document.getElementById('fileInput').click(); }
+    window.processaFile = function(inp) {
+        const f = inp.files[0]; if(!f) return; const r = new FileReader();
+        r.onload = async function(e) { try { const j = JSON.parse(e.target.result); if(j.tipo !== 'bilancio_sv_backup') return alert("File non valido"); if(!confirm("Importare? Dati verranno aggiunti.")) return;
+        const unisci = (t, s) => { if(s) s.forEach(x => { if(!t.includes(x)) t.push(x); }); };
+        unisci(window.categorie, j.config.categorie); unisci(window.tipiBolletta, j.config.bollette); unisci(window.nomiSuper, j.config.supermercati); if(j.offsets) window.balanceOffsets = j.offsets; await salvaSettingsSuFirebase();
+        for (const i of j.dati) if(!window.movimenti.some(x => x.id === i.id)) { window.movimenti.push(i); await salvaMovimentoSuFirebase(i); }
+        if(j.scadenze) for (const s of j.scadenze) if(!window.scadenze.some(x => x.id === s.id)) { window.scadenze.push(s); await salvaScadenzaSuFirebase(s); }
+        if(j.note) for (const n of j.note) if(!window.note.some(x => x.id === n.id)) { window.note.push(n); await salvaNotaSuFirebase(n); }
+        if(j.patrimonio) for (const p of j.patrimonio) if(!window.patrimonioHistory.some(x => x.id === p.id)) { window.patrimonioHistory.push(p); await salvaPatrimonioSuFirebase(p); }
+        alert("Import Completo!"); initUI(); closeAllPanels(); } catch(err) { alert("Errore"); } }; r.readAsText(f); inp.value = '';
+    }
+    window.eliminaMassivoPeriodo = async function() {
+        const s = document.getElementById('exportStart').value, e = document.getElementById('exportEnd').value; if(!s || !e) return alert("Date?");
+        const del = window.movimenti.filter(x => x.data >= s && x.data <= e); if(del.length===0) return alert("Niente da cancellare");
+        if(!confirm(`ELIMINARE ${del.length} movimenti? Irreversibile.`)) return;
+        for (const m of del) await eliminaMovimentoSuFirebase(m.id);
+        window.movimenti = window.movimenti.filter(x => x.data < s || x.data > e); render(); calcolaSaldiGlobali(); alert("Fatto.");
+    }
+    window.esportaDati = function() {
+        const s = document.getElementById('exportStart').value, e = document.getElementById('exportEnd').value; if(!s || !e) return alert("Date?");
+        const m = window.movimenti.filter(x => x.data >= s && x.data <= e);
+        const obj = { tipo: 'bilancio_sv_backup', dataExport: new Date().toISOString(), dati: m, scadenze: window.scadenze, note: window.note, patrimonio: window.patrimonioHistory, configFondi: window.fondiConfig, config: { categorie: window.categorie, bollette: window.tipiBolletta, supermercati: window.nomiSuper }, offsets: window.balanceOffsets };
+        const a=document.createElement('a'); a.href="data:text/json;charset=utf-8,"+encodeURIComponent(JSON.stringify(obj)); a.download=`bilancio_${s}_${e}.json`; document.body.appendChild(a); a.click(); a.remove();
+    }
+
+    // FUEL REPORT
+    window.renderFuelReport = function() {
+        const tbody = document.getElementById('fuelTableBody_NEW'), selAnno = document.getElementById('fuelYearSelect'); if(!tbody) return;
+        let all = window.movimenti.filter(x => { const c=(x.categoria||"").toLowerCase(); return c.includes('benz')||c.includes('auto')||(x.rawCat||"").toLowerCase().includes('benz'); });
+        all.sort((a,b) => new Date(a.data) - new Date(b.data));
+        const anni = [...new Set(all.map(x => x.data.split('-')[0]))].sort().reverse(); if(anni.length===0) anni.push(new Date().getFullYear().toString());
+        if (selAnno && selAnno.options.length !== anni.length) { selAnno.innerHTML = ''; anni.forEach(a => { const o=document.createElement('option'); o.value=a; o.text=a; selAnno.appendChild(o); }); }
+        const selA = selAnno ? selAnno.value : new Date().getFullYear().toString(); if(document.getElementById('lblAnnoSpesa')) document.getElementById('lblAnnoSpesa').textContent = selA;
+        const fAnno = all.filter(x => x.data.startsWith(selA)); fAnno.sort((a,b) => new Date(b.data) - new Date(a.data));
+        let totE=0, totL=0, totK=0; fAnno.forEach(x => { totE+=x.importo; if(x.datiBenzina){ totL+=(parseFloat(x.datiBenzina.litri)||0); totK+=(parseFloat(x.datiBenzina.km)||0); } });
+        document.getElementById('fuelSpesa_NEW').textContent = formatEuro(totE); document.getElementById('fuelLitri_NEW').textContent = totL.toFixed(1); document.getElementById('fuelKm_NEW').textContent = totK>0?totK:"-";
+        document.getElementById('fuelAvg_NEW').textContent = (totL>0&&totK>0)?(totK/totL).toFixed(2)+" km/l":"-";
+        tbody.innerHTML = ''; if(fAnno.length===0) { tbody.innerHTML='<tr><td colspan="5" style="text-align:center;">No Dati</td></tr>'; return; }
+        const mesi=["Gen","Feb","Mar","Apr","Mag","Giu","Lug","Ago","Set","Ott","Nov","Dic"]; let curM=-1;
+        fAnno.forEach(c => { const [y,m,d]=c.data.split('-'); const mi=parseInt(m)-1; if(mi!==curM){ curM=mi; tbody.innerHTML+=`<tr style="background:#fff3e0;color:#e65100;font-weight:bold;"><td colspan="5" style="font-size:0.8em;text-transform:uppercase;">${mesi[mi]} ${y}</td></tr>`; }
+        let ente=c.datiBenzina?.distributore||"Benzina", lt=c.datiBenzina?.litri||"-", km=c.datiBenzina?.km||"-";
+        tbody.innerHTML+=`<tr style="border-bottom:1px solid #eee;"><td style="padding:8px;">${d}/${m}</td><td style="padding:8px;font-size:0.9em;color:#555;">${ente}</td><td style="padding:8px;">${km}</td><td style="padding:8px;">${lt}</td><td style="padding:8px;">${formatEuro(c.importo)}</td></tr>`; });
+    }
+
+    window.salvaRicarica = async function() {
+        const dt=document.getElementById('transDate').value, u=document.getElementById('transUser').value, d=document.getElementById('transDesc').value, a=parseFloat(document.getElementById('transAmount').value);
+        if(!dt||isNaN(a)||a<=0) return alert("Dati?");
+        const m={ id:Date.now(), tipo:'uscita', data:dt, importo:a, categoria:'Ricarica CC', rawCat:'Ricarica CC', descrizione:d||"Ricarica CC", conto:u==='Altro'?'Altro':'Conto '+u };
+        window.movimenti.push(m); render(); calcolaSaldiGlobali(); document.getElementById('transferPanel').style.display='none'; await salvaMovimentoSuFirebase(m); alert("Fatto!");
+    }
+
+	    // --- GESTIONE GRAFICA RICERCA ---
+    
+    window.handleSearchInput = function() {
+        const val = document.getElementById('globalSearch').value;
+        const btn = document.getElementById('btnEsceRicerca');
+        
+        // Mostra/Nascondi la X
+        if(val.length > 0) {
+            btn.style.display = 'flex';
+        } else {
+            btn.style.display = 'none';
+        }
+        
+        // Lancia il render classico
+        window.render();
+    }
+
+    window.pulisciRicerca = function() {
+        const inp = document.getElementById('globalSearch');
+        inp.value = '';
+        document.getElementById('btnEsceRicerca').style.display = 'none';
+        window.render(); // Ricarica la lista con le date normali
+        inp.focus(); // Rimette il focus se vuoi scrivere altro
+    }
+    // --- FUNZIONE RESET TOTALE (Simula Ricarica Pagina) ---
+    window.resetTotale = function() {
+        console.log("🔄 Reset Totale in corso...");
+
+        // 1. Chiudi tutti i pannelli aperti (Statistiche, Settings, ecc.)
+        closeAllPanels();
+
+        // 2. Esci dalla modalità modifica (se attiva) e pulisci il form
+        annullaModifica(); 
+        resetForm(); // Forza la pulizia dei campi input
+        impostaDataOggi(); // Rimette la data di oggi
+
+        // 3. Resetta la Ricerca Globale
+        if(typeof pulisciRicerca === 'function') {
+            pulisciRicerca(); // Pulisce testo e nasconde la X
+        }
+
+        // 4. Resetta i filtri della tabella (Torna al Mese Corrente)
+        impostaFiltroMese(0);
+
+        // 5. Resetta i filtri interni delle statistiche
+        if(typeof resetStatistiche === 'function') {
+            resetStatistiche();
+        }
+
+        // 6. Scrolla delicatamente in cima alla pagina
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+</script>
+</body>
+</html>
