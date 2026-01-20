@@ -1391,7 +1391,7 @@ window.calcolaSaldiGlobali = function() {
         } 
     });
 
-    // 3. GENERA HTML CON COLORI
+    // 3. GENERA HTML (Con Colori Nomi e Colore Azzurro Ricarica)
     let righe = '';
     if(m.length === 0) {
         righe = '<tr><td colspan="3" style="text-align:center; padding:10px;">Nessun dato.</td></tr>';
@@ -1401,25 +1401,35 @@ window.calcolaSaldiGlobali = function() {
             const parti = x.data.split('-');
             const d = parti[2];
             const mm = parti[1];
-            const cl = x.tipo==='entrata'?'positivo':'negativo';
             
-            // LOGICA COLORI UTENTE
-            let colorStyle = "color:#666;"; // Default grigio
+            // Logica Classe Verde/Rosso Base
+            let cl = x.tipo==='entrata'?'positivo':'negativo';
+            
+            // NUOVA LOGICA: Se è Ricarica CC, usiamo uno stile inline Azzurro
+            let importoStyle = "";
+            if(x.rawCat === 'Ricarica CC' || x.categoria === 'Ricarica CC') {
+                importoStyle = "color:#0099ff; font-weight:bold;"; // Azzurro
+                cl = ""; // Rimuoviamo la classe positivo/negativo standard per non fare conflitti
+            }
+
+            // Logica Colore Nomi (Ste/Vale/CC)
+            let colorStyle = "color:#666;"; 
             const cLower = x.conto.toLowerCase();
-            if(cLower.includes("ste")) colorStyle = "color:#1565C0; font-weight:bold;"; // Blu
-            else if(cLower.includes("vale")) colorStyle = "color:#AD1457; font-weight:bold;"; // Rosa scuro
-            else if(cLower.includes("cc") || cLower.includes("comune")) colorStyle = "color:#2E7D32; font-weight:bold;"; // Verde
+            if(cLower.includes("ste")) colorStyle = "color:#1565C0; font-weight:bold;"; 
+            else if(cLower.includes("vale")) colorStyle = "color:#AD1457; font-weight:bold;"; 
+            else if(cLower.includes("cc") || cLower.includes("comune")) colorStyle = "color:#2E7D32; font-weight:bold;"; 
             
             righe += '<tr style="border-bottom:1px solid #eee;">';
             righe += '<td style="padding:6px; color:#666;">' + d + '/' + mm + '</td>';
             righe += '<td style="padding:6px;">';
             righe += '<div style="font-weight:bold;">' + x.descrizione + '</div>';
-            // Qui applichiamo lo stile colorato al nome del conto
             righe += '<div style="font-size:0.8em; color:#666;">';
             righe += '<span style="' + colorStyle + '">' + x.conto + '</span> • ' + x.categoria;
             righe += '</div>';
             righe += '</td>';
-            righe += '<td style="padding:6px; text-align:right;" class="' + cl + '">' + formatEuro(x.importo) + '</td>';
+            
+            // Qui applichiamo lo stile azzurro se necessario
+            righe += '<td style="padding:6px; text-align:right; ' + importoStyle + '" class="' + cl + '">' + formatEuro(x.importo) + '</td>';
             righe += '</tr>';
         });
     }
@@ -1439,6 +1449,7 @@ window.calcolaSaldiGlobali = function() {
     
     setTimeout(() => div.scrollIntoView({behavior: "smooth"}), 100);
 };
+
 
 
 
