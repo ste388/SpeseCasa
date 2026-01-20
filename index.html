@@ -1513,16 +1513,58 @@ window.calcolaSaldiGlobali = function() {
     }
 
     window.renderScadenze = function() {
-        const div = document.getElementById('listScadenze'); if(!div) return; div.innerHTML = '';
-        window.scadenze.sort((a,b) => new Date(a.data) - new Date(b.data)); if(window.scadenze.length === 0) { div.innerHTML = '<p style="color:#888; text-align:center;">Nessuna scadenza.</p>'; return; }
-        const oggi = new Date(); oggi.setHours(0,0,0,0);
-        window.scadenze.forEach(s => {
-            const [y, m, d] = s.data.split('-'); const scadDt = new Date(y, m-1, d); scadDt.setHours(0,0,0,0); const diff = Math.ceil((scadDt - oggi) / (86400000));
-            let st = diff<0?'scad-status-red':(diff<=2?'scad-status-yellow':(diff<=5?'scad-status-blue':''));
-            let cc = s.categoria; if(s.rawSub) cc += ` (${s.rawSub})`;
-            div.innerHTML += `<div class="scad-card ${st}"><div class="scad-row"><input type="date" class="s-date" value="${s.data}" onchange="aggiornaCampoScadenza(${s.id},'data',this.value)"><input type="text" class="s-desc" value="${s.descrizione}" onchange="aggiornaCampoScadenza(${s.id},'descrizione',this.value)"></div><div class="scad-row" style="margin-top:5px; background:#f8f9fa; padding:4px;"><span style="font-weight:bold;margin-right:5px;">${s.conto}</span><span style="color:#555;">${cc}</span></div><div class="scad-row"><input type="text" class="s-desc" value="${s.link||''}" onchange="aggiornaCampoScadenza(${s.id},'link',this.value)" placeholder="Link"><input type="number" class="s-amount" value="${s.importo}" onchange="aggiornaCampoScadenza(${s.id},'importo',this.value)"></div><div class="scad-row" style="margin-top:8px;"><div class="s-btn-group"><button class="s-btn" onclick="pagaRinnova(${s.id},1)">+1M</button><button class="s-btn" onclick="pagaRinnova(${s.id},2)">+2M</button><button class="s-btn" onclick="pagaRinnova(${s.id},12)">+1A</button></div><button class="s-btn s-btn-del" onclick="eliminaScadenza(${s.id})">🗑</button></div></div>`;
-        });
+    const div = document.getElementById('listScadenze'); 
+    if(!div) return; 
+    div.innerHTML = '';
+    
+    window.scadenze.sort((a,b) => new Date(a.data) - new Date(b.data)); 
+    
+    if(window.scadenze.length === 0) { 
+        div.innerHTML = '<p style="color:#888; text-align:center;">Nessuna scadenza.</p>'; 
+        return; 
     }
+    
+    const oggi = new Date(); 
+    oggi.setHours(0,0,0,0);
+    
+    window.scadenze.forEach(s => {
+        const [y, m, d] = s.data.split('-'); 
+        const scadDt = new Date(y, m-1, d); 
+        scadDt.setHours(0,0,0,0); 
+        const diff = Math.ceil((scadDt - oggi) / (86400000));
+        
+        let st = diff<0 ? 'scad-status-red' : (diff<=2 ? 'scad-status-yellow' : (diff<=5 ? 'scad-status-blue' : ''));
+        let cc = s.categoria; 
+        if(s.rawSub) cc += ` (${s.rawSub})`;
+        
+        // Qui sotto aggiungiamo il pulsante +3M
+        div.innerHTML += `
+        <div class="scad-card ${st}">
+            <div class="scad-row">
+                <input type="date" class="s-date" value="${s.data}" onchange="aggiornaCampoScadenza(${s.id},'data',this.value)">
+                <input type="text" class="s-desc" value="${s.descrizione}" onchange="aggiornaCampoScadenza(${s.id},'descrizione',this.value)">
+            </div>
+            <div class="scad-row" style="margin-top:5px; background:#f8f9fa; padding:4px;">
+                <span style="font-weight:bold;margin-right:5px;">${s.conto}</span>
+                <span style="color:#555;">${cc}</span>
+            </div>
+            <div class="scad-row">
+                <input type="text" class="s-desc" value="${s.link||''}" onchange="aggiornaCampoScadenza(${s.id},'link',this.value)" placeholder="Link">
+                <input type="number" class="s-amount" value="${s.importo}" onchange="aggiornaCampoScadenza(${s.id},'importo',this.value)">
+            </div>
+            <div class="scad-row" style="margin-top:8px;">
+                <div class="s-btn-group">
+                    <button class="s-btn" onclick="pagaRinnova(${s.id},1)">+1M</button>
+                    <button class="s-btn" onclick="pagaRinnova(${s.id},2)">+2M</button>
+					<button class="s-btn" onclick="pagaRinnova(${s.id},3)">+3M</button> <!-- NUOVO TASTO -->
+                    <button class="s-btn" onclick="pagaRinnova(${s.id},12)">+1A</button>
+                </div>
+                <button class="s-btn s-btn-del" onclick="eliminaScadenza(${s.id})">🗑</button>
+            </div>
+        </div>`;
+    });
+};
+
     window.checkAlertScadenze = function(){ const b = document.getElementById('badgeScadenze'); if(!b)return; const oggi=new Date(); oggi.setHours(0,0,0,0); const dom=new Date(oggi); dom.setDate(dom.getDate()+1); const has = window.scadenze.some(s => { const [y,m,d]=s.data.split('-'); return new Date(y,m-1,d) <= dom; }); b.style.display = has ? 'flex' : 'none'; }
     window.gestisciCatScadenza = function(){ const c=document.getElementById('scadCategoria').value, b=document.getElementById('boxScadSub'), s=document.getElementById('scadSub'); s.innerHTML=''; if(c==='Bolletta'){b.style.display='block';popolaSelect('scadSub',window.tipiBolletta);} else if(c==='Supermercato'){b.style.display='block';popolaSelect('scadSub',window.nomiSuper);} else b.style.display='none'; }
     window.salvaNuovaNota = async function() {
