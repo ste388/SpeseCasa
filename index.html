@@ -1250,8 +1250,36 @@ tfoot td { border-top: 2px solid #333; font-weight: bold; padding-top: 15px; fon
         document.getElementById('modalContentBenzina').innerHTML = html; document.getElementById('modalBenzina').style.display='flex';
     }
     window.getSaldiVirtuali = function() {
-        let s={Ste:0,Vale:0,CC:0}; window.movimenti.forEach(m=>{ let c=m.conto; if(c==='CC Comune')c='CC';if(c==='Conto Ste')c='Ste';if(c==='Conto Vale')c='Vale'; if(m.rawCat==='Ricarica CC'){ if(c==='Ste')s.Ste-=m.importo;else if(c==='Vale')s.Vale-=m.importo; s.CC+=m.importo; } else { let v=(m.tipo==='entrata'?m.importo:-m.importo); if(c==='Ste')s.Ste+=v;else if(c==='Vale')s.Vale+=v;else if(c==='CC')s.CC+=v; } }); return s;
+    let s = 0, v = 0, c = 0;
+    
+    if(window.movimenti) {
+        window.movimenti.forEach(m => {
+            let imp = parseFloat(m.importo);
+            if(isNaN(imp)) imp = 0;
+            
+            // Normalizzazione Nomi Conti (Fix per il CC)
+            const nome = m.conto ? m.conto.toLowerCase().trim() : "";
+            
+            // Riconoscimento intelligente
+            const isSte = nome.includes('ste');
+            const isVale = nome.includes('vale');
+            const isCC = nome.includes('cc') || nome.includes('comune');
+            
+            if (m.tipo === 'entrata') {
+                if (isSte) s += imp;
+                else if (isVale) v += imp;
+                else if (isCC) c += imp;
+            } else {
+                if (isSte) s -= imp;
+                else if (isVale) v -= imp;
+                else if (isCC) c -= imp;
+            }
+        });
     }
+    
+    return { Ste: s, Vale: v, CC: c };
+};
+
 window.calcolaSaldiGlobali = function() { 
     const v = getSaldiVirtuali(); 
     
@@ -1304,88 +1332,115 @@ window.calcolaSaldiGlobali = function() {
     }
 
     // STATISTICHE
-        window.calcolaStatistiche = function() {
-        const s = document.getElementById('statStart').value;
-        const e = document.getElementById('statEnd').value;
-        const filterCat = document.getElementById('statCat').value;
-        const filterConto = document.getElementById('statConto').value;
-        
-        // NUOVO: Leggi il sottomenu
-        const filterSub = document.getElementById('statSub') ? document.getElementById('statSub').value : "Tutte";
-        
-        const div = document.getElementById('statResults'); if(!div) return;
-        
-        let m = window.movimenti.filter(x => {
-            // 1. Filtro Data
-            if (x.data < s || x.data > e) return false;
-            
-            // 2. Filtro Utente
-            if (filterConto !== "Tutti") {
-                let cn = x.conto, fn = filterConto;
-                if(cn==='Conto Ste')cn='Ste';if(cn==='Conto Vale')cn='Vale';if(cn==='CC Comune')cn='CC';
-                if(fn==='Conto Ste')fn='Ste';if(fn==='Conto Vale')fn='Vale';if(fn==='CC Comune')fn='CC';
-                if(cn !== fn) return false;
-            }
-            
-            // 3. Filtro Categoria
-            if (filterCat !== "Tutte") {
-                if (x.rawCat !== filterCat) return false;
-                
-                // 4. NUOVO: Filtro Sottocategoria (Solo se siamo in Bolletta e non è "Tutte")
-                if (filterCat === 'Bolletta' && filterSub !== "Tutte") {
-                    // Controllo robusto: controlla rawSub OPPURE se la descrizione categoria contiene la parola
-                    const subReale = x.rawSub || "";
-                    // Se non corrisponde al rawSub E la stringa categoria non contiene la parola (es "Bolletta - Enel")
-                    if (subReale !== filterSub && !x.categoria.includes(filterSub)) {
-                        return false;
-                    }
-                }
-            }
-            return true;
-        });
+    window.calcolaStatistiche = function() {
+    const s = document.getElementById('statStart').value;
+    const e = document.getElementById('statEnd').value;
+    const filterConto = document.getElementById('statConto').value;
+    const filterCat = document.getElementById('statCat').value;
+    const filterSub = document.getElementById('statSub') ? document.getElementById('statSub').value : "Tutte";
+    
+    const div = document.getElementById('statResults'); 
+    if(!div) return;
+    div.innerHTML = '';
 
-               // ... codice precedente della funzione (filtri, calcoli, ecc) ...
-        
-        let entr = 0, usc = 0; 
-        m.forEach(x => { if(x.rawCat !== 'Ricarica CC') { if(x.tipo === 'entrata') entr += x.importo; else usc += x.importo; } });
-        const saldo = entr - usc;
-        
-        // --- COSTRUZIONE HTML DEI BOX STATISTICHE (MODIFICATA) ---
-        let html = `
-        <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; margin-bottom:20px; text-align:center;">
-            
-            <!-- Box Entrate -->
-            <div class="stat-box" style="background:#e8f5e9; border:1px solid #c8e6c9; display:flex; flex-direction:column; justify-content:center; padding:10px 2px;">
-                <div style="font-size:0.8em; color:#2e7d32; text-transform:uppercase; margin-bottom:4px;">Entrate</div>
-                <div style="font-weight:bold; font-size:1.1em; color:#2e7d32; word-wrap:break-word;">${formatEuro(entr)}</div>
-            </div>
-
-            <!-- Box Uscite -->
-            <div class="stat-box" style="background:#ffebee; border:1px solid #ffcdd2; display:flex; flex-direction:column; justify-content:center; padding:10px 2px;">
-                <div style="font-size:0.8em; color:#c62828; text-transform:uppercase; margin-bottom:4px;">Uscite</div>
-                <div style="font-weight:bold; font-size:1.1em; color:#c62828; word-wrap:break-word;">${formatEuro(usc)}</div>
-            </div>
-
-            <!-- Box Saldo -->
-            <div class="stat-box" style="background:#e3f2fd; border:1px solid #bbdefb; display:flex; flex-direction:column; justify-content:center; padding:10px 2px;">
-                <div style="font-size:0.8em; color:#1565c0; text-transform:uppercase; margin-bottom:4px;">Saldo</div>
-                <div style="font-weight:bold; font-size:1.1em; color:${saldo>=0?'#1565c0':'#c62828'}; word-wrap:break-word;">${formatEuro(saldo)}</div>
-            </div>
-
-        </div>
-        <h5 style="border-bottom:1px solid #eee; padding-bottom:5px; margin-top:20px;">Dettaglio Movimenti (${m.length})</h5>`;
-        
-        // ... resto della funzione (tabella dettagli) ...
-
-        
-        if (m.length === 0) html += '<p style="text-align:center; color:#999;">Nessun movimento trovato con questi filtri.</p>'; 
-        else { 
-            html += `<table style="width:100%; border-collapse:collapse; font-size:0.85em;"><thead style="background:#f5f5f5; color:#666;"><tr><th style="padding:8px;">Data</th><th style="padding:8px;">Utente</th><th style="padding:8px;">Desc</th><th style="padding:8px; text-align:right;">€</th></tr></thead><tbody>`; 
-            m.forEach(x => { const [y,mm,d] = x.data.split('-'); let l=x.conto;if(l==='CC Comune')l='CC';if(l==='Conto Ste')l='Ste';if(l==='Conto Vale')l='Vale'; let b='badge-cc';if(l==='Ste')b='badge-ste';if(l==='Vale')b='badge-vale';if(l==='Altro')b='badge-altro'; const cl = x.tipo === 'entrata' ? 'positivo' : (x.rawCat==='Ricarica CC'?'neutro':'negativo'); const sg = x.tipo === 'entrata' ? '+' : ''; html += `<tr style="border-bottom:1px solid #eee;"><td style="padding:8px;">${d}/${mm}</td><td style="padding:8px;"><span class="badge ${b}">${l}</span></td><td style="padding:8px;">${x.descrizione}</td><td style="padding:8px; text-align:right;" class="importo-col ${cl}">${sg} ${formatEuro(x.importo)}</td></tr>`; }); 
-            html += `</tbody></table>`; 
-        }
-        div.innerHTML = html;
+    if (!s || !e) { 
+        div.innerHTML='<p style="color:red; text-align:center;">Date mancanti</p>'; 
+        return; 
     }
+
+    // 1. FILTRA I DATI
+    let m = window.movimenti.filter(x => {
+        if (x.data < s || x.data > e) return false;
+        
+        if (filterConto !== "Tutti") {
+            const normalizza = (str) => {
+                if(!str) return "";
+                const n = str.toLowerCase().trim();
+                if(n.includes("ste")) return "ste";
+                if(n.includes("vale")) return "vale";
+                if(n.includes("cc") || n.includes("comune")) return "cc";
+                return n;
+            };
+            const utenteDb = normalizza(x.conto);
+            const utenteFiltro = normalizza(filterConto);
+            if(utenteDb !== utenteFiltro) return false;
+        }
+        
+        if (filterCat !== "Tutte") {
+            if (x.rawCat !== filterCat && !x.categoria.startsWith(filterCat)) return false;
+            if (filterCat === 'Bolletta' && filterSub !== "Tutte") {
+                 if (x.rawSub !== filterSub && !x.categoria.includes(filterSub)) return false;
+            }
+        }
+        return true;
+    });
+
+    m.sort((a,b) => new Date(b.data) - new Date(a.data));
+
+    // 2. CALCOLA I TOTALI
+    let entr = 0, usc = 0; 
+    m.forEach(x => { 
+        let imp = parseFloat(x.importo);
+        if(isNaN(imp)) imp = 0;
+        let skip = false;
+        if(filterConto === "Tutti" && x.rawCat === 'Ricarica CC') skip = true;
+        
+        if(!skip) {
+            if(x.tipo === 'entrata') entr += imp; 
+            else usc += imp; 
+        } 
+    });
+
+    // 3. GENERA HTML CON COLORI
+    let righe = '';
+    if(m.length === 0) {
+        righe = '<tr><td colspan="3" style="text-align:center; padding:10px;">Nessun dato.</td></tr>';
+    } else {
+        m.forEach(x => {
+            if(!x.data) return;
+            const parti = x.data.split('-');
+            const d = parti[2];
+            const mm = parti[1];
+            const cl = x.tipo==='entrata'?'positivo':'negativo';
+            
+            // LOGICA COLORI UTENTE
+            let colorStyle = "color:#666;"; // Default grigio
+            const cLower = x.conto.toLowerCase();
+            if(cLower.includes("ste")) colorStyle = "color:#1565C0; font-weight:bold;"; // Blu
+            else if(cLower.includes("vale")) colorStyle = "color:#AD1457; font-weight:bold;"; // Rosa scuro
+            else if(cLower.includes("cc") || cLower.includes("comune")) colorStyle = "color:#2E7D32; font-weight:bold;"; // Verde
+            
+            righe += '<tr style="border-bottom:1px solid #eee;">';
+            righe += '<td style="padding:6px; color:#666;">' + d + '/' + mm + '</td>';
+            righe += '<td style="padding:6px;">';
+            righe += '<div style="font-weight:bold;">' + x.descrizione + '</div>';
+            // Qui applichiamo lo stile colorato al nome del conto
+            righe += '<div style="font-size:0.8em; color:#666;">';
+            righe += '<span style="' + colorStyle + '">' + x.conto + '</span> • ' + x.categoria;
+            righe += '</div>';
+            righe += '</td>';
+            righe += '<td style="padding:6px; text-align:right;" class="' + cl + '">' + formatEuro(x.importo) + '</td>';
+            righe += '</tr>';
+        });
+    }
+
+    div.innerHTML = '<div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:15px; text-align:center;">' +
+        '<div class="stat-box" style="background:#e8f5e9; border:1px solid #c8e6c9; padding:10px;">' +
+        '<div style="font-size:0.8em; color:#2e7d32; text-transform:uppercase;">Entrate</div>' +
+        '<div style="font-weight:bold; font-size:1.1em; color:#2e7d32;">' + formatEuro(entr) + '</div>' +
+        '</div>' +
+        '<div class="stat-box" style="background:#ffebee; border:1px solid #ffcdd2; padding:10px;">' +
+        '<div style="font-size:0.8em; color:#c62828; text-transform:uppercase;">Uscite</div>' +
+        '<div style="font-weight:bold; font-size:1.1em; color:#c62828;">' + formatEuro(usc) + '</div>' +
+        '</div></div>' +
+        '<div style="font-size:0.85em; color:#666; margin-bottom:5px; border-bottom:1px solid #eee;">Risultati: <b>' + m.length + '</b></div>' +
+        '<div style="max-height:350px; overflow-y:auto;"><table style="width:100%; border-collapse:collapse; font-size:0.85em;">' +
+        righe + '</table></div>';
+    
+    setTimeout(() => div.scrollIntoView({behavior: "smooth"}), 100);
+};
+
+
 
         window.resetStatistiche = function() {
         document.getElementById('statConto').value = "Tutti";
@@ -1415,14 +1470,48 @@ window.calcolaSaldiGlobali = function() {
     }
     window.eliminaScadenza = async function(id) { if(confirm("Eliminare?")) { window.scadenze = window.scadenze.filter(x => x.id !== id); renderScadenze(); checkAlertScadenze(); await eliminaScadenzaSuFirebase(id); } }
     window.pagaRinnova = async function(id, mesi) {
-        const s = window.scadenze.find(x => x.id === id); if(!s) return;
-        let cc = s.categoria; if(s.rawSub) cc = `${s.categoria} - ${s.rawSub}`;
-        const mov = { id: Date.now(), tipo: 'uscita', data: s.data, importo: parseFloat(s.importo), categoria: cc, rawCat: s.categoria, rawSub: s.rawSub || null, descrizione: s.descrizione, conto: s.conto, linkPdf: s.link || "" };
-        await salvaNuovo('uscita', mov);
-        const [y,m,d] = s.data.split('-'); const dt = new Date(y, m-1, d);
-        if(mesi === 12) dt.setFullYear(dt.getFullYear() + 1); else dt.setMonth(dt.getMonth() + mesi);
-        s.data = formatLocalYMD(dt); renderScadenze(); checkAlertScadenze(); await salvaScadenzaSuFirebase(s); alert("Pagato e Rinnovato!");
+        const s = window.scadenze.find(x => x.id === id); 
+        if(!s) return;
+        
+        if(!confirm(`Pagare € ${s.importo} e rinnovare tra ${mesi} mesi?`)) return;
+        
+        let cc = s.categoria; 
+        if(s.rawSub) cc = `${s.categoria} - ${s.rawSub}`;
+        
+        // FIX: Aggiunta esplicita di linkPdf prendendolo da s.link
+        const mov = { 
+            id: Date.now(), 
+            tipo: 'uscita', 
+            data: new Date().toISOString().split('T')[0], 
+            importo: parseFloat(s.importo), 
+            categoria: cc, 
+            rawCat: s.categoria, 
+            rawSub: s.rawSub || null, 
+            descrizione: s.descrizione, 
+            conto: s.conto, 
+            linkPdf: s.link || "" // <--- QUESTA è la correzione importante
+        };
+        
+        await window.salvaNuovo('uscita', mov);
+
+        // Calcolo nuova data
+        const dateStr = s.data || s.date; // Fallback sicurezza
+        const [y,m,d] = dateStr.split('-'); 
+        const dt = new Date(y, m-1, d);
+        
+        if(mesi === 12) dt.setFullYear(dt.getFullYear() + 1); 
+        else dt.setMonth(dt.getMonth() + mesi);
+        
+        s.data = formatLocalYMD(dt); 
+        s.date = s.data; // Aggiorniamo entrambi i campi per sicurezza
+        
+        renderScadenze(); 
+        if(window.checkBadgeScadenze) window.checkBadgeScadenze(); 
+        
+        await salvaScadenzaSuFirebase(s); 
+        alert("Pagato e Rinnovato!");
     }
+
     window.renderScadenze = function() {
         const div = document.getElementById('listScadenze'); if(!div) return; div.innerHTML = '';
         window.scadenze.sort((a,b) => new Date(a.data) - new Date(b.data)); if(window.scadenze.length === 0) { div.innerHTML = '<p style="color:#888; text-align:center;">Nessuna scadenza.</p>'; return; }
