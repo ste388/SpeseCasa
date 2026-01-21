@@ -1290,28 +1290,43 @@ tfoot td { border-top: 2px solid #333; font-weight: bold; padding-top: 15px; fon
             let imp = parseFloat(m.importo);
             if(isNaN(imp)) imp = 0;
             
-            // Normalizzazione Nomi Conti (Fix per il CC)
+            // Normalizzazione Nomi
             const nome = m.conto ? m.conto.toLowerCase().trim() : "";
+            const cat = m.rawCat || m.categoria; // Categoria movimento
             
-            // Riconoscimento intelligente
             const isSte = nome.includes('ste');
             const isVale = nome.includes('vale');
             const isCC = nome.includes('cc') || nome.includes('comune');
-            
+            const isRicarica = cat === 'Ricarica CC'; // Controllo se è una ricarica
+
             if (m.tipo === 'entrata') {
+                // Se è un'entrata normale
                 if (isSte) s += imp;
                 else if (isVale) v += imp;
                 else if (isCC) c += imp;
             } else {
-                if (isSte) s -= imp;
-                else if (isVale) v -= imp;
-                else if (isCC) c -= imp;
+                // Se è un'uscita
+                if (isRicarica) {
+                    // LOGICA SPECIALE RICARICA:
+                    // Chi paga (Ste/Vale) perde i soldi
+                    if (isSte) s -= imp;
+                    if (isVale) v -= imp;
+                    
+                    // MA il CC li GUADAGNA! (Incremento esplicito)
+                    c += imp; 
+                } else {
+                    // Uscita normale (spesa)
+                    if (isSte) s -= imp;
+                    else if (isVale) v -= imp;
+                    else if (isCC) c -= imp;
+                }
             }
         });
     }
     
     return { Ste: s, Vale: v, CC: c };
 };
+
 
 window.calcolaSaldiGlobali = function() { 
     const v = getSaldiVirtuali(); 
