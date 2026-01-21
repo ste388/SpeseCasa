@@ -1392,7 +1392,7 @@ window.calcolaSaldiGlobali = function() {
     const s = document.getElementById('statStart').value;
     const e = document.getElementById('statEnd').value;
     const filterConto = document.getElementById('statConto').value;
-    const filterCat = document.getElementById('statCat').value;
+    const filterCat = document.getElementById('statCat').value; // Qui leggiamo cosa hai scelto
     const filterSub = document.getElementById('statSub') ? document.getElementById('statSub').value : "Tutte";
     
     const div = document.getElementById('statResults'); 
@@ -1433,21 +1433,33 @@ window.calcolaSaldiGlobali = function() {
 
     m.sort((a,b) => new Date(b.data) - new Date(a.data));
 
-    // 2. CALCOLA I TOTALI
+    // 2. CALCOLA I TOTALI (Logica Intelligente Ricarica)
     let entr = 0, usc = 0; 
     m.forEach(x => { 
         let imp = parseFloat(x.importo);
         if(isNaN(imp)) imp = 0;
-        let skip = false;
-        if(filterConto === "Tutti" && x.rawCat === 'Ricarica CC') skip = true;
+
+        const isRicarica = (x.rawCat === 'Ricarica CC' || x.categoria === 'Ricarica CC');
         
-        if(!skip) {
+        let includi = false;
+        
+        if (!isRicarica) {
+            // Se NON è una ricarica, la contiamo sempre (spesa vera)
+            includi = true;
+        } else {
+            // Se È una ricarica, la contiamo SOLO SE l'utente ha filtrato specificamente per "Ricarica CC"
+            if (filterCat === 'Ricarica CC') {
+                includi = true;
+            }
+        }
+        
+        if (includi) {
             if(x.tipo === 'entrata') entr += imp; 
             else usc += imp; 
-        } 
+        }
     });
 
-    // 3. GENERA HTML (Con Colori Nomi e Colore Azzurro Ricarica)
+    // 3. GENERA HTML
     let righe = '';
     if(m.length === 0) {
         righe = '<tr><td colspan="3" style="text-align:center; padding:10px;">Nessun dato.</td></tr>';
@@ -1458,17 +1470,14 @@ window.calcolaSaldiGlobali = function() {
             const d = parti[2];
             const mm = parti[1];
             
-            // Logica Classe Verde/Rosso Base
             let cl = x.tipo==='entrata'?'positivo':'negativo';
-            
-            // NUOVA LOGICA: Se è Ricarica CC, usiamo uno stile inline Azzurro
             let importoStyle = "";
+            
             if(x.rawCat === 'Ricarica CC' || x.categoria === 'Ricarica CC') {
-                importoStyle = "color:#0099ff; font-weight:bold;"; // Azzurro
-                cl = ""; // Rimuoviamo la classe positivo/negativo standard per non fare conflitti
+                importoStyle = "color:#0099ff; font-weight:bold;"; 
+                cl = ""; 
             }
 
-            // Logica Colore Nomi (Ste/Vale/CC)
             let colorStyle = "color:#666;"; 
             const cLower = x.conto.toLowerCase();
             if(cLower.includes("ste")) colorStyle = "color:#1565C0; font-weight:bold;"; 
@@ -1483,8 +1492,6 @@ window.calcolaSaldiGlobali = function() {
             righe += '<span style="' + colorStyle + '">' + x.conto + '</span> • ' + x.categoria;
             righe += '</div>';
             righe += '</td>';
-            
-            // Qui applichiamo lo stile azzurro se necessario
             righe += '<td style="padding:6px; text-align:right; ' + importoStyle + '" class="' + cl + '">' + formatEuro(x.importo) + '</td>';
             righe += '</tr>';
         });
@@ -1505,6 +1512,8 @@ window.calcolaSaldiGlobali = function() {
     
     setTimeout(() => div.scrollIntoView({behavior: "smooth"}), 100);
 };
+
+
 
 
 
