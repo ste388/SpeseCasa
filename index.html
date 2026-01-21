@@ -17,6 +17,27 @@
    STILI BASE DESKTOP
    ============================================ */
 
+/* FIX PULSANTE CHIUSURA RICERCA SU MOBILE */
+#btnEsceRicerca {
+    /* ... le altre regole di posizionamento che hai già (position: absolute, top: 50%, ecc) ... */
+    
+    /* FIX CENTRATURA INTERNA */
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    
+    /* Resetta altezze di riga che spostano il testo su mobile */
+    line-height: 1 !important; 
+    padding-bottom: 2px !important; /* TRUCCO: Spesso su mobile i font sono renderizzati 1-2px più in alto. Questo compensa. */
+    
+    /* Forza il font */
+    font-family: Arial, sans-serif !important; 
+    font-size: 14px !important;
+    height: 24px !important; /* Forza altezza fissa */
+    width: 24px !important;
+}
+
+
 /* STILE CONFIGURAZIONE FONDI */
 .fondo-row { display: flex; align-items: center; background: #fff; border: 1px solid #ddd; padding: 8px 10px; border-radius: 6px; margin-bottom: 6px; transition: background 0.2s; }
 .fondo-row:hover { background: #f9fafb; border-color: #bbb; }
@@ -165,19 +186,31 @@ tfoot td { border-top: 2px solid #333; font-weight: bold; padding-top: 15px; fon
 @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
 /* RICERCA COMPATTA */
-.search-wrapper { position: relative; margin-bottom: 8px; width: 100%; }
+#globalSearch {
+    flex: 1 !important;            /* Si allarga al massimo */
+    width: 100% !important;        /* Rinforzo */
+    padding-left: 35px !important; /* SPAZIO PER LA LENTE (modifica questo valore se serve) */
+    padding-right: 35px !important;/* Spazio per la X a destra */
+    box-sizing: border-box !important;
+}
+
+.search-wrapper {
+    display: flex !important;
+    align-items: center !important;
+    width: 100% !important;        /* Occupa tutto lo spazio orizzontale */
+    box-sizing: border-box !important;
+    position: relative !important; /* Serve per la lente */
+}
 .search-input-pro {
-    width: 100%;
-    height: 30px !important;
-    line-height: 30px !important;
-    padding: 0 30px 0 30px !important;
-    border: 1px solid #ced4da;
-    border-radius: 4px !important;
-    font-size: 13px !important;
-    background-color: #f8f9fa;
-    color: #495057;
-    box-shadow: none !important;
-    transition: all 0.2s;
+    flex-grow: 1 !important;
+    width: auto !important; /* Resetta width fisse che bloccano l'espansione */
+    margin-right: 5px !important; /* Spazio di sicurezza prima della X */
+}
+
+/* Assicura che la X stia ferma a destra */
+#btnEsceRicerca {
+    flex-shrink: 0 !important; /* Impedisce che si schiacci */
+    margin-left: auto !important; /* Spinta extra verso destra */
 }
 .search-input-pro:focus { background-color: #fff; border-color: #80bdff; outline: none; }
 .search-input-pro::placeholder { color: #adb5bd; font-size: 12px; }
@@ -1183,7 +1216,7 @@ tfoot td { border-top: 2px solid #333; font-weight: bold; padding-top: 15px; fon
         else if(t==='benzina'){const v=document.getElementById('benDistributore').value;if(v)f.value=`Benzina ${v}`;}
     }
 
-            window.render = function(){
+    window.render = function(){
         const t=document.getElementById('listaDati'); if(!t) return; t.innerHTML=''; 
         
         // 1. Filtri
