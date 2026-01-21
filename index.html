@@ -688,10 +688,18 @@ tfoot td { border-top: 2px solid #333; font-weight: bold; padding-top: 15px; fon
 				</div>
 			</div>
 
-                <div style="display:flex; gap:5px;">
-                    <button onclick="calcolaStatistiche()" style="background:#673ab7; color:white; border:none; padding:0 15px; height:32px; border-radius:4px; cursor:pointer;">🔍</button>
-                    <button onclick="resetStatistiche()" style="background:#9e9e9e; color:white; border:none; padding:0 15px; height:32px; border-radius:4px; cursor:pointer;">✖</button>
-                </div>
+<div style="display:flex; gap:5px;">
+    <button onclick="calcolaStatistiche()" style="background:#673ab7; color:white; border:none; padding:0 15px; height:32px; border-radius:4px; cursor:pointer;" title="Calcola">🔍</button>
+    <button onclick="resetStatistiche()" style="background:#9e9e9e; color:white; border:none; padding:0 15px; height:32px; border-radius:4px; cursor:pointer;" title="Reset">✖</button>
+</div>
+
+<!-- PULSANTE BILANCIO COMPATTO -->
+<div style="margin-top:10px;">
+    <button onclick="apriBilancioAnnuale()" style="width:100%; background:#009688; color:white; border:none; padding:8px; border-radius:4px; font-weight:bold; cursor:pointer; font-size:0.95em;">
+        📅 Bilancio
+    </button>
+</div>
+
             </div>
             <div id="statResults"></div>
         </div>
@@ -1947,6 +1955,106 @@ window.calcolaSaldiGlobali = function() {
         // 6. Scrolla delicatamente in cima alla pagina
         window.scrollTo({ top: 0, behavior: 'smooth' });
     }
+	
+	
+	// --- LOGICA BILANCIO ANNUALE/MENSILE ---
+
+window.apriBilancioAnnuale = function() {
+    const div = document.getElementById('contenutoBilancio');
+    const modal = document.getElementById('modalBilancio');
+    if(!div || !modal) return;
+    
+    div.innerHTML = '<p style="text-align:center;">Calcolo in corso...</p>';
+    modal.style.display = 'flex'; // Mostra la modale
+
+    // 1. Struttura Dati: { "2024": { "01": 100, "02": -50, ... }, "2025": ... }
+    let dati = {};
+
+    window.movimenti.forEach(m => {
+        // Ignoriamo le Ricariche CC nel bilancio globale per evitare doppi conteggi?
+        // Di solito sì, perché è solo spostamento soldi, non guadagno/perdita reale.
+        if (m.rawCat === 'Ricarica CC' || m.categoria === 'Ricarica CC') return;
+
+        let data = m.data; // Formato YYYY-MM-DD
+        if (!data) return;
+        
+        let [anno, mese, giorno] = data.split('-');
+        
+        if (!dati[anno]) dati[anno] = {};
+        if (!dati[anno][mese]) dati[anno][mese] = 0;
+        
+        let imp = parseFloat(m.importo);
+        if (m.tipo === 'entrata') {
+            dati[anno][mese] += imp;
+        } else {
+            dati[anno][mese] -= imp;
+        }
+    });
+
+    // 2. Ordina gli anni (dal più recente al più vecchio)
+    let anni = Object.keys(dati).sort().reverse();
+    
+    let html = '';
+
+    if (anni.length === 0) {
+        html = '<p style="text-align:center; color:#666;">Nessun dato disponibile.</p>';
+    } else {
+        anni.forEach(anno => {
+            // Calcolo Totale Anno
+            let totAnno = 0;
+            let mesi = Object.keys(dati[anno]).sort().reverse(); // Gennaio (01) -> Dicembre (12)
+            
+            mesi.forEach(m => totAnno += dati[anno][m]);
+
+            let colorAnno = totAnno >= 0 ? '#28a745' : '#dc3545';
+            
+            // Intestazione Anno (Cliccabile per espandere? Per ora lasciamo tutto aperto)
+            html += `
+            <div style="background:#f8f9fa; border:1px solid #ddd; border-radius:8px; margin-bottom:15px; overflow:hidden;">
+                <div style="background:#e9ecef; padding:10px 15px; display:flex; justify-content:space-between; align-items:center; font-weight:bold; color:#333;">
+                    <span style="font-size:1.1em;">${anno}</span>
+                    <span style="color:${colorAnno}; font-size:1.1em;">${formatEuro(totAnno)}</span>
+                </div>
+                <table style="width:100%; border-collapse:collapse; font-size:0.9em;">
+            `;
+
+            // Righe Mesi
+            mesi.forEach(mese => {
+                let val = dati[anno][mese];
+                let colorMese = val >= 0 ? '#28a745' : '#dc3545';
+                let nomeMese = getNomiMesi(mese);
+                
+                html += `
+                    <tr style="border-bottom:1px solid #eee;">
+                        <td style="padding:8px 15px; color:#555;">${nomeMese}</td>
+                        <td style="padding:8px 15px; text-align:right; font-weight:bold; color:${colorMese};">
+                            ${formatEuro(val)}
+                        </td>
+                    </tr>
+                `;
+            });
+            
+            html += `</table></div>`;
+        });
+    }
+
+    div.innerHTML = html;
+};
+
+// Funzione helper per chiudere cliccando fuori
+window.chiudiModalBilancio = function(e) {
+    if (e.target.id === 'modalBilancio') {
+        document.getElementById('modalBilancio').style.display = 'none';
+    }
+};
+
+// Helper nomi mesi
+window.getNomiMesi = function(numString) {
+    const nomi = ["", "Gennaio", "Febbraio", "Marzo", "Aprile", "Maggio", "Giugno", "Luglio", "Agosto", "Settembre", "Ottobre", "Novembre", "Dicembre"];
+    return nomi[parseInt(numString)] || numString;
+};
+
+	
 /* --- NUOVA FUNZIONE DI SUPPORTO PER TOTALI DASHBOARD --- */
 window.aggiornaBoxTotaliDashboard = function(entrate, uscite) {
     const saldo = entrate - uscite;
@@ -1990,6 +2098,36 @@ window.aggiornaBoxTotaliDashboard = function(entrate, uscite) {
             .catch((err) => console.error('Errore PWA:', err));
     }
 </script>
+
+<!-- MODALE BILANCIO (Versione Finestra Centrata) -->
+<div id="modalBilancio" class="modal-overlay" onclick="chiudiModalBilancio(event)" 
+     style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:99999; align-items:center; justify-content:center;">
+    
+    <!-- Finestra Bianca -->
+    <div class="modal-content" 
+         style="background:white; width:90%; max-width:450px; max-height:80vh; border-radius:12px; box-shadow:0 10px 25px rgba(0,0,0,0.3); display:flex; flex-direction:column; overflow:hidden; position:relative; margin:auto;">
+        
+        <!-- Intestazione Fissa -->
+        <div style="padding:15px; border-bottom:1px solid #eee; display:flex; justify-content:space-between; align-items:center; background:#f8f9fa;">
+            <h3 style="margin:0; color:#009688; font-size:1.1em;">Bilancio Periodico</h3>
+            <span onclick="document.getElementById('modalBilancio').style.display='none'" 
+                  style="cursor:pointer; font-size:1.8em; color:#999; line-height:0.8;">&times;</span>
+        </div>
+        
+        <!-- Corpo Scrollabile -->
+        <div id="contenutoBilancio" style="padding:15px; overflow-y:auto; flex:1;">
+            <!-- Qui verranno iniettati i dati JS -->
+        </div>
+        
+        <!-- Footer Fisso -->
+        <div style="padding:10px 15px; border-top:1px solid #eee; text-align:right; background:white;">
+            <button onclick="document.getElementById('modalBilancio').style.display='none'" 
+                    style="background:#6c757d; color:white; padding:6px 15px; border:none; border-radius:4px; cursor:pointer;">Chiudi</button>
+        </div>
+    </div>
+</div>
+
+
 
 </body>
 </html>
