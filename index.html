@@ -496,6 +496,50 @@ tfoot td { border-top: 2px solid #333; font-weight: bold; padding-top: 15px; fon
 		right: 0 !important; /* Forza l'ancoraggio anche a destra */
 	}
 
+/* FIX MOBILE PER PANNELLO STATISTICHE */
+@media screen and (max-width: 600px) {
+    
+    /* 1. Il contenitore che ha Utente/Categoria/Bottoni */
+    /* Lo identifichiamo perché è un div flex dentro statsPanel */
+    #statsPanel > div[style*="display:flex; gap:10px"] {
+        display: flex !important;
+        flex-wrap: wrap !important; /* Permette di andare a capo */
+        gap: 15px !important;       /* Più spazio verticale */
+    }
+
+    /* 2. I blocchi Utente e Categoria (figli diretti) */
+    #statsPanel > div[style*="display:flex; gap:10px"] > div {
+        flex: 0 0 100% !important; /* Forza larghezza 100% */
+        width: 100% !important;
+        min-width: 100% !important;
+    }
+
+    /* 3. Assicura che le select dentro siano larghe 100% */
+    #statsPanel select {
+        width: 100% !important;
+        height: 40px !important; /* Altezza comoda */
+        font-size: 16px !important;
+    }
+
+    /* 4. Il blocco dei bottoni (Lente e X) */
+    /* Riconoscibile perché contiene button */
+    #statsPanel > div[style*="display:flex; gap:10px"] > div:last-child {
+        display: flex !important;
+        flex-direction: row !important; /* I bottoni restano affiancati TRA LORO */
+        gap: 10px !important;
+        margin-top: 5px !important;
+    }
+
+    /* 5. Stile dei bottoni stessi */
+    #statsPanel button {
+        flex: 1 !important; /* 50% spazio a testa */
+        height: 45px !important; /* Bottoni alti */
+        padding: 0 !important;
+        font-size: 18px !important; /* Icone grandi */
+    }
+}
+
+
 </style>
 
 </head>
