@@ -887,9 +887,12 @@ tfoot td { border-top: 2px solid #333; font-weight: bold; padding-top: 15px; fon
                         <span id="span_unit_new" style="font-weight:bold; margin-left:5px; color:#0d47a1;"></span>
                     </div>
                 </div>
-                <label style="display:block; margin-bottom:5px;">Link PDF:</label>
-                <input type="url" id="inp_pdf_new" placeholder="https://..." style="width:100%; padding:8px; border:1px solid #ccc; border-radius:4px;">
             </div>
+			<!-- NUOVO CONTENITORE PDF INDIPENDENTE -->
+<div id="wrapper_pdf_only" style="display:none; width:100%; grid-column: span 2; margin-top:5px;">
+    <label style="font-weight:bold; display:block; margin-bottom:5px;">Link Documento/Busta Paga:</label>
+    <input type="url" id="inp_pdf_new" placeholder="https://..." style="width:100%; padding:8px; border:1px solid #ccc; border-radius:4px;">
+</div>
             
             <div id="divSottoSuper" class="full-width hidden submenu-box">
                 <label>Quale Supermercato?</label><select id="selectSuper" onchange="autoCompilaDescrizione('super')"></select>
@@ -1237,23 +1240,51 @@ window.formatEuro = function(numero) {
         if(confirm("Eliminare?")){ window.movimenti = window.movimenti.filter(x=>x.id!==id); render(); calcolaSaldiGlobali(); await eliminaMovimentoSuFirebase(id); }
     }
     window.preparaModifica = function(id){
-        const m = window.movimenti.find(x => String(x.id) === String(id)); if(!m) return alert("Errore");
-        window.idInModifica = m.id;
-        document.getElementById('data').value = m.data; document.getElementById('importo').value = m.importo; document.getElementById('descrizione').value = (m.descrizione === "Nessuna descrizione" ? "" : m.descrizione);
-        if(m.rawCat && window.categorie.includes(m.rawCat)) document.getElementById('categoria').value = m.rawCat; else document.getElementById('categoria').value = window.categorie[0];
-        gestisciCategoria(); 
+    const m = window.movimenti.find(x => String(x.id) === String(id)); 
+    if(!m) return alert("Errore");
+    
+    window.idInModifica = m.id;
+    document.getElementById('data').value = m.data; 
+    document.getElementById('importo').value = m.importo; 
+    document.getElementById('descrizione').value = (m.descrizione === "Nessuna descrizione" ? "" : m.descrizione);
+    
+    if(m.rawCat && window.categorie.includes(m.rawCat)) document.getElementById('categoria').value = m.rawCat; 
+    else document.getElementById('categoria').value = window.categorie[0];
+    
+    // 1. Prima chiamo gestisciCategoria() per mostrare/nascondere i div giusti
+    gestisciCategoria(); 
 
-        if(m.rawCat === 'Bolletta'){
-            document.getElementById('sel_tipo_bolletta_new').value = m.rawSub || ''; // NUOVO ID
-            if(m.linkPdf) document.getElementById('inp_pdf_new').value = m.linkPdf; // NUOVO ID
-            window.logica_consumi_new(); // Controllo
-        }
-        else if(m.rawCat === 'Supermercato'){ document.getElementById('selectSuper').value = m.rawSub || ''; }
-        else if(m.rawCat === 'Benzina' && m.datiBenzina){ document.getElementById('benLitri').value = m.datiBenzina.litri || ''; document.getElementById('benKm').value = m.datiBenzina.km || ''; document.getElementById('benPrezzo').value = m.datiBenzina.prezzo || ''; document.getElementById('benDistributore').value = m.datiBenzina.distributore || ''; }
-        document.getElementById('conto').value = m.conto;
-        document.getElementById('titoloForm').textContent = "Modifica Voce"; document.getElementById('titoloForm').style.color = "#ffc107"; document.getElementById('btnDefault').style.display = 'none'; document.getElementById('btnEdit').style.display = 'flex';
-        closeAllPanels(); window.scrollTo({top: 0, behavior: 'smooth'}); render();
+    // 2. Poi popolo i valori nei div appena mostrati
+    if(m.rawCat === 'Bolletta'){
+        document.getElementById('sel_tipo_bolletta_new').value = m.rawSub || ''; 
+        if(m.linkPdf) document.getElementById('inp_pdf_new').value = m.linkPdf; 
+        window.logica_consumi_new(); 
     }
+    else if(m.rawCat === 'Stipendio'){ 
+        // NUOVO BLOCCO: Se è Stipendio, popolo il link PDF
+        if(m.linkPdf) document.getElementById('inp_pdf_new').value = m.linkPdf;
+    }
+    else if(m.rawCat === 'Supermercato'){ 
+        document.getElementById('selectSuper').value = m.rawSub || ''; 
+    }
+    else if(m.rawCat === 'Benzina' && m.datiBenzina){ 
+        document.getElementById('benLitri').value = m.datiBenzina.litri || ''; 
+        document.getElementById('benKm').value = m.datiBenzina.km || ''; 
+        document.getElementById('benPrezzo').value = m.datiBenzina.prezzo || ''; 
+        document.getElementById('benDistributore').value = m.datiBenzina.distributore || ''; 
+    }
+    
+    document.getElementById('conto').value = m.conto;
+    document.getElementById('titoloForm').textContent = "Modifica Voce"; 
+    document.getElementById('titoloForm').style.color = "#ffc107"; 
+    document.getElementById('btnDefault').style.display = 'none'; 
+    document.getElementById('btnEdit').style.display = 'flex';
+    
+    closeAllPanels(); 
+    window.scrollTo({top: 0, behavior: 'smooth'}); 
+    render();
+}
+
     window.confermaModifica = async function(){
         if(!window.idInModifica) return; const d = getDatiForm(); if(!d) return alert("Dati non validi");
         const i = window.movimenti.findIndex(x => String(x.id) === String(window.idInModifica)); 
@@ -1281,21 +1312,44 @@ window.formatEuro = function(numero) {
         gestisciCategoria(); impostaDataOggi();
     }
     window.gestisciCategoria = function(){
-        const c = document.getElementById('categoria').value;
-        const bE = document.getElementById('btnEntrata'), bU = document.getElementById('btnUscita');
-        const wrapB = document.getElementById('wrapper_bolletta_new'); // NUOVO
-        const d2 = document.getElementById('divSottoSuper'), d3 = document.getElementById('divSottoBenzina');
-        if(c==='Stipendio'||c==='Entrata'){ bE.disabled=false; bU.disabled=true; } else { bE.disabled=true; bU.disabled=false; }
-        
-        if(wrapB) wrapB.style.display = 'none';
-        d2.classList.add('hidden'); d3.classList.add('hidden');
-        
-        if(c==='Bolletta') {
-            if(wrapB) { wrapB.style.display = 'block'; window.logica_consumi_new(); }
-        } else if(c==='Supermercato') d2.classList.remove('hidden');
-        else if(c==='Benzina') d3.classList.remove('hidden');
-        if(typeof aggiornaSuggerimentiDescrizione === 'function') aggiornaSuggerimentiDescrizione();
+    const c = document.getElementById('categoria').value;
+    const bE = document.getElementById('btnEntrata'), bU = document.getElementById('btnUscita');
+    const wrapB = document.getElementById('wrapper_bolletta_new'); 
+    const wrapPDF = document.getElementById('wrapper_pdf_only'); // NUOVO RIFERIMENTO
+    const d2 = document.getElementById('divSottoSuper'), d3 = document.getElementById('divSottoBenzina');
+    
+    // Logica Entrata/Uscita
+    if(c==='Stipendio' || c==='Entrata'){ bE.disabled=false; bU.disabled=true; } 
+    else { bE.disabled=true; bU.disabled=false; }
+    
+    // Reset di tutto
+    if(wrapB) wrapB.style.display = 'none';
+    if(wrapPDF) wrapPDF.style.display = 'none'; // Nascondi PDF di default
+    d2.classList.add('hidden'); 
+    d3.classList.add('hidden');
+    
+    // Logica specifica
+    if(c==='Bolletta') {
+        if(wrapB) { 
+            wrapB.style.display = 'block'; 
+            window.logica_consumi_new(); 
+        }
+        if(wrapPDF) wrapPDF.style.display = 'block'; // Mostra anche PDF
+    } 
+    else if(c==='Stipendio') {
+        // Niente wrapper bolletta, ma SÌ al PDF
+        if(wrapPDF) {
+            wrapPDF.style.display = 'block';
+            // Opzionale: cambia label se vuoi
+            // wrapPDF.querySelector('label').textContent = "Link Busta Paga:";
+        }
     }
+    else if(c==='Supermercato') d2.classList.remove('hidden');
+    else if(c==='Benzina') d3.classList.remove('hidden');
+    
+    if(typeof aggiornaSuggerimentiDescrizione === 'function') aggiornaSuggerimentiDescrizione();
+}
+
     window.calcolaPrezzoBenzina = function(){ const i=parseFloat(document.getElementById('importo').value), l=parseFloat(document.getElementById('benLitri').value); if(!isNaN(i)&&!isNaN(l)&&l>0)document.getElementById('benPrezzo').value=(i/l).toFixed(3); else document.getElementById('benPrezzo').value=''; }
     window.autoCompilaDescrizione = function(t){
         const f=document.getElementById('descrizione');
@@ -1575,22 +1629,22 @@ window.calcolaSaldiGlobali = function() {
     // NOVITÀ: Ho aggiunto grid-template-columns: 1fr 1fr 1fr (3 colonne) 
     // e il terzo box azzurro per il bilancio
     div.innerHTML = `
-        <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; margin-bottom:15px; text-align:center;">
-            
-            <div class="stat-box" style="background:#e8f5e9; border:1px solid #c8e6c9; padding:8px; border-radius:5px;">
-                <div style="font-size:0.7em; color:#2e7d32; text-transform:uppercase;">Entrate</div>
-                <div style="font-weight:bold; font-size:0.95em; color:#2e7d32;">${formatEuro(entr)}</div>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:8px; text-align:center;">
+            <!-- RIGA 1: ENTRATE e USCITE affiancate -->
+            <div class="stat-box" style="background:#e8f5e9; border:1px solid #c8e6c9; padding:10px; border-radius:6px;">
+                <div style="font-size:0.75em; color:#2e7d32; text-transform:uppercase;">Entrate</div>
+                <div style="font-weight:bold; font-size:1.1em; color:#2e7d32;">${formatEuro(entr)}</div>
             </div>
 
-            <div class="stat-box" style="background:#ffebee; border:1px solid #ffcdd2; padding:8px; border-radius:5px;">
-                <div style="font-size:0.7em; color:#c62828; text-transform:uppercase;">Uscite</div>
-                <div style="font-weight:bold; font-size:0.95em; color:#c62828;">${formatEuro(usc)}</div>
+            <div class="stat-box" style="background:#ffebee; border:1px solid #ffcdd2; padding:10px; border-radius:6px;">
+                <div style="font-size:0.75em; color:#c62828; text-transform:uppercase;">Uscite</div>
+                <div style="font-weight:bold; font-size:1.1em; color:#c62828;">${formatEuro(usc)}</div>
             </div>
             
-            <!-- NUOVO BOX BILANCIO -->
-            <div class="stat-box" style="background:#e1f5fe; border:1px solid #b3e5fc; padding:8px; border-radius:5px;">
-                <div style="font-size:0.7em; color:#0277bd; text-transform:uppercase;">Bilancio</div>
-                <div style="font-weight:bold; font-size:0.95em; color:#0277bd;">${formatEuro(bilancio)}</div>
+            <!-- RIGA 2: BILANCIO a tutta larghezza (grid-column: span 2) -->
+            <div class="stat-box" style="grid-column: span 2; background:#e1f5fe; border:1px solid #b3e5fc; padding:10px; border-radius:6px;">
+                <div style="font-size:0.75em; color:#0277bd; text-transform:uppercase;">Bilancio (Entrate - Uscite)</div>
+                <div style="font-weight:bold; font-size:1.2em; color:#0277bd;">${formatEuro(bilancio)}</div>
             </div>
 
         </div>
@@ -1604,6 +1658,7 @@ window.calcolaSaldiGlobali = function() {
                 ${righe}
             </table>
         </div>`;
+
     
     setTimeout(() => div.scrollIntoView({behavior: "smooth"}), 100);
 };
