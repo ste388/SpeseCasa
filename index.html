@@ -539,6 +539,26 @@ tfoot td { border-top: 2px solid #333; font-weight: bold; padding-top: 15px; fon
     }
 }
 
+/* =========================================
+   FIX MOBILE SALDI (Uno sotto l'altro)
+   ========================================= */
+@media screen and (max-width: 600px) {
+    /* Seleziona il div con la griglia dentro il pannello saldi */
+    #balancePanel > div[style*="display:grid"] {
+        grid-template-columns: 1fr !important; /* 1 sola colonna */
+        gap: 15px !important; /* Un po' più di spazio tra i box */
+    }
+}
+
+/* Stile per l'importo in evidenza (vedi punto 2) */
+.saldo-highlight {
+    font-size: 1.4em;       /* Molto più grande */
+    font-weight: 800;       /* Molto grassetto */
+    color: #2e7d32;         /* Un bel verde scuro (o cambia a tuo piacere) */
+    display: block;         /* Va a capo forzatamente */
+    margin-top: 5px;
+}
+
 
 </style>
 
@@ -566,7 +586,6 @@ tfoot td { border-top: 2px solid #333; font-weight: bold; padding-top: 15px; fon
     </div>
 
 </div>
-
 
 
     <!-- MODALE DETTAGLI BENZINA -->
@@ -1081,6 +1100,23 @@ tfoot td { border-top: 2px solid #333; font-weight: bold; padding-top: 15px; fon
     window.salvaPatrimonioSuFirebase = async function(obj) { await setDoc(doc(db, "patrimonio", String(obj.id)), obj); }
     window.eliminaPatrimonioSuFirebase = async function(id) { await deleteDoc(doc(db, "patrimonio", String(id))); }
 
+window.formatEuro = function(numero) {
+    let val = Number(numero);
+    if (isNaN(val)) val = 0;
+
+    // Metodo manuale sicuro per forzare il punto italiano sempre
+    // 1. Fissiamo i decimali a 2
+    let parts = val.toFixed(2).split('.'); 
+    
+    // 2. Formattiamo la parte intera con i punti
+    // La Regex inserisce un punto ogni 3 cifre partendo dalla fine
+    parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+    
+    // 3. Ricostruiamo con la virgola
+    return '€ ' + parts.join(',');
+}
+
+
     // --- NUOVA LOGICA CONSUMI ---
     window.logica_consumi_new = function() {
         const sel = document.getElementById('sel_tipo_bolletta_new');
@@ -1125,8 +1161,7 @@ tfoot td { border-top: 2px solid #333; font-weight: bold; padding-top: 15px; fon
         if(window.checkAlertScadenze) window.checkAlertScadenze();
     }
 
-    window.formatEuro = function(num) { let n=parseFloat(num); if(isNaN(n))n=0; return "€ "+n.toLocaleString('it-IT',{minimumFractionDigits:2,maximumFractionDigits:2}); }
-    window.formatLocalYMD = function(d) { const y=d.getFullYear(), m=String(d.getMonth()+1).padStart(2,'0'), dd=String(d.getDate()).padStart(2,'0'); return `${y}-${m}-${dd}`; }
+ window.formatLocalYMD = function(d) { const y=d.getFullYear(), m=String(d.getMonth()+1).padStart(2,'0'), dd=String(d.getDate()).padStart(2,'0'); return `${y}-${m}-${dd}`; }
     window.impostaDataOggi = function() { document.getElementById('data').value = formatLocalYMD(new Date()); }
     window.popolaSelect = function(id, arr, addEmpty) {
         const sel = document.getElementById(id); if(!sel) return;
@@ -1389,22 +1424,22 @@ window.calcolaSaldiGlobali = function() {
     const valCC = v.CC + (window.balanceOffsets.CC || 0);
 
     // STAMPA HTML PERSONALIZZATO
-    
+
     // --- STE (Blu) ---
     const elSte = document.getElementById('saldoSte');
     if (elSte) {
         elSte.innerHTML = `
-            <div style="font-size:0.85em; color:#0d47a1; font-weight:bold; text-transform:uppercase; margin-bottom:2px;">Conto Ste</div>
-            <div style="font-weight:normal; font-size:1.2em; color:#333;">${formatEuro(valSte)}</div>
+            <div style="font-size:0.85em; color:#666; text-transform:uppercase; margin-bottom:5px;">Conto Ste</div>
+            <div style="font-weight:600; font-size:1.6em; color:#0d47a1; letter-spacing:-0.5px;">${formatEuro(valSte)}</div>
         `;
     }
 
-    // --- VALE (Rosa/Viola) ---
+    // --- VALE (Rosa/Viola scuro) ---
     const elVale = document.getElementById('saldoVale');
     if (elVale) {
         elVale.innerHTML = `
-            <div style="font-size:0.85em; color:#880e4f; font-weight:bold; text-transform:uppercase; margin-bottom:2px;">Conto Vale</div>
-            <div style="font-weight:normal; font-size:1.2em; color:#333;">${formatEuro(valVale)}</div>
+            <div style="font-size:0.85em; color:#666; text-transform:uppercase; margin-bottom:5px;">Conto Vale</div>
+            <div style="font-weight:600; font-size:1.6em; color:#880e4f; letter-spacing:-0.5px;">${formatEuro(valVale)}</div>
         `;
     }
 
@@ -1412,11 +1447,12 @@ window.calcolaSaldiGlobali = function() {
     const elCC = document.getElementById('saldoCC');
     if (elCC) {
         elCC.innerHTML = `
-            <div style="font-size:0.85em; color:#5d4037; font-weight:bold; text-transform:uppercase; margin-bottom:2px;">CC Comune</div>
-            <div style="font-weight:normal; font-size:1.2em; color:#333;">${formatEuro(valCC)}</div>
+            <div style="font-size:0.85em; color:#666; text-transform:uppercase; margin-bottom:5px;">CC Comune</div>
+            <div style="font-weight:600; font-size:1.6em; color:#5d4037; letter-spacing:-0.5px;">${formatEuro(valCC)}</div>
         `;
     }
 };
+
 
 
 
@@ -1709,12 +1745,35 @@ window.calcolaSaldiGlobali = function() {
 
     window.initPatrimonio = function(){ renderFondiConfig(); if(document.getElementById('patrimonioDate'))document.getElementById('patrimonioDate').value=formatLocalYMD(new Date()); renderPatrimonioTable(); }
     window.toggleModalPatrimonio = function() { const m=document.getElementById('modalPatrimonioMain'); if(m.style.display==='none'||m.style.display===''){ m.style.display='flex'; renderFondiConfig(); aggiornaLiquiditaSte(); renderPatrimonioTable(); } else m.style.display='none'; }
-    window.renderFondiConfig = function() {
-        const div = document.getElementById('listFondiConfig'); if(!div) return;
-        if(!window.fondiConfig || window.fondiConfig.length === 0) { div.innerHTML = '<div style="color:#999; text-align:center;">Nessun titolo.</div>'; renderPatrimonioInputs(); return; }
-        div.innerHTML = window.fondiConfig.map(f => `<div class="fondo-row"><div class="fondo-nome">${f.nome}</div><div class="fondo-group"><label class="fondo-label">Caricato (€)</label><input type="number" step="0.01" class="fondo-input" value="${f.investito}" onchange="aggiornaConfigFondo('${f.id}','investito',this.value)"></div><div class="fondo-group"><label class="fondo-label">Quote</label><input type="number" step="0.001" class="fondo-input" value="${f.quote}" onchange="aggiornaConfigFondo('${f.id}','quote',this.value)"></div><button class="btn-del-mini" onclick="rimuoviFondo('${f.id}')">&times;</button></div>`).join('');
-        renderPatrimonioInputs();
+window.renderFondiConfig = function() {
+    const div = document.getElementById('listFondiConfig'); 
+    if(!div) return;
+    
+    if(!window.fondiConfig || window.fondiConfig.length === 0) { 
+        div.innerHTML = '<div style="color:#999; text-align:center;">Nessun titolo.</div>'; 
+        renderPatrimonioInputs(); 
+        return; 
     }
+
+    // Qui la modifica: ho aggiunto uno span style="color:green; font-size:0.8em;" che mostra formatEuro(f.investito)
+    div.innerHTML = window.fondiConfig.map(f => `
+        <div class="fondo-row">
+            <div class="fondo-nome">${f.nome}</div>
+            <div class="fondo-group">
+                <label class="fondo-label">Caricato (€) <span style="color:#2e7d32; font-weight:bold; margin-left:5px;">${formatEuro(f.investito)}</span></label>
+                <input type="number" step="0.01" class="fondo-input" value="${f.investito}" onchange="aggiornaConfigFondo('${f.id}','investito',this.value)">
+            </div>
+            <div class="fondo-group">
+                <label class="fondo-label">Quote</label>
+                <input type="number" step="0.001" class="fondo-input" value="${f.quote}" onchange="aggiornaConfigFondo('${f.id}','quote',this.value)">
+            </div>
+            <button class="btn-del-mini" onclick="rimuoviFondo('${f.id}')">&times;</button>
+        </div>
+    `).join('');
+    
+    renderPatrimonioInputs();
+}
+
     window.aggiornaConfigFondo = async function(id, campo, val) { const f = window.fondiConfig.find(x => x.id === id); if(!f) return; f[campo] = parseFloat(val) || 0; if(campo==='investito') renderPatrimonioInputs(); await salvaSettingsSuFirebase(); }
     window.aggiungiFondo = async function() {
         const n = document.getElementById('newFondoNome').value.trim(), i = parseFloat(document.getElementById('newFondoInvestito').value) || 0, q = parseFloat(document.getElementById('newFondoQuote').value) || 0; if(!n) return;
@@ -1723,45 +1782,49 @@ window.calcolaSaldiGlobali = function() {
     }
     window.rimuoviFondo = async function(id) { if(confirm("Del?")){ window.fondiConfig=window.fondiConfig.filter(x=>x.id!==id); renderFondiConfig(); await salvaSettingsSuFirebase(); } }
         window.renderPatrimonioInputs = function() {
-        const c = document.getElementById('patrimonioInputsContainer'); 
-        if(!c) return; 
-        c.innerHTML = '';
-        
-        (window.fondiConfig || []).forEach(f => {
-            c.innerHTML += `
-            <div style="margin-bottom:10px; padding:10px; background:white; border:1px solid #ddd; border-radius:5px;">
-                <div style="font-weight:bold; font-size:0.9em; margin-bottom:5px; color:#2c3e50;">${f.nome}</div>
-                
-                <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px;">
-                    <!-- CAMPO ATTUALE -->
-                    <div>
-                        <label style="font-size:0.7em; color:#666;">Attuale</label>
-                        <input type="number" step="0.01" id="val_${f.id}" 
-                               oninput="calcolaFruttiInput('${f.id}')" 
-                               placeholder="Totale">
-                    </div>
-
-                    <!-- CAMPO CARICATO (INVESTITO) -->
-                    <div>
-                        <label style="font-size:0.7em; color:#666;">Caricato</label>
-                        <input type="number" step="0.01" id="quote_${f.id}" 
-                               value="${f.investito}" 
-                               oninput="calcolaFruttiInput('${f.id}')"> <!-- Ricalcola se cambi l'investito -->
-                    </div>
-
-                    <!-- CAMPO FRUTTI (ORA EDITABILE: "MAIL") -->
-                    <div>
-                        <label style="font-size:0.7em; color:#666;">Diff / Mail</label>
-                        <input type="number" step="0.01" id="numQuote_${f.id}" 
-                               oninput="calcolaAttualeDaFrutti('${f.id}')" 
-                               placeholder="+/- €" 
-                               style="background:#fff; border:1px solid #ccc; font-weight:bold;">
-                    </div>
+    const c = document.getElementById('patrimonioInputsContainer'); 
+    if(!c) return; 
+    c.innerHTML = '';
+    
+    (window.fondiConfig || []).forEach(f => {
+        c.innerHTML += `
+        <div style="margin-bottom:10px; padding:10px; background:white; border:1px solid #ddd; border-radius:5px;">
+            <div style="font-weight:bold; font-size:0.9em; margin-bottom:5px; color:#2c3e50;">${f.nome}</div>
+            
+            <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px;">
+                <!-- CAMPO ATTUALE -->
+                <div>
+                    <label style="font-size:0.7em; color:#666;">Attuale</label>
+                    <input type="number" step="0.01" id="val_${f.id}" 
+                           oninput="calcolaFruttiInput('${f.id}')" 
+                           placeholder="Totale">
                 </div>
-            </div>`;
-        });
-        aggiornaLiquiditaSte();
-    }
+
+                <!-- CAMPO CARICATO (INVESTITO) -->
+                <div>
+                    <!-- QUI LA MODIFICA: Label Caricato + Valore formattato in verde -->
+                    <label style="font-size:0.7em; color:#666;">Caricato 
+                        <span style="color:#2e7d32; font-weight:bold;">${formatEuro(f.investito)}</span>
+                    </label>
+                    <input type="number" step="0.01" id="quote_${f.id}" 
+                           value="${f.investito}" 
+                           oninput="calcolaFruttiInput('${f.id}')">
+                </div>
+
+                <!-- CAMPO FRUTTI (DIFF / MAIL) -->
+                <div>
+                    <label style="font-size:0.7em; color:#666;">Diff / Mail</label>
+                    <input type="number" step="0.01" id="numQuote_${f.id}" 
+                           oninput="calcolaAttualeDaFrutti('${f.id}')" 
+                           placeholder="+/- €" 
+                           style="background:#fff; border:1px solid #ccc; font-weight:bold;">
+                </div>
+            </div>
+        </div>`;
+    });
+    aggiornaLiquiditaSte();
+}
+
 
     // Caso B: Scrivo la DIFFERENZA (Mail) -> Calcolo il totale Attuale
     window.calcolaAttualeDaFrutti = function(fid) {
