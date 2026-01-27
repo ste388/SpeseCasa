@@ -1995,92 +1995,100 @@ window.renderFondiConfig = function() {
 
     // FUEL REPORT (Aggiornato con colonna €/L)
     window.renderFuelReport = function() {
-        const tbody = document.getElementById('fuelTableBody_NEW'), selAnno = document.getElementById('fuelYearSelect'); 
-        if(!tbody) return;
+    const tbody = document.getElementById('fuelTableBody_NEW'), selAnno = document.getElementById('fuelYearSelect'); 
+    if(!tbody) return;
+    
+    // Filtro movimenti: Benzina/Auto E SOLO conto 'Ste'
+    let all = window.movimenti.filter(x => { 
+        // 1. Controllo Categoria
+        const c = (x.categoria || "").toLowerCase(); 
+        const isBenzina = c.includes('benz') || c.includes('auto') || (x.rawCat || "").toLowerCase().includes('benz');
         
-        // Filtro movimenti
-        let all = window.movimenti.filter(x => { 
-            const c=(x.categoria||"").toLowerCase(); 
-            return c.includes('benz')||c.includes('auto')||(x.rawCat||"").toLowerCase().includes('benz'); 
-        });
-        all.sort((a,b) => new Date(a.data) - new Date(b.data));
+        if (!isBenzina) return false;
 
-        // Gestione anni
-        const anni = [...new Set(all.map(x => x.data.split('-')[0]))].sort().reverse(); 
-        if(anni.length===0) anni.push(new Date().getFullYear().toString());
-        
-        if (selAnno && selAnno.options.length !== anni.length) { 
-            selAnno.innerHTML = ''; 
-            anni.forEach(a => { const o=document.createElement('option'); o.value=a; o.text=a; selAnno.appendChild(o); }); 
-        }
-        
-        const selA = selAnno ? selAnno.value : new Date().getFullYear().toString(); 
-        if(document.getElementById('lblAnnoSpesa')) document.getElementById('lblAnnoSpesa').textContent = selA;
+        // 2. Controllo Conto (Solo 'Ste')
+        // Normalizziamo per essere sicuri (gestisce 'Ste', 'Carta Ste', 'Stipendio Ste', ecc.)
+        const conto = (x.conto || "").toLowerCase();
+        return conto.includes('ste'); 
+    });
 
-        // Filtra per anno selezionato
-        const fAnno = all.filter(x => x.data.startsWith(selA)); 
-        fAnno.sort((a,b) => new Date(b.data) - new Date(a.data)); // Ordine decrescente
+    all.sort((a,b) => new Date(a.data) - new Date(b.data));
 
-        // Calcolo Totali
-        let totE=0, totL=0, totK=0; 
-        fAnno.forEach(x => { 
-            totE+=x.importo; 
-            if(x.datiBenzina){ 
-                totL+=(parseFloat(x.datiBenzina.litri)||0); 
-                totK+=(parseFloat(x.datiBenzina.km)||0); 
-            } 
-        });
-
-        document.getElementById('fuelSpesa_NEW').textContent = formatEuro(totE); 
-        document.getElementById('fuelLitri_NEW').textContent = totL.toFixed(1); 
-        document.getElementById('fuelKm_NEW').textContent = totK>0?totK:"-";
-        document.getElementById('fuelAvg_NEW').textContent = (totL>0&&totK>0)?(totK/totL).toFixed(2)+" km/l":"-";
-
-        // Render Tabella
-        tbody.innerHTML = ''; 
-        if(fAnno.length===0) { 
-            tbody.innerHTML='<tr><td colspan="6" style="text-align:center;">No Dati</td></tr>'; 
-            return; 
-        }
-
-        const mesi=["Gen","Feb","Mar","Apr","Mag","Giu","Lug","Ago","Set","Ott","Nov","Dic"]; 
-        let curM=-1;
-
-        fAnno.forEach(c => { 
-            const [y,m,d]=c.data.split('-'); 
-            const mi=parseInt(m)-1; 
-            
-            // Intestazione Mese
-            if(mi!==curM){ 
-                curM=mi; 
-                tbody.innerHTML+=`<tr style="background:#fff3e0;color:#e65100;font-weight:bold;"><td colspan="6" style="font-size:0.8em;text-transform:uppercase;">${mesi[mi]} ${y}</td></tr>`;
-            }
-
-            // Dati riga
-            let ente=c.datiBenzina?.distributore||"Benzina";
-            let lt=c.datiBenzina?.litri||"-";
-            let km=c.datiBenzina?.km||"-";
-
-            // CALCOLO €/L
-            let prezzoLitro = '-';
-            let ltNum = parseFloat(lt);
-            if (ltNum > 0 && c.importo > 0) {
-                prezzoLitro = (c.importo / ltNum).toFixed(3); // Es: 1.759
-            }
-
-            tbody.innerHTML+=`
-                <tr style="border-bottom:1px solid #eee;">
-                    <td style="padding:8px;">${d}/${m}</td>
-                    <td style="padding:8px;font-size:0.9em;color:#555;">${ente}</td>
-                    <td style="padding:8px;">${km}</td>
-                    <td style="padding:8px;">${lt}</td>
-                    <td style="padding:8px; font-size:0.9em; color:#666;">${prezzoLitro}</td> <!-- €/L (Grigio/Normale) -->
-                    
-                    <!-- TOTALE EURO (Blu Scuro e Grassetto) -->
-                    <td style="padding:8px; font-weight:bold; color:#0d47a1;">${formatEuro(c.importo)}</td>
-                </tr>`; 
-        });
+    // Gestione anni
+    const anni = [...new Set(all.map(x => x.data.split('-')[0]))].sort().reverse(); 
+    if(anni.length===0) anni.push(new Date().getFullYear().toString());
+    
+    if (selAnno && selAnno.options.length !== anni.length) { 
+        selAnno.innerHTML = ''; 
+        anni.forEach(a => { const o=document.createElement('option'); o.value=a; o.text=a; selAnno.appendChild(o); }); 
     }
+    
+    const selA = selAnno ? selAnno.value : new Date().getFullYear().toString(); 
+    if(document.getElementById('lblAnnoSpesa')) document.getElementById('lblAnnoSpesa').textContent = selA;
+
+    // Filtra per anno selezionato
+    const fAnno = all.filter(x => x.data.startsWith(selA)); 
+    fAnno.sort((a,b) => new Date(b.data) - new Date(a.data)); // Ordine decrescente
+
+    // Calcolo Totali
+    let totE=0, totL=0, totK=0; 
+    fAnno.forEach(x => { 
+        totE+=x.importo; 
+        if(x.datiBenzina){ 
+            totL+=(parseFloat(x.datiBenzina.litri)||0); 
+            totK+=(parseFloat(x.datiBenzina.km)||0); 
+        } 
+    });
+
+    document.getElementById('fuelSpesa_NEW').textContent = formatEuro(totE); 
+    document.getElementById('fuelLitri_NEW').textContent = totL.toFixed(1); 
+    document.getElementById('fuelKm_NEW').textContent = totK>0?totK:"-";
+    document.getElementById('fuelAvg_NEW').textContent = (totL>0&&totK>0)?(totK/totL).toFixed(2)+" km/l":"-";
+
+    // Render Tabella
+    tbody.innerHTML = ''; 
+    if(fAnno.length===0) { 
+        tbody.innerHTML='<tr><td colspan="6" style="text-align:center;">No Dati</td></tr>'; 
+        return; 
+    }
+
+    const mesi=["Gen","Feb","Mar","Apr","Mag","Giu","Lug","Ago","Set","Ott","Nov","Dic"]; 
+    let curM=-1;
+
+    fAnno.forEach(c => { 
+        const [y,m,d]=c.data.split('-'); 
+        const mi=parseInt(m)-1; 
+        
+        // Intestazione Mese
+        if(mi!==curM){ 
+            curM=mi; 
+            tbody.innerHTML+=`<tr style="background:#fff3e0;color:#e65100;font-weight:bold;"><td colspan="6" style="font-size:0.8em;text-transform:uppercase;">${mesi[mi]} ${y}</td></tr>`;
+        }
+
+        // Dati riga
+        let ente=c.datiBenzina?.distributore||"Benzina";
+        let lt=c.datiBenzina?.litri||"-";
+        let km=c.datiBenzina?.km||"-";
+
+        // CALCOLO €/L
+        let prezzoLitro = '-';
+        let ltNum = parseFloat(lt);
+        if (ltNum > 0 && c.importo > 0) {
+            prezzoLitro = (c.importo / ltNum).toFixed(3); 
+        }
+
+        tbody.innerHTML+=`
+            <tr style="border-bottom:1px solid #eee;">
+                <td style="padding:8px;">${d}/${m}</td>
+                <td style="padding:8px;font-size:0.9em;color:#555;">${ente}</td>
+                <td style="padding:8px;">${km}</td>
+                <td style="padding:8px;">${lt}</td>
+                <td style="padding:8px; font-size:0.9em; color:#666;">${prezzoLitro}</td> 
+                <td style="padding:8px; font-weight:bold; color:#0d47a1;">${formatEuro(c.importo)}</td>
+            </tr>`; 
+    });
+}
+
 
 
     window.salvaRicarica = async function() {
