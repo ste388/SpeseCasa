@@ -14,10 +14,12 @@
     <title>Bilancio Casa (Ste & Vale)</title>
 <style>
 
-
-body {
-    overscroll-behavior-y: contain;
-    /* Oppure: overscroll-behavior-y: none; */
+/* BLOCCO TOTALE AGGIORNAMENTO TRASCINANDO */
+html, body {
+    overscroll-behavior-y: none; /* Usa 'none': è più potente di 'contain' */
+    height: 100%;                /* Fondamentale per definire l'area di scroll */
+    margin: 0;
+    padding: 0;
 }
 
 
