@@ -923,13 +923,35 @@ tfoot td { border-top: 2px solid #333; font-weight: bold; padding-top: 15px; fon
 		<!-- LISTA MOVIMENTI -->
 		<div class="card">
 	<!-- RICERCA GLOBALE COMPATTA -->
-	<div class="search-wrapper">
-		<span class="search-icon-left">🔍</span>
-		<input type="text" id="globalSearch" class="search-input-pro" 
-			   onkeyup="window.handleSearchInput()" 
-			   placeholder="Cerca ovunque..." autocomplete="off">
-		<button id="btnEsceRicerca" class="search-clear-btn" onclick="pulisciRicerca()" title="Pulisci">✕</button>
-	</div>
+<div style="position:relative; width:100%; display:flex; align-items:center; box-sizing:border-box;">
+    
+    <!-- Lente (ridimensionata e riposizionata) -->
+    <span style="position:absolute; left:10px; font-size:14px; pointer-events:none; z-index:10;">🔍</span>
+    
+    <!-- Input (Altezza ridotta a 36px) -->
+    <input type="text" id="globalSearch" 
+           onkeyup="window.handleSearchInput()" 
+           placeholder="Cerca ovunque..." autocomplete="off"
+           style="width:100% !important; height:36px !important; padding:0 35px 0 32px !important; 
+                  margin:0 !important; border:1px solid #ccc !important; border-radius:18px !important; 
+                  font-size:14px !important; line-height:normal !important; box-sizing:border-box !important;
+                  background:#fff !important; -webkit-appearance:none !important;">
+    
+    <!-- Bottone X (Ridimensionato a 26px per stare nel nuovo spazio) -->
+    <button id="btnEsceRicerca" onclick="pulisciRicerca()" type="button"
+            style="display:none; position:absolute !important; right:5px !important; top:50% !important; 
+                   transform:translateY(-50%) !important; margin:0 !important; padding:0 !important;
+                   width:26px !important; height:26px !important; min-width:26px !important; min-height:26px !important;
+                   border:none !important; background:#f0f0f0 !important; color:#555 !important; 
+                   border-radius:50% !important; font-size:12px !important; line-height:26px !important; 
+                   text-align:center !important; cursor:pointer !important; z-index:20 !important;
+                   box-shadow:none !important;">
+        ✕
+    </button>
+
+</div>
+
+
 
 	<!-- FILTER BAR (Solo Date e Bottoni) -->
 	<div class="filter-bar">
@@ -1585,10 +1607,9 @@ window.calcolaSaldiGlobali = function() {
         }
     });
 
-    // NOVITÀ: Calcolo il Bilancio
     let bilancio = entr - usc;
 
-    // 3. GENERA HTML
+    // 3. GENERA HTML RIGHE
     let righe = '';
     if(m.length === 0) {
         righe = '<tr><td colspan="3" style="text-align:center; padding:10px;">Nessun dato.</td></tr>';
@@ -1626,11 +1647,10 @@ window.calcolaSaldiGlobali = function() {
         });
     }
 
-    // NOVITÀ: Ho aggiunto grid-template-columns: 1fr 1fr 1fr (3 colonne) 
-    // e il terzo box azzurro per il bilancio
+    // 4. LAYOUT FINALE CON NUOVA SCRITTA "Esclusa Ricarica CC"
     div.innerHTML = `
         <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:8px; text-align:center;">
-            <!-- RIGA 1: ENTRATE e USCITE affiancate -->
+            
             <div class="stat-box" style="background:#e8f5e9; border:1px solid #c8e6c9; padding:10px; border-radius:6px;">
                 <div style="font-size:0.75em; color:#2e7d32; text-transform:uppercase;">Entrate</div>
                 <div style="font-weight:bold; font-size:1.1em; color:#2e7d32;">${formatEuro(entr)}</div>
@@ -1641,11 +1661,24 @@ window.calcolaSaldiGlobali = function() {
                 <div style="font-weight:bold; font-size:1.1em; color:#c62828;">${formatEuro(usc)}</div>
             </div>
             
-            <!-- RIGA 2: BILANCIO a tutta larghezza (grid-column: span 2) -->
-            <div class="stat-box" style="grid-column: span 2; background:#e1f5fe; border:1px solid #b3e5fc; padding:10px; border-radius:6px;">
-                <div style="font-size:0.75em; color:#0277bd; text-transform:uppercase;">Bilancio (Entrate - Uscite)</div>
-                <div style="font-weight:bold; font-size:1.2em; color:#0277bd;">${formatEuro(bilancio)}</div>
-            </div>
+			<div class="stat-box" style="grid-column: span 2; background:#e1f5fe; border:1px solid #b3e5fc; padding:10px 15px; border-radius:6px; display:flex; align-items:center; justify-content:space-between;">
+				
+				<!-- COLONNA SINISTRA: TITOLO + NOTA -->
+				<div style="text-align:left;">
+					<div style="font-size:0.75em; color:#0277bd; text-transform:uppercase; font-weight:bold;">
+						Bilancio
+					</div>
+					<div style="font-size:0.65em; color:#01579b; font-style:italic; margin-top:2px;">
+						(Esclusa Ricarica CC)
+					</div>
+				</div>
+
+				<!-- COLONNA DESTRA: IMPORTO -->
+				<div style="font-weight:bold; font-size:1.3em; color:#0277bd;">
+					${formatEuro(bilancio)}
+				</div>
+
+			</div>
 
         </div>
         
@@ -1658,15 +1691,9 @@ window.calcolaSaldiGlobali = function() {
                 ${righe}
             </table>
         </div>`;
-
     
     setTimeout(() => div.scrollIntoView({behavior: "smooth"}), 100);
 };
-
-
-
-
-
 
 
         window.resetStatistiche = function() {
