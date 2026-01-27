@@ -22,7 +22,6 @@ body {
     overflow-y: auto; /* Permette lo scroll normale */
 }
 
-
 /* ============================================
    STILI BASE DESKTOP
    ============================================ */
@@ -933,12 +932,13 @@ tfoot td { border-top: 2px solid #333; font-weight: bold; padding-top: 15px; fon
 		<!-- LISTA MOVIMENTI -->
 		<div class="card">
 	<!-- RICERCA GLOBALE COMPATTA -->
-<div style="position:relative; width:100%; display:flex; align-items:center; box-sizing:border-box;">
+<!-- AGGIUNTO margin-bottom: 20px QUI SOTTO -->
+<div style="position:relative; width:100%; display:flex; align-items:center; box-sizing:border-box; margin-bottom: 20px;">
     
-    <!-- Lente (ridimensionata e riposizionata) -->
+    <!-- Lente -->
     <span style="position:absolute; left:10px; font-size:14px; pointer-events:none; z-index:10;">🔍</span>
     
-    <!-- Input (Altezza ridotta a 36px) -->
+    <!-- Input -->
     <input type="text" id="globalSearch" 
            onkeyup="window.handleSearchInput()" 
            placeholder="Cerca ovunque..." autocomplete="off"
@@ -947,7 +947,7 @@ tfoot td { border-top: 2px solid #333; font-weight: bold; padding-top: 15px; fon
                   font-size:14px !important; line-height:normal !important; box-sizing:border-box !important;
                   background:#fff !important; -webkit-appearance:none !important;">
     
-    <!-- Bottone X (Ridimensionato a 26px per stare nel nuovo spazio) -->
+    <!-- Bottone X -->
     <button id="btnEsceRicerca" onclick="pulisciRicerca()" type="button"
             style="display:none; position:absolute !important; right:5px !important; top:50% !important; 
                    transform:translateY(-50%) !important; margin:0 !important; padding:0 !important;
@@ -960,6 +960,7 @@ tfoot td { border-top: 2px solid #333; font-weight: bold; padding-top: 15px; fon
     </button>
 
 </div>
+
 
 
 
@@ -1426,6 +1427,7 @@ window.formatEuro = function(numero) {
             }
             
 
+                        // Logica Disegno Riga
             const tr=document.createElement('tr'); 
             if(window.idInModifica===x.id) tr.className='editing-row'; 
             else if(x.rawCat==='Bolletta') tr.className='bolletta-row'; 
@@ -1442,36 +1444,35 @@ window.formatEuro = function(numero) {
             let b='badge-cc'; 
             if(l==='Ste')b='badge-ste'; if(l==='Vale')b='badge-vale'; if(l==='Altro')b='badge-altro';
             
-            // Costruzione Descrizione
+            // Costruzione Descrizione con Icona Pompa (se presente)
             let dh=x.descrizione==="Nessuna descrizione"?`<span style="color:#aaa;font-style:italic;">${x.descrizione}</span>`:`<span style="font-weight:500;">${x.descrizione}</span>`; 
-            
-            // 1. Aggiunta Link PDF (se c'è)
             if(x.linkPdf) dh+=`<a href="${x.linkPdf}" target="_blank" class="link-pdf" style="margin-left:5px;">🔗</a>`;
-
-            // 2. NUOVA POSIZIONE POMPA BENZINA (Accanto alla descrizione)
             if(x.rawCat==='Benzina' && x.datiBenzina) {
-                // Aggiungiamo l'icona cliccabile direttamente qui
-                dh+=` <span onclick="mostraDettagliBenzina(${x.id})" style="cursor:pointer; font-size:1.1em; margin-left:5px; title='Vedi dettagli rifornimento'">⛽</span>`;
+                dh+=` <span onclick="mostraDettagliBenzina(${x.id})" style="cursor:pointer; font-size:1.1em; margin-left:5px;">⛽</span>`;
             }
             
             tr.innerHTML = `
-                <td>
+                <!-- CELLA 1: DESCRIZIONE (Allineata al centro verticalmente) -->
+                <td style="vertical-align: middle;">
                     <span class="data-small">${d}/${mm}/${y}</span>
                     <div style="margin-bottom:4px; word-break:break-word;">${dh}</div>
                     <div><span class="badge ${b}">${l}</span> <span style="font-size:0.85em;color:#666;">• ${x.categoria}</span></div>
                 </td>
-                <td class="importo-col ${cl}">
+                
+                <!-- CELLA 2: IMPORTO (Allineato al centro verticalmente) -->
+                <td class="importo-col ${cl}" style="vertical-align: middle; white-space:nowrap;">
                     ${x.rawCat==='Ricarica CC'?'➡':sg} ${formatEuro(x.importo)}
                 </td>
                 
-                <!-- CELLA AZIONI STANDARD (Solo Modifica ed Elimina) -->
-                <td class="action-cell" style="white-space:nowrap; width:1%; text-align:right;">
+                <!-- CELLA 3: AZIONI (Allineate al centro verticalmente) -->
+                <td class="action-cell" style="vertical-align: middle; white-space:nowrap; width:1%; text-align:right;">
                     <button class="action-btn btn-edit" onclick="preparaModifica(${x.id})">✏️</button>
                     <button class="action-btn btn-del" onclick="elimina(${x.id})">🗑️</button>
                 </td>`;
             
             t.appendChild(tr);
         });
+
         
         // 4. Aggiorna Totali Footer (Tabella)
         const f=document.getElementById('totaleFooter'); if(f) { f.textContent=formatEuro(totSaldo); f.className='importo-col '+(totSaldo>=0?'positivo':'negativo'); }
