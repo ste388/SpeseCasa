@@ -14,12 +14,12 @@
     <title>Bilancio Casa (Ste & Vale)</title>
 <style>
 
-/* BLOCCO TOTALE AGGIORNAMENTO TRASCINANDO */
-html, body {
-    overscroll-behavior-y: none; /* Usa 'none': è più potente di 'contain' */
-    height: 100%;                /* Fondamentale per definire l'area di scroll */
-    margin: 0;
-    padding: 0;
+html {
+    overscroll-behavior-y: none; /* Blocca rimbalzo su HTML */
+}
+body {
+    overscroll-behavior-y: none; /* Blocca rimbalzo su BODY */
+    overflow-y: auto; /* Permette lo scroll normale */
 }
 
 
@@ -2369,6 +2369,30 @@ window.aggiornaBoxTotaliDashboard = function(entrate, uscite) {
     }
 }
 
+// BLOCCA PULL-TO-REFRESH VIA JAVASCRIPT
+document.addEventListener('DOMContentLoaded', () => {
+    let touchStartY = 0;
+
+    // Quando tocchi lo schermo, memorizza dove hai messo il dito
+    document.addEventListener('touchstart', (e) => {
+        touchStartY = e.touches[0].clientY;
+    }, { passive: false });
+
+    // Mentre muovi il dito...
+    document.addEventListener('touchmove', (e) => {
+        const touchY = e.touches[0].clientY;
+        const touchDiff = touchY - touchStartY;
+
+        // Se sei in CIMA alla pagina (scrollTop === 0) 
+        // E stai tirando verso il BASSO (touchDiff > 0)
+        if (window.scrollY === 0 && touchDiff > 0) {
+            // Blocca l'azione predefinita del browser (il refresh)
+            e.preventDefault(); 
+        }
+    }, { passive: false }); // 'passive: false' è FONDAMENTALE per far funzionare preventDefault
+});
+
+
 </script>
 
 <script>
@@ -2407,7 +2431,6 @@ window.aggiornaBoxTotaliDashboard = function(entrate, uscite) {
         </div>
     </div>
 </div>
-
 
 
 </body>
