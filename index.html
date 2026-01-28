@@ -549,6 +549,34 @@ tfoot td { border-top: 2px solid #333; font-weight: bold; padding-top: 15px; fon
     }
 }
 
+
+    /* Contenitore della riga (o della parte superiore Descrizione - Importo) */
+    .riga-spesa-mobile { 
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 10px; /* Spazio minimo tra descrizione e prezzo */
+    }
+
+    /* 1. La Descrizione si accorcia con i puntini (...) */
+    .descrizione-mobile {
+        flex: 1;                /* Prende tutto lo spazio disponibile */
+        white-space: nowrap;    /* Niente a capo */
+        overflow: hidden;       /* Nascondi l'eccesso */
+        text-overflow: ellipsis;/* Metti i tre puntini ... */
+        min-width: 0;           /* Trucco fondamentale per far funzionare ellipsis nei flex */
+    }
+
+    /* 2. L'Importo NON si tocca */
+    .importo-mobile {
+        flex-shrink: 0;         /* VIETATO restringere questo elemento */
+        white-space: nowrap;    /* Mai andare a capo */
+        font-weight: bold;      /* Opzionale: per renderlo leggibile */
+        text-align: right;
+    }
+
+
+
 /* =========================================
    FIX MOBILE SALDI (Uno sotto l'altro)
    ========================================= */
@@ -568,6 +596,37 @@ tfoot td { border-top: 2px solid #333; font-weight: bold; padding-top: 15px; fon
     display: block;         /* Va a capo forzatamente */
     margin-top: 5px;
 }
+
+@media screen and (max-width: 600px) {
+
+    /* 1. L'IMPORTO: BLINDATO */
+    tr td:nth-last-child(2), 
+    .importo-col {
+        /* Non crescere (0), NON RESTRINGERTI (0), larghezza automatica (auto) */
+        flex: 0 0 auto !important; 
+        
+        white-space: nowrap !important;
+        text-align: right !important;
+        margin-left: 10px !important; /* Stacca l'importo dalla descrizione */
+        min-width: 85px !important;   /* Larghezza minima di sicurezza per cifre tipo 1.000,00 */
+    }
+
+    /* 2. LA DESCRIZIONE: SI ADATTA */
+    tr td:nth-child(2),
+    .descrizione-col {
+        flex: 1 1 auto !important;    /* Cresci (1), restringiti (1), auto */
+        
+        white-space: nowrap !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+        
+        /* Questo è il segreto: senza min-width:0 il flex item non scende mai 
+           sotto la larghezza del suo contenuto, quindi non "taglia" mai. */
+        min-width: 0 !important;      
+        max-width: 100px;             /* Aiuta il browser a capire che DEVE tagliare */
+    }
+}
+
 
 
 </style>
