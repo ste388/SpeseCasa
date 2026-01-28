@@ -13,6 +13,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Bilancio Casa (Ste & Vale)</title>
 <style>
+
+/* BLOCCO TOTALE AGGIORNAMENTO TRASCINANDO */
+html, body {
+    overscroll-behavior-y: none; /* Usa 'none': è più potente di 'contain' */
+    height: 100%;                /* Fondamentale per definire l'area di scroll */
+    margin: 0;
+    padding: 0;
+}
+
+
 /* ============================================
    STILI BASE DESKTOP
    ============================================ */
@@ -923,13 +933,35 @@ tfoot td { border-top: 2px solid #333; font-weight: bold; padding-top: 15px; fon
 		<!-- LISTA MOVIMENTI -->
 		<div class="card">
 	<!-- RICERCA GLOBALE COMPATTA -->
-	<div class="search-wrapper">
-		<span class="search-icon-left">🔍</span>
-		<input type="text" id="globalSearch" class="search-input-pro" 
-			   onkeyup="window.handleSearchInput()" 
-			   placeholder="Cerca ovunque..." autocomplete="off">
-		<button id="btnEsceRicerca" class="search-clear-btn" onclick="pulisciRicerca()" title="Pulisci">✕</button>
-	</div>
+<div style="position:relative; width:100%; display:flex; align-items:center; box-sizing:border-box;">
+    
+    <!-- Lente (ridimensionata e riposizionata) -->
+    <span style="position:absolute; left:10px; font-size:14px; pointer-events:none; z-index:10;">🔍</span>
+    
+    <!-- Input (Altezza ridotta a 36px) -->
+    <input type="text" id="globalSearch" 
+           onkeyup="window.handleSearchInput()" 
+           placeholder="Cerca ovunque..." autocomplete="off"
+           style="width:100% !important; height:36px !important; padding:0 35px 0 32px !important; 
+                  margin:0 !important; border:1px solid #ccc !important; border-radius:18px !important; 
+                  font-size:14px !important; line-height:normal !important; box-sizing:border-box !important;
+                  background:#fff !important; -webkit-appearance:none !important;">
+    
+    <!-- Bottone X (Ridimensionato a 26px per stare nel nuovo spazio) -->
+    <button id="btnEsceRicerca" onclick="pulisciRicerca()" type="button"
+            style="display:none; position:absolute !important; right:5px !important; top:50% !important; 
+                   transform:translateY(-50%) !important; margin:0 !important; padding:0 !important;
+                   width:26px !important; height:26px !important; min-width:26px !important; min-height:26px !important;
+                   border:none !important; background:#f0f0f0 !important; color:#555 !important; 
+                   border-radius:50% !important; font-size:12px !important; line-height:26px !important; 
+                   text-align:center !important; cursor:pointer !important; z-index:20 !important;
+                   box-shadow:none !important;">
+        ✕
+    </button>
+
+</div>
+
+
 
 	<!-- FILTER BAR (Solo Date e Bottoni) -->
 	<div class="filter-bar">
@@ -1393,17 +1425,51 @@ window.formatEuro = function(numero) {
                 }
             }
             
-            // Logica Disegno Riga (uguale a prima)
+
             const tr=document.createElement('tr'); 
-            if(window.idInModifica===x.id) tr.className='editing-row'; else if(x.rawCat==='Bolletta') tr.className='bolletta-row'; else if(x.rawCat==='Ricarica CC') tr.className='ricarica-row'; else if(x.rawCat==='Benzina') tr.className='benzina-row';
-            const sg=x.tipo==='entrata'?'+':'-'; const cl=x.tipo==='entrata'?'positivo':(x.rawCat==='Ricarica CC'?'neutro':'negativo');
+            if(window.idInModifica===x.id) tr.className='editing-row'; 
+            else if(x.rawCat==='Bolletta') tr.className='bolletta-row'; 
+            else if(x.rawCat==='Ricarica CC') tr.className='ricarica-row'; 
+            else if(x.rawCat==='Benzina') tr.className='benzina-row';
+
+            const sg=x.tipo==='entrata'?'+':'-'; 
+            const cl=x.tipo==='entrata'?'positivo':(x.rawCat==='Ricarica CC'?'neutro':'negativo');
             const [y,mm,d]=x.data.split('-');
-            let l=x.conto; if(l==='CC Comune')l='CC';if(l==='Conto Ste')l='Ste';if(l==='Conto Vale')l='Vale';
-            let b='badge-cc';if(l==='Ste')b='badge-ste';if(l==='Vale')b='badge-vale';if(l==='Altro')b='badge-altro';
+            
+            let l=x.conto; 
+            if(l==='CC Comune')l='CC'; if(l==='Conto Ste')l='Ste'; if(l==='Conto Vale')l='Vale';
+            
+            let b='badge-cc'; 
+            if(l==='Ste')b='badge-ste'; if(l==='Vale')b='badge-vale'; if(l==='Altro')b='badge-altro';
+            
+            // Costruzione Descrizione
             let dh=x.descrizione==="Nessuna descrizione"?`<span style="color:#aaa;font-style:italic;">${x.descrizione}</span>`:`<span style="font-weight:500;">${x.descrizione}</span>`; 
-            if(x.linkPdf) dh+=`<a href="${x.linkPdf}" target="_blank" class="link-pdf">🔗</a>`;
-            let bn=''; if(x.rawCat==='Benzina' && x.datiBenzina) bn=`<button class="action-btn btn-fuel" onclick="mostraDettagliBenzina(${x.id})">⛽</button>`;
-            tr.innerHTML=`<td><span class="data-small">${d}/${mm}/${y}</span><div style="margin-bottom:4px;">${dh}</div><div><span class="badge ${b}">${l}</span> <span style="font-size:0.85em;color:#666;">• ${x.categoria}</span></div></td><td class="importo-col ${cl}">${x.rawCat==='Ricarica CC'?'➡':sg} ${formatEuro(x.importo)}</td><td class="action-cell">${bn}<button class="action-btn btn-edit" onclick="preparaModifica(${x.id})">✏️</button><button class="action-btn btn-del" onclick="elimina(${x.id})">🗑️</button></td>`;
+            
+            // 1. Aggiunta Link PDF (se c'è)
+            if(x.linkPdf) dh+=`<a href="${x.linkPdf}" target="_blank" class="link-pdf" style="margin-left:5px;">🔗</a>`;
+
+            // 2. NUOVA POSIZIONE POMPA BENZINA (Accanto alla descrizione)
+            if(x.rawCat==='Benzina' && x.datiBenzina) {
+                // Aggiungiamo l'icona cliccabile direttamente qui
+                dh+=` <span onclick="mostraDettagliBenzina(${x.id})" style="cursor:pointer; font-size:1.1em; margin-left:5px; title='Vedi dettagli rifornimento'">⛽</span>`;
+            }
+            
+            tr.innerHTML = `
+                <td>
+                    <span class="data-small">${d}/${mm}/${y}</span>
+                    <div style="margin-bottom:4px; word-break:break-word;">${dh}</div>
+                    <div><span class="badge ${b}">${l}</span> <span style="font-size:0.85em;color:#666;">• ${x.categoria}</span></div>
+                </td>
+                <td class="importo-col ${cl}">
+                    ${x.rawCat==='Ricarica CC'?'➡':sg} ${formatEuro(x.importo)}
+                </td>
+                
+                <!-- CELLA AZIONI STANDARD (Solo Modifica ed Elimina) -->
+                <td class="action-cell" style="white-space:nowrap; width:1%; text-align:right;">
+                    <button class="action-btn btn-edit" onclick="preparaModifica(${x.id})">✏️</button>
+                    <button class="action-btn btn-del" onclick="elimina(${x.id})">🗑️</button>
+                </td>`;
+            
             t.appendChild(tr);
         });
         
@@ -1542,6 +1608,7 @@ window.calcolaSaldiGlobali = function() {
     let m = window.movimenti.filter(x => {
         if (x.data < s || x.data > e) return false;
         
+        // Logica Filtro Conto
         if (filterConto !== "Tutti") {
             const normalizza = (str) => {
                 if(!str) return "";
@@ -1556,6 +1623,7 @@ window.calcolaSaldiGlobali = function() {
             if(utenteDb !== utenteFiltro) return false;
         }
         
+        // Logica Filtro Categoria
         if (filterCat !== "Tutte") {
             if (x.rawCat !== filterCat && !x.categoria.startsWith(filterCat)) return false;
             if (filterCat === 'Bolletta' && filterSub !== "Tutte") {
@@ -1565,8 +1633,25 @@ window.calcolaSaldiGlobali = function() {
         return true;
     });
 
-    m.sort((a,b) => new Date(b.data) - new Date(a.data));
-
+    // ---------------------------------------------------------
+    // PUNTO CRUCIALE: L'ORDINAMENTO VA MESSO QUI, FUORI DAGLI IF
+    // DEVE ESSERE ESEGUITO SEMPRE, INDIPENDENTEMENTE DAI FILTRI
+    // ---------------------------------------------------------
+    m.sort((a,b) => {
+        // Funzione per pulire e convertire la data in numero YYYYMMDD
+        const getVal = (item) => {
+            if (!item || !item.data) return 0;
+            // Rimuove eventuali trattini o slash
+            let s = item.data.replace(/-/g, '').replace(/\//g, '');
+            // Se è YYYYMMDD (es: 20260127) va bene così
+            // Se fosse DDMMYYYY (27012026) l'ordine alfabetico fallirebbe, ma tu usi YYYY-MM-DD
+            return parseInt(s) || 0;
+        };
+        
+        return getVal(b) - getVal(a); // Decrescente
+    });
+	
+	
     // 2. CALCOLA I TOTALI
     let entr = 0, usc = 0; 
     m.forEach(x => { 
@@ -1585,7 +1670,6 @@ window.calcolaSaldiGlobali = function() {
         }
     });
 
-    // NOVITÀ: Calcolo il Bilancio
     let bilancio = entr - usc;
 
     // 3. GENERA HTML
@@ -1626,11 +1710,10 @@ window.calcolaSaldiGlobali = function() {
         });
     }
 
-    // NOVITÀ: Ho aggiunto grid-template-columns: 1fr 1fr 1fr (3 colonne) 
-    // e il terzo box azzurro per il bilancio
+    // 4. LAYOUT RISULTATI
     div.innerHTML = `
         <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:8px; text-align:center;">
-            <!-- RIGA 1: ENTRATE e USCITE affiancate -->
+            
             <div class="stat-box" style="background:#e8f5e9; border:1px solid #c8e6c9; padding:10px; border-radius:6px;">
                 <div style="font-size:0.75em; color:#2e7d32; text-transform:uppercase;">Entrate</div>
                 <div style="font-weight:bold; font-size:1.1em; color:#2e7d32;">${formatEuro(entr)}</div>
@@ -1641,10 +1724,18 @@ window.calcolaSaldiGlobali = function() {
                 <div style="font-weight:bold; font-size:1.1em; color:#c62828;">${formatEuro(usc)}</div>
             </div>
             
-            <!-- RIGA 2: BILANCIO a tutta larghezza (grid-column: span 2) -->
-            <div class="stat-box" style="grid-column: span 2; background:#e1f5fe; border:1px solid #b3e5fc; padding:10px; border-radius:6px;">
-                <div style="font-size:0.75em; color:#0277bd; text-transform:uppercase;">Bilancio (Entrate - Uscite)</div>
-                <div style="font-weight:bold; font-size:1.2em; color:#0277bd;">${formatEuro(bilancio)}</div>
+            <div class="stat-box" style="grid-column: span 2; background:#e1f5fe; border:1px solid #b3e5fc; padding:10px 15px; border-radius:6px; display:flex; align-items:center; justify-content:space-between;">
+                <div style="text-align:left;">
+                    <div style="font-size:0.75em; color:#0277bd; text-transform:uppercase; font-weight:bold;">
+                        Bilancio
+                    </div>
+                    <div style="font-size:0.65em; color:#01579b; font-style:italic; margin-top:2px;">
+                        (Esclusa Ricarica CC)
+                    </div>
+                </div>
+                <div style="font-weight:bold; font-size:1.3em; color:#0277bd;">
+                    ${formatEuro(bilancio)}
+                </div>
             </div>
 
         </div>
@@ -1658,14 +1749,9 @@ window.calcolaSaldiGlobali = function() {
                 ${righe}
             </table>
         </div>`;
-
     
     setTimeout(() => div.scrollIntoView({behavior: "smooth"}), 100);
 };
-
-
-
-
 
 
 
