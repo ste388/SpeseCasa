@@ -597,35 +597,6 @@ tfoot td { border-top: 2px solid #333; font-weight: bold; padding-top: 15px; fon
     margin-top: 5px;
 }
 
-@media screen and (max-width: 600px) {
-
-    /* 1. L'IMPORTO: BLINDATO */
-    tr td:nth-last-child(2), 
-    .importo-col {
-        /* Non crescere (0), NON RESTRINGERTI (0), larghezza automatica (auto) */
-        flex: 0 0 auto !important; 
-        
-        white-space: nowrap !important;
-        text-align: right !important;
-        margin-left: 10px !important; /* Stacca l'importo dalla descrizione */
-        min-width: 85px !important;   /* Larghezza minima di sicurezza per cifre tipo 1.000,00 */
-    }
-
-    /* 2. LA DESCRIZIONE: SI ADATTA */
-    tr td:nth-child(2),
-    .descrizione-col {
-        flex: 1 1 auto !important;    /* Cresci (1), restringiti (1), auto */
-        
-        white-space: nowrap !important;
-        overflow: hidden !important;
-        text-overflow: ellipsis !important;
-        
-        /* Questo è il segreto: senza min-width:0 il flex item non scende mai 
-           sotto la larghezza del suo contenuto, quindi non "taglia" mai. */
-        min-width: 0 !important;      
-        max-width: 100px;             /* Aiuta il browser a capire che DEVE tagliare */
-    }
-}
 
 
 
@@ -1034,7 +1005,7 @@ tfoot td { border-top: 2px solid #333; font-weight: bold; padding-top: 15px; fon
 
 
         <table>
-            <thead><tr><th style="width:60%">Dettagli</th><th class="importo-col">Importo <br><span id="totaleHeader" style="font-size:0.9em; font-weight:normal;">€ 0.00</span></th><th style="width:50px;"></th></tr></thead>
+            <thead><tr><th style="width:48%">Dettagli</th><th class="importo-col">Importo <br><span id="totaleHeader" style="font-size:0.9em; font-weight:normal;">€ 0.00</span></th><th style="width:50px;"></th></tr></thead>
             <tbody id="listaDati"></tbody>
             <tfoot><tr><td>Totale (periodo)</td><td id="totaleFooter" class="importo-col">€ 0.00</td><td></td></tr></tfoot>
         </table>
