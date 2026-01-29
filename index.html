@@ -1106,9 +1106,14 @@ tfoot td { border-top: 2px solid #333; font-weight: bold; padding-top: 15px; fon
                         <button class="btn-offset" onclick="salvaRilevazionePatrimonio()" style="width:100%; margin-top:10px; background:#33691e;">💾 Salva Rilevazione</button>
                     </div>
                 </details>
-                <div style="width:100%; overflow-x:auto;">
-                    <table style="font-size:0.85em; white-space:nowrap; width:100%;"><thead id="patrimonioThead"></thead><tbody id="patrimonioTbody"></tbody></table>
-                </div>
+<!-- MODIFICA QUI: Aggiunto max-height e sticky header -->
+<div style="width:100%; overflow:auto; max-height:calc(100vh - 250px); border:1px solid #eee;">
+    <table style="font-size:0.85em; white-space:nowrap; width:100%; border-collapse:collapse;">
+        <thead id="patrimonioThead" style="position:sticky; top:0; background:#f1f1f1; z-index:5; box-shadow:0 1px 2px rgba(0,0,0,0.1);"></thead>
+        <tbody id="patrimonioTbody"></tbody>
+    </table>
+</div>
+
             </div>
         </div>
     </div>
