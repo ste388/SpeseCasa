@@ -598,6 +598,70 @@ tfoot td { border-top: 2px solid #333; font-weight: bold; padding-top: 15px; fon
 }
 
 
+/* ============================================================
+   FIX DEFINITIVO "NOTE & ACQUISTI" MOBILE
+   Struttura a 3 piani: Descrizione -> Importo -> Bottoni
+   ============================================================ */
+@media screen and (max-width: 600px) {
+
+    /* 1. La Riga diventa una Colonna Verticale (Elementi uno sotto l'altro) */
+    #listNote table tbody tr,
+    #listNote tr {
+        display: flex !important;
+        flex-direction: column !important; 
+        padding: 12px 5px !important;
+        border-bottom: 2px solid #e0e0e0 !important; 
+        background-color: #fff !important;
+    }
+
+    /* 2. Tutte le celle diventano larghe 100% e blocchi separati */
+    #listNote table tbody tr td,
+    #listNote td {
+        display: block !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
+        padding: 2px 0 !important;
+        border: none !important; 
+    }
+
+    /* 3. DESCRIZIONE (e Data): Allineate a Sinistra */
+    #listNote td:nth-child(2), 
+    #listNote td:nth-child(1) {
+        text-align: left !important;
+        white-space: normal !important; /* Testo va a capo se lungo */
+        font-size: 14px !important;
+    }
+
+    /* 4. IMPORTO: A Destra, Grassetto, Grande, A CAPO SOTTO LA DESCRIZIONE */
+    #listNote td:nth-last-child(2) {
+        text-align: right !important;
+        font-size: 18px !important; 
+        font-weight: bold !important;
+        color: #333 !important;
+        margin-top: 5px !important;
+    }
+
+    /* 5. BOTTONI: In fondo, A Destra, Affiancati */
+    #listNote td:last-child {
+        display: flex !important;
+        flex-direction: row !important; /* Affiancati orizzontalmente */
+        justify-content: flex-end !important; /* Spinti a destra */
+        gap: 20px !important; 
+        
+        border-top: 1px dashed #ccc !important; 
+        padding-top: 10px !important;
+        margin-top: 5px !important;
+    }
+
+    /* Stile Bottoni */
+    #listNote .action-btn, 
+    #listNote button {
+        font-size: 18px !important; 
+        padding: 5px 10px !important;
+        width: auto !important; /* Importante: non 100% */
+    }
+}
+
 
 
 </style>
@@ -1742,7 +1806,11 @@ window.calcolaSaldiGlobali = function() {
         });
     }
 
-    // 4. LAYOUT RISULTATI
+
+    // [MODIFICA 1] Salva i dati filtrati in una variabile globale temporanea
+    window.datiFiltratiTemp = m; 
+
+    // 4. LAYOUT RISULTATI CON TASTO EXCEL
     div.innerHTML = `
         <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:8px; text-align:center;">
             
@@ -1770,6 +1838,12 @@ window.calcolaSaldiGlobali = function() {
                 </div>
             </div>
 
+            <!-- [MODIFICA 2] Bottone Export Excel -->
+            <button onclick="exportToExcel(window.datiFiltratiTemp, 'Statistiche_Filtrate.csv')" 
+                    style="grid-column: span 2; background:#217346; color:white; border:none; padding:10px; border-radius:6px; cursor:pointer; font-weight:bold; display:flex; align-items:center; justify-content:center; gap:10px;">
+                <span>📊 Scarica in Excel</span>
+            </button>
+
         </div>
         
         <div style="font-size:0.85em; color:#666; margin-bottom:5px; border-bottom:1px solid #eee;">
@@ -1785,6 +1859,47 @@ window.calcolaSaldiGlobali = function() {
     setTimeout(() => div.scrollIntoView({behavior: "smooth"}), 100);
 };
 
+
+		window.exportToExcel = function(dataArray, filename = 'statistiche.csv') {
+			if (!dataArray || dataArray.length === 0) {
+				alert("Nessun dato da esportare.");
+				return;
+			}
+
+			// 1. Intestazione CSV (Separatrice ; per Excel italiano)
+			let csvContent = "Data;Utente;Categoria;Sottocateg.;Descrizione;Tipo;Importo\n";
+
+			// 2. Righe Dati
+			dataArray.forEach(row => {
+				// Formatta la data (da YYYY-MM-DD a DD/MM/YYYY)
+				let dataIt = row.data; 
+				try {
+					const [y, m, d] = row.data.split('-');
+					dataIt = `${d}/${m}/${y}`;
+				} catch(e) {}
+
+				// Gestisci i campi di testo per evitare problemi col punto e virgola
+				const clean = (text) => (text || "").replace(/;/g, " ").replace(/\n/g, " ");
+				
+				// Formatta importo (virgola per i decimali)
+				const importoIt = parseFloat(row.importo).toFixed(2).replace('.', ',');
+
+				csvContent += `${dataIt};${clean(row.conto)};${clean(row.categoria)};${clean(row.sottocategoria)};${clean(row.descrizione)};${row.tipo};${importoIt}\n`;
+			});
+
+			// 3. Crea il file Blob e scarica
+			// Usiamo il BOM (\uFEFF) per dire a Excel che è UTF-8 (corregge caratteri strani)
+			const blob = new Blob(["\uFEFF" + csvContent], { type: 'text/csv;charset=utf-8;' });
+			const url = URL.createObjectURL(blob);
+			
+			const link = document.createElement("a");
+			link.setAttribute("href", url);
+			link.setAttribute("download", filename);
+			link.style.visibility = 'hidden';
+			document.body.appendChild(link);
+			link.click();
+			document.body.removeChild(link);
+		};
 
 
         window.resetStatistiche = function() {
