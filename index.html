@@ -731,6 +731,30 @@ tfoot td { border-top: 2px solid #333; font-weight: bold; padding-top: 15px; fon
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 10px;">
                 <h4 style="margin:0; color:#fd7e14;">Gestione Scadenze</h4>
                 <button onclick="document.getElementById('deadlinesPanel').style.display='none'" style="background:transparent; border:none; color:#999; font-size:1.5em; cursor:pointer;">&times;</button>
+				
+				<!-- Bottone Previsione (Solo Icona) -->
+<button onclick="apriProiezioneSpese()" 
+        title="Previsione"
+        style="
+            background: #673AB7; 
+            color: white; 
+            border: none; 
+            border-radius: 6px; 
+            
+            /* FORZA LARGHEZZA MINIMA */
+            width: auto !important; 
+            min-width: 0 !important;
+            flex: 0 0 auto !important; /* Impedisce di espandersi nei flex container */
+            
+            padding: 6px 12px; 
+            font-size: 1.2em; 
+            cursor: pointer; 
+            line-height: 1;
+        ">
+    🔮
+</button>
+
+
             </div>
             <div style="background:#fff3e0; padding:10px; border-radius:5px; border:1px solid #ffe0b2;">
                 <div class="form-grid">
@@ -2521,6 +2545,70 @@ window.aggiornaBoxTotaliDashboard = function(entrate, uscite) {
     }
 }
 
+window.apriProiezioneSpese = function() {
+    const oggi = new Date();
+    // Calcola il mese prossimo esatto (es. Oggi Gen 2026 -> Target: Feb 2026)
+    let targetDate = new Date(oggi.getFullYear(), oggi.getMonth() + 1, 1);
+    
+    const targetMese = targetDate.getMonth();      // 0-11 (es. 1 per Febbraio)
+    const targetAnno = targetDate.getFullYear();   // es. 2026
+    
+    const nomiMesi = ["Gennaio","Febbraio","Marzo","Aprile","Maggio","Giugno","Luglio","Agosto","Settembre","Ottobre","Novembre","Dicembre"];
+    document.getElementById('titoloProiezione').innerText = `Uscite Previste: ${nomiMesi[targetMese]} ${targetAnno}`;
+
+    let totale = 0;
+    let html = '<table style="width:100%; border-collapse:collapse;">';
+    
+    const lista = window.scadenze || []; 
+
+    if(lista.length === 0) {
+        html += '<tr><td colspan="2" style="text-align:center;">Nessuna scadenza.</td></tr>';
+    } else {
+        lista.forEach(s => {
+            // Se non c'è una data specifica, saltiamo (o gestiamo i mensili "senza data" se esistono?)
+            // Se le tue scadenze mensili hanno data fittizia (es. 2099), verranno escluse qui.
+            // Se invece vuoi includere i "Mensili" sempre, dimmelo.
+            // Qui assumo: SOLO DATA PURA.
+            
+            if (!s.data) return;
+
+            let d = new Date(s.data);
+            
+            // IL CUORE DELLA LOGICA:
+            // La data della scadenza deve avere STESSO MESE e STESSO ANNO del target.
+            if (d.getMonth() === targetMese && d.getFullYear() === targetAnno) {
+                
+                let importo = parseFloat(s.importo);
+                totale += importo;
+                
+                // Formatta data GG/MM
+                let giorno = d.getDate();
+                let mese = d.getMonth() + 1;
+                let dataFmt = (giorno<10?'0':'')+giorno + '/' + (mese<10?'0':'')+mese;
+
+                html += `
+                <tr style="border-bottom:1px solid #eee;">
+                    <td style="padding:8px 0;">
+                        <div style="font-weight:bold;">${s.titolo || s.descrizione}</div>
+                        <div style="font-size:0.8em; color:#666;">Scadenza: ${dataFmt}</div>
+                    </td>
+                    <td style="text-align:right; font-weight:bold; color:#d32f2f;">
+                        - ${formatEuro(importo)}
+                    </td>
+                </tr>`;
+            }
+        });
+    }
+    
+    // ... (chiusura tabella e aggiornamento HTML come prima)
+    html += '</table>';
+    document.getElementById('listaProiezione').innerHTML = html;
+    document.getElementById('totaleProiezione').innerText = formatEuro(totale);
+    document.getElementById('modalProiezione').style.display = 'flex';
+};
+
+
+
 </script>
 
 <script>
@@ -2557,6 +2645,34 @@ window.aggiornaBoxTotaliDashboard = function(entrate, uscite) {
             <button onclick="document.getElementById('modalBilancio').style.display='none'" 
                     style="background:#6c757d; color:white; padding:6px 15px; border:none; border-radius:4px; cursor:pointer;">Chiudi</button>
         </div>
+    </div>
+</div>
+
+<!-- MODALE PROIEZIONE SPESE -->
+<div id="modalProiezione" class="modal-overlay" style="display:none; align-items:center; justify-content:center; z-index:30000; background-color:rgba(0,0,0,0.5);">
+    <div class="modal-content" style="background:#fff; padding:20px; width:90%; max-width:400px; border-radius:12px; position:relative; box-shadow: 0 4px 15px rgba(0,0,0,0.2);">
+        
+        <!-- Intestazione con X di chiusura -->
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; border-bottom:1px solid #eee; padding-bottom:10px;">
+            <h4 id="titoloProiezione" style="margin:0; color:#673AB7; font-size:1.1em;">Spese Previste</h4>
+            <button onclick="document.getElementById('modalProiezione').style.display='none'" 
+                    style="background:transparent; border:none; font-size:1.8em; color:#999; cursor:pointer; padding:0 10px; line-height:1;">
+                &times;
+            </button>
+        </div>
+
+        <!-- Lista Scrollabile -->
+        <div id="listaProiezione" style="max-height:350px; overflow-y:auto; margin-bottom:20px; font-size:0.95em;">
+            <!-- Qui il JS inserirà le righe -->
+        </div>
+
+        <!-- Totale -->
+        <div style="background:#f3e5f5; padding:15px; border-radius:8px; text-align:center; border:1px solid #d1c4e9; margin-bottom:15px;">
+            <div style="font-size:0.8em; color:#673AB7; letter-spacing:1px; text-transform:uppercase;">Totale Stimato</div>
+            <div id="totaleProiezione" style="font-size:1.6em; font-weight:800; color:#4A148C; margin-top:5px;">€ 0,00</div>
+        </div>
+
+
     </div>
 </div>
 
