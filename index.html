@@ -1713,7 +1713,8 @@ window.calcolaSaldiGlobali = function() {
     }
 
     // STATISTICHE
-    window.calcolaStatistiche = function() {
+   window.calcolaStatistiche = function() {
+    // 1. RECUPERO INPUT
     const s = document.getElementById('statStart').value;
     const e = document.getElementById('statEnd').value;
     const filterConto = document.getElementById('statConto').value;
@@ -1724,16 +1725,25 @@ window.calcolaSaldiGlobali = function() {
     if(!div) return;
     div.innerHTML = '';
 
+    // Controllo Date
     if (!s || !e) { 
-        div.innerHTML='<p style="color:red; text-align:center;">Date mancanti</p>'; 
+        div.innerHTML='<p style="color:red; text-align:center;">Seleziona le date di inizio e fine.</p>'; 
         return; 
     }
 
-    // 1. FILTRA I DATI
+    // ---------------------------------------------------------
+    // 2. UNICO FILTRO CENTRALE (PULIZIA + RICERCA)
+    // ---------------------------------------------------------
     let m = window.movimenti.filter(x => {
+        // A) PULIZIA: Se il dato è corrotto, lo scartiamo subito.
+        // Se x è null, o non ha data, o la data è vuota, o l'importo non è valido -> VIA.
+        if (!x) return false; 
+        if (!x.data || x.data === "undefined" || x.data === "") return false;
+        
+        // B) FILTRO DATA
         if (x.data < s || x.data > e) return false;
         
-        // Logica Filtro Conto
+        // C) FILTRO CONTO
         if (filterConto !== "Tutti") {
             const normalizza = (str) => {
                 if(!str) return "";
@@ -1748,42 +1758,48 @@ window.calcolaSaldiGlobali = function() {
             if(utenteDb !== utenteFiltro) return false;
         }
         
-        // Logica Filtro Categoria
+        // D) FILTRO CATEGORIA
         if (filterCat !== "Tutte") {
-            if (x.rawCat !== filterCat && !x.categoria.startsWith(filterCat)) return false;
+            // Controllo robusto su rawCat e categoria (gestisce se sono undefined)
+            const cat = x.categoria || "";
+            const raw = x.rawCat || "";
+            
+            if (raw !== filterCat && !cat.startsWith(filterCat)) return false;
+            
             if (filterCat === 'Bolletta' && filterSub !== "Tutte") {
-                 if (x.rawSub !== filterSub && !x.categoria.includes(filterSub)) return false;
+                 const sub = x.rawSub || "";
+                 if (sub !== filterSub && !cat.includes(filterSub)) return false;
             }
         }
+
+        // Se arriva qui, il dato è VALIDO e RICHIESTO
         return true;
     });
 
     // ---------------------------------------------------------
-    // PUNTO CRUCIALE: L'ORDINAMENTO VA MESSO QUI, FUORI DAGLI IF
-    // DEVE ESSERE ESEGUITO SEMPRE, INDIPENDENTEMENTE DAI FILTRI
+    // 3. ORDINAMENTO (Per Data Decrescente)
     // ---------------------------------------------------------
     m.sort((a,b) => {
-        // Funzione per pulire e convertire la data in numero YYYYMMDD
-        const getVal = (item) => {
-            if (!item || !item.data) return 0;
-            // Rimuove eventuali trattini o slash
-            let s = item.data.replace(/-/g, '').replace(/\//g, '');
-            // Se è YYYYMMDD (es: 20260127) va bene così
-            // Se fosse DDMMYYYY (27012026) l'ordine alfabetico fallirebbe, ma tu usi YYYY-MM-DD
-            return parseInt(s) || 0;
-        };
-        
-        return getVal(b) - getVal(a); // Decrescente
+        // Siccome abbiamo già filtrato chi non ha data, andiamo sul sicuro
+        const dataA = a.data.replace(/-/g, '');
+        const dataB = b.data.replace(/-/g, '');
+        return (parseInt(dataB) || 0) - (parseInt(dataA) || 0);
     });
 	
-	
-    // 2. CALCOLA I TOTALI
+    // ---------------------------------------------------------
+    // 4. CALCOLO TOTALI
+    // ---------------------------------------------------------
     let entr = 0, usc = 0; 
+    
     m.forEach(x => { 
+        // Conversione sicura
         let imp = parseFloat(x.importo);
         if(isNaN(imp)) imp = 0;
 
-        const isRicarica = (x.rawCat === 'Ricarica CC' || x.categoria === 'Ricarica CC');
+        const cat = x.categoria || "";
+        const raw = x.rawCat || "";
+
+        const isRicarica = (raw === 'Ricarica CC' || cat === 'Ricarica CC');
         let includi = false;
         
         if (!isRicarica) includi = true;
@@ -1797,27 +1813,34 @@ window.calcolaSaldiGlobali = function() {
 
     let bilancio = entr - usc;
 
-    // 3. GENERA HTML
+    // ---------------------------------------------------------
+    // 5. GENERA HTML
+    // ---------------------------------------------------------
     let righe = '';
+    
     if(m.length === 0) {
-        righe = '<tr><td colspan="3" style="text-align:center; padding:10px;">Nessun dato.</td></tr>';
+        righe = '<tr><td colspan="3" style="text-align:center; padding:10px;">Nessun risultato trovato.</td></tr>';
     } else {
         m.forEach(x => {
-            if(!x.data) return;
+            // Qui non servono più controlli if(!x.data), li ha fatti il filtro sopra!
             const parti = x.data.split('-');
             const d = parti[2];
             const mm = parti[1];
             
-            let cl = x.tipo==='entrata'?'positivo':'negativo';
+            let cl = x.tipo==='entrata' ? 'positivo' : 'negativo';
             let importoStyle = "";
             
-            if(x.rawCat === 'Ricarica CC' || x.categoria === 'Ricarica CC') {
+            const cat = x.categoria || "";
+            const raw = x.rawCat || "";
+            
+            if(raw === 'Ricarica CC' || cat === 'Ricarica CC') {
                 importoStyle = "color:#0099ff; font-weight:bold;"; 
                 cl = ""; 
             }
 
             let colorStyle = "color:#666;"; 
-            const cLower = x.conto.toLowerCase();
+            const cLower = (x.conto || "").toLowerCase();
+            
             if(cLower.includes("ste")) colorStyle = "color:#1565C0; font-weight:bold;"; 
             else if(cLower.includes("vale")) colorStyle = "color:#AD1457; font-weight:bold;"; 
             else if(cLower.includes("cc") || cLower.includes("comune")) colorStyle = "color:#2E7D32; font-weight:bold;"; 
@@ -1825,9 +1848,9 @@ window.calcolaSaldiGlobali = function() {
             righe += '<tr style="border-bottom:1px solid #eee;">';
             righe += '<td style="padding:6px; color:#666;">' + d + '/' + mm + '</td>';
             righe += '<td style="padding:6px;">';
-            righe += '<div style="font-weight:bold;">' + x.descrizione + '</div>';
+            righe += '<div style="font-weight:bold;">' + (x.descrizione || "---") + '</div>';
             righe += '<div style="font-size:0.8em; color:#666;">';
-            righe += '<span style="' + colorStyle + '">' + x.conto + '</span> • ' + x.categoria;
+            righe += '<span style="' + colorStyle + '">' + (x.conto || "N.D.") + '</span> • ' + cat;
             righe += '</div>';
             righe += '</td>';
             righe += '<td style="padding:6px; text-align:right; ' + importoStyle + '" class="' + cl + '">' + formatEuro(x.importo) + '</td>';
@@ -1835,11 +1858,12 @@ window.calcolaSaldiGlobali = function() {
         });
     }
 
-
-    // [MODIFICA 1] Salva i dati filtrati in una variabile globale temporanea
+    // Salva per Export Excel
     window.datiFiltratiTemp = m; 
 
-    // 4. LAYOUT RISULTATI CON TASTO EXCEL
+    // ---------------------------------------------------------
+    // 6. LAYOUT FINALE
+    // ---------------------------------------------------------
     div.innerHTML = `
         <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:8px; text-align:center;">
             
@@ -1867,7 +1891,6 @@ window.calcolaSaldiGlobali = function() {
                 </div>
             </div>
 
-            <!-- [MODIFICA 2] Bottone Export Excel -->
             <button onclick="exportToExcel(window.datiFiltratiTemp, 'Statistiche_Filtrate.csv')" 
                     style="grid-column: span 2; background:#217346; color:white; border:none; padding:10px; border-radius:6px; cursor:pointer; font-weight:bold; display:flex; align-items:center; justify-content:center; gap:10px;">
                 <span>📊 Scarica in Excel</span>
@@ -1884,43 +1907,52 @@ window.calcolaSaldiGlobali = function() {
                 ${righe}
             </table>
         </div>`;
-    
-    setTimeout(() => div.scrollIntoView({behavior: "smooth"}), 100);
+
 };
 
 
-		window.exportToExcel = function(dataArray, filename = 'statistiche.csv') {
+
+				window.exportToExcel = function(dataArray, filename = 'statistiche.csv') {
 			if (!dataArray || dataArray.length === 0) {
 				alert("Nessun dato da esportare.");
 				return;
 			}
 
-			// 1. Intestazione CSV (Separatrice ; per Excel italiano)
+			// 1. Intestazione CSV
 			let csvContent = "Data;Utente;Categoria;Sottocateg.;Descrizione;Tipo;Importo\n";
 
 			// 2. Righe Dati
 			dataArray.forEach(row => {
+				
+				// --- CONTROLLO INTEGRITÀ ---
+				// Se manca la data o l'importo è NaN (Not a Number), SALTA la riga.
+				if (!row.data || row.data === "undefined" || isNaN(parseFloat(row.importo))) {
+					return; // Salta questa riga sporca
+				}
+				// ---------------------------
+
 				// Formatta la data (da YYYY-MM-DD a DD/MM/YYYY)
 				let dataIt = row.data; 
 				try {
 					const [y, m, d] = row.data.split('-');
-					dataIt = `${d}/${m}/${y}`;
+					if (d && m && y) { // Controllo extra
+						dataIt = `${d}/${m}/${y}`;
+					}
 				} catch(e) {}
 
-				// Gestisci i campi di testo per evitare problemi col punto e virgola
-				const clean = (text) => (text || "").replace(/;/g, " ").replace(/\n/g, " ");
+				const clean = (text) => (text || "").toString().replace(/;/g, " ").replace(/\n/g, " ").trim();
 				
-				// Formatta importo (virgola per i decimali)
-				const importoIt = parseFloat(row.importo).toFixed(2).replace('.', ',');
+				// Formatta importo
+				const importoNum = parseFloat(row.importo);
+				const importoIt = importoNum.toFixed(2).replace('.', ',');
 
-				csvContent += `${dataIt};${clean(row.conto)};${clean(row.categoria)};${clean(row.sottocategoria)};${clean(row.descrizione)};${row.tipo};${importoIt}\n`;
+				// Scriviamo la riga solo se ha senso
+				csvContent += `${dataIt};${clean(row.conto)};${clean(row.categoria)};${clean(row.sottocategoria)};${clean(row.descrizione)};${clean(row.tipo)};${importoIt}\n`;
 			});
 
-			// 3. Crea il file Blob e scarica
-			// Usiamo il BOM (\uFEFF) per dire a Excel che è UTF-8 (corregge caratteri strani)
+			// 3. Scarica
 			const blob = new Blob(["\uFEFF" + csvContent], { type: 'text/csv;charset=utf-8;' });
 			const url = URL.createObjectURL(blob);
-			
 			const link = document.createElement("a");
 			link.setAttribute("href", url);
 			link.setAttribute("download", filename);
@@ -1929,6 +1961,7 @@ window.calcolaSaldiGlobali = function() {
 			link.click();
 			document.body.removeChild(link);
 		};
+
 
 
         window.resetStatistiche = function() {
