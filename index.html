@@ -662,7 +662,43 @@ tfoot td { border-top: 2px solid #333; font-weight: bold; padding-top: 15px; fon
     }
 }
 
+/* OTTIMIZZAZIONE MOBILE: GESTIONE PATRIMONIO */
+@media screen and (max-width: 768px) {
+    /* 1. Impila gli input "Configura Titoli" uno sull'altro invece di schiacciarli */
+    #modalPatrimonioMain .add-box {
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 8px;
+    }
+    #modalPatrimonioMain .add-box input, 
+    #modalPatrimonioMain .add-box button {
+        width: 100% !important;
+        box-sizing: border-box !important;
+        padding: 10px !important;
+        font-size: 16px !important; /* Evita lo zoom automatico su iPhone */
+    }
 
+    /* 2. Impila le date e la liquidità */
+    #modalPatrimonioMain .form-grid {
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 10px;
+    }
+
+    /* 3. IL FIX PER LA TABELLA: La rende scorrevole col dito a destra/sinistra */
+    #modalPatrimonioMain table {
+        display: block !important;
+        width: 100% !important;
+        overflow-x: auto !important;
+        white-space: nowrap !important; /* Impedisce ai numeri di andare a capo */
+        -webkit-overflow-scrolling: touch; /* Scorrimento fluido su iOS */
+    }
+    
+    #modalPatrimonioMain th, 
+    #modalPatrimonioMain td {
+        padding: 8px 12px !important; /* Dà respiro ai valori */
+    }
+}
 
 </style>
 
@@ -1111,12 +1147,12 @@ tfoot td { border-top: 2px solid #333; font-weight: bold; padding-top: 15px; fon
                     <summary style="font-weight:bold; cursor:pointer; color:#007bff;">⚙️ Configura Titoli / Fondi</summary>
                     <div style="margin-top:10px;">
                         <div id="listFondiConfig"></div>
-                        <div class="add-box" style="margin-top:10px; border-top:1px dashed #ccc; padding-top:10px;">
-                            <input type="text" id="newFondoNome" placeholder="Nome Titolo / ISIN" style="width:40%">
-                            <input type="number" id="newFondoInvestito" placeholder="Caricato Default (€)" step="0.01" style="width:25%">
-                            <input type="number" id="newFondoQuote" placeholder="N. Quote" step="0.001" style="width:25%">
-                            <button onclick="aggiungiFondo()" style="background:#28a745; width:auto; padding:5px 10px;">+</button>
-                        </div>
+<div class="add-box" style="margin-top:10px; border-top:1px dashed #ccc; padding-top:10px; display:flex; flex-wrap:wrap; gap:5px;">
+    <input type="text" id="newFondoNome" placeholder="Nome Titolo / ISIN" style="flex: 1 1 100px; min-width: 120px;">
+    <input type="number" id="newFondoInvestito" placeholder="Caricato (€)" step="0.01" style="flex: 1 1 80px; min-width: 90px;">
+    <input type="number" id="newFondoQuote" placeholder="N. Quote" step="0.001" style="flex: 1 1 80px; min-width: 80px;">
+    <button onclick="aggiungiFondo()" style="background:#28a745; padding:8px 15px; color:white; border:none; border-radius:4px; cursor:pointer;">+ Aggiungi</button>
+</div>
                     </div>
                 </details>
                 <details id="boxRilevazione" style="background:#f1f8e9; border:1px solid #c5e1a5; padding:10px; border-radius:5px; margin-bottom:20px; width:100%; box-sizing:border-box;">
