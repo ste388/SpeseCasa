@@ -2057,7 +2057,7 @@ window.calcolaSaldiGlobali = function() {
     }
     window.eliminaScadenza = async function(id) { if(confirm("Eliminare?")) { window.scadenze = window.scadenze.filter(x => x.id !== id); renderScadenze(); checkAlertScadenze(); await eliminaScadenzaSuFirebase(id); } }
     window.pagaRinnova = async function(id, mesi) {
-        const s = window.scadenze.find(x => x.id === id); 
+        const s = window.scadenze.find(x => x.id === id);
         if(!s) return;
         
         if(!confirm(`Pagare € ${s.importo} e rinnovare tra ${mesi} mesi?`)) return;
@@ -2123,34 +2123,60 @@ window.calcolaSaldiGlobali = function() {
         let st = diff<0 ? 'scad-status-red' : (diff<=2 ? 'scad-status-yellow' : (diff<=5 ? 'scad-status-blue' : ''));
         let cc = s.categoria; 
         if(s.rawSub) cc += ` (${s.rawSub})`;
+
+        const dataFormattata = `${d}/${m}/${y}`;
         
-        // Qui sotto aggiungiamo il pulsante +3M
+        // Icona link posizionata in modo che non disturbi il testo lungo
+        let htmlLink = s.link ? `<a href="${s.link}" target="_blank" style="margin-left:5px; text-decoration:none; display:inline-block;" title="Apri Link">🌐</a>` : '';
+
+        const importoStr = parseFloat(s.importo) > 0 ? `€ ${parseFloat(s.importo).toFixed(2)}` : '€ 0.00';
+
         div.innerHTML += `
-        <div class="scad-card ${st}">
-            <div class="scad-row">
-                <input type="date" class="s-date" value="${s.data}" onchange="aggiornaCampoScadenza(${s.id},'data',this.value)">
-                <input type="text" class="s-desc" value="${s.descrizione}" onchange="aggiornaCampoScadenza(${s.id},'descrizione',this.value)">
+        <div class="scad-card ${st}" style="padding:10px;">
+            
+            <!-- RIGA PRINCIPALE CON FLEXBOX (evita che vada a capo) -->
+            <div style="display:flex; justify-content:space-between; align-items:center; gap:10px; width:100%; overflow:hidden;">
+                
+                <!-- BLOCCO TESTI (Descrizione e Data) -->
+                <div style="flex:1; min-width:0; overflow:hidden;">
+                    
+                    <!-- DESCRIZIONE (con taglio a 3 puntini se troppo lunga) -->
+                    <div style="font-size:1.05em; color:#333; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; display:flex; align-items:center;">
+                        <span style="overflow:hidden; text-overflow:ellipsis;">${s.descrizione}</span>
+                        ${htmlLink}
+                    </div>
+                    
+                    <!-- DATI SOTTO LA DESCRIZIONE -->
+                    <div style="font-size:0.85em; color:#666; margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
+                        <span style="color:#000;">${dataFormattata}</span> • ${s.conto} • ${cc}
+                    </div>
+                </div>
+                
+                <!-- BLOCCO IMPORTO (Fermo a destra, carattere rimpicciolito) -->
+                <div style="font-size:1.1em; color:#d32f2f; white-space:nowrap; flex-shrink:0; text-align:right;">
+                    ${importoStr}
+                </div>
             </div>
-            <div class="scad-row" style="margin-top:5px; background:#f8f9fa; padding:4px;">
-                <span style="font-weight:bold;margin-right:5px;">${s.conto}</span>
-                <span style="color:#555;">${cc}</span>
-            </div>
-            <div class="scad-row">
-                <input type="text" class="s-desc" value="${s.link||''}" onchange="aggiornaCampoScadenza(${s.id},'link',this.value)" placeholder="Link">
-                <input type="number" class="s-amount" value="${s.importo}" onchange="aggiornaCampoScadenza(${s.id},'importo',this.value)">
-            </div>
-            <div class="scad-row" style="margin-top:8px;">
+            
+            <!-- RIGA BOTTONI -->
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-top:12px;">
                 <div class="s-btn-group">
                     <button class="s-btn" onclick="pagaRinnova(${s.id},1)">+1M</button>
                     <button class="s-btn" onclick="pagaRinnova(${s.id},2)">+2M</button>
-					<button class="s-btn" onclick="pagaRinnova(${s.id},3)">+3M</button> <!-- NUOVO TASTO -->
+                    <button class="s-btn" onclick="pagaRinnova(${s.id},3)">+3M</button>
                     <button class="s-btn" onclick="pagaRinnova(${s.id},12)">+1A</button>
                 </div>
-                <button class="s-btn s-btn-del" onclick="eliminaScadenza(${s.id})">🗑</button>
+                
+                <div style="display:flex; gap:5px;">
+                    <button class="s-btn" onclick="modificaScadenza(${s.id})" style="background:#ff9800; color:white;">✏️</button>
+                    <button class="s-btn s-btn-del" onclick="eliminaScadenza(${s.id})">🗑</button>
+                </div>
             </div>
         </div>`;
     });
 };
+
+
 
     window.checkAlertScadenze = function(){ const b = document.getElementById('badgeScadenze'); if(!b)return; const oggi=new Date(); oggi.setHours(0,0,0,0); const dom=new Date(oggi); dom.setDate(dom.getDate()+1); const has = window.scadenze.some(s => { const [y,m,d]=s.data.split('-'); return new Date(y,m-1,d) <= dom; }); b.style.display = has ? 'flex' : 'none'; }
     window.gestisciCatScadenza = function(){ const c=document.getElementById('scadCategoria').value, b=document.getElementById('boxScadSub'), s=document.getElementById('scadSub'); s.innerHTML=''; if(c==='Bolletta'){b.style.display='block';popolaSelect('scadSub',window.tipiBolletta);} else if(c==='Supermercato'){b.style.display='block';popolaSelect('scadSub',window.nomiSuper);} else b.style.display='none'; }
@@ -2448,6 +2474,127 @@ window.renderFondiConfig = function() {
             </tr>`; 
     });
 }
+
+
+// Variabile globale per ricordare quale scadenza stiamo modificando (null = nuova)
+window.scadenzaInModifica = null;
+
+// Funzione che prende i dati e li mette nel form in alto
+window.modificaScadenza = function(id) {
+    const s = window.scadenze.find(x => x.id === id);
+    if(!s) return;
+
+    // Imposta la variabile per ricordarsi che stiamo modificando
+    window.scadenzaInModifica = id;
+
+    // Popola i campi in alto
+    document.getElementById('scadDate').value = s.data || '';
+    document.getElementById('scadConto').value = s.conto || 'CC';
+    document.getElementById('scadImporto').value = s.importo || '';
+    document.getElementById('scadCategoria').value = s.categoria || '';
+    document.getElementById('scadDesc').value = s.descrizione || '';
+    document.getElementById('scadLink').value = s.link || '';
+
+    // Gestione sottocategoria (se esiste)
+    if(s.rawSub) {
+        document.getElementById('scadSub').value = s.rawSub;
+        document.getElementById('boxScadSub').style.display = 'block';
+    } else {
+        document.getElementById('boxScadSub').style.display = 'none';
+    }
+
+    // Cambia il testo e il colore del bottone per far capire che stiamo modificando
+    const btn = document.querySelector('button[onclick="salvaNuovaScadenza()"]');
+    if(btn) {
+        btn.innerHTML = "✏️ Aggiorna Scadenza";
+        btn.style.background = "#ff9800"; // Colore arancione
+    }
+
+    // Scorri la pagina fino al form in alto
+    document.getElementById('scadDate').scrollIntoView({behavior: "smooth"});
+};
+
+// Devi sovrascrivere la tua funzione salvaNuovaScadenza() esistente con questa:
+window.salvaNuovaScadenza = async function() {
+    const data = document.getElementById('scadDate').value;
+    const conto = document.getElementById('scadConto').value;
+    const importo = parseFloat(document.getElementById('scadImporto').value);
+    const cat = document.getElementById('scadCategoria').value;
+    const desc = document.getElementById('scadDesc').value.trim();
+    const link = document.getElementById('scadLink').value.trim();
+    let sub = '';
+    
+    if (document.getElementById('boxScadSub').style.display !== 'none') {
+        sub = document.getElementById('scadSub').value;
+    }
+
+    if(!data || !cat || !desc) {
+        alert('Compila data, categoria e descrizione.');
+        return;
+    }
+
+    let scadenzaObj = null;
+
+    if (window.scadenzaInModifica !== null) {
+        // --- MODIFICA SCADENZA ESISTENTE ---
+        const indice = window.scadenze.findIndex(x => x.id === window.scadenzaInModifica);
+        if(indice !== -1) {
+            window.scadenze[indice].data = data;
+            window.scadenze[indice].conto = conto;
+            window.scadenze[indice].importo = isNaN(importo) ? 0 : importo;
+            window.scadenze[indice].categoria = cat;
+            window.scadenze[indice].descrizione = desc;
+            window.scadenze[indice].rawSub = sub;
+            window.scadenze[indice].link = link;
+            
+            scadenzaObj = window.scadenze[indice];
+        }
+    } else {
+        // --- CREA NUOVA SCADENZA ---
+        scadenzaObj = {
+            id: Date.now(), // Usa il timestamp come ID univoco (perfetto per string(obj.id))
+            data: data,
+            conto: conto,
+            importo: isNaN(importo) ? 0 : importo,
+            categoria: cat,
+            descrizione: desc,
+            rawSub: sub,
+            link: link
+        };
+        window.scadenze.push(scadenzaObj);
+    }
+
+    // Se per qualche motivo l'oggetto non esiste, blocca
+    if (!scadenzaObj) return;
+
+    // --- AGGIORNAMENTO GRAFICA IMMEDIATO ---
+    renderScadenze(); 
+    if(typeof checkAlertScadenze === "function") checkAlertScadenze();
+
+    // Reset del form e del bottone (torna a "Nuova Scadenza")
+    document.getElementById('scadDate').value = '';
+    document.getElementById('scadImporto').value = '';
+    document.getElementById('scadDesc').value = '';
+    document.getElementById('scadLink').value = '';
+    window.scadenzaInModifica = null; 
+    
+    const btn = document.querySelector('button[onclick="salvaNuovaScadenza()"]');
+    if(btn) {
+        btn.innerHTML = "Salva Scadenza";
+        btn.style.background = ""; // Rimuove il colore arancione
+    }
+
+    // --- SALVATAGGIO DEFINITIVO SU FIREBASE ---
+    try {
+        await salvaScadenzaSuFirebase(scadenzaObj);
+    } catch(e) {
+        console.error("Errore durante il salvataggio su Firebase:", e);
+        alert("Attenzione: la scadenza non è stata salvata sul server per un problema di rete.");
+    }
+};
+
+
+
 
 
 
