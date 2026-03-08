@@ -576,7 +576,6 @@ tfoot td { border-top: 2px solid #333; font-weight: bold; padding-top: 15px; fon
     }
 
 
-
 /* =========================================
    FIX MOBILE SALDI (Uno sotto l'altro)
    ========================================= */
@@ -699,6 +698,36 @@ tfoot td { border-top: 2px solid #333; font-weight: bold; padding-top: 15px; fon
         padding: 8px 12px !important; /* Dà respiro ai valori */
     }
 }
+
+
+/* FORZA I PANNELLI A STARE DENTRO LO SCHERMO SU MOBILE */
+@media screen and (max-width: 768px) {
+    .panel-area {
+        width: 95% !important; 
+        max-width: 95vw !important; 
+        box-sizing: border-box !important;
+        
+        /* SISTEMAZIONE POSIZIONE: Lo posizioniamo a un po' dal bordo superiore */
+        top: 5% !important; 
+        left: 50% !important; 
+        transform: translateX(-50%) !important; /* Centrato solo orizzontalmente */
+        
+        /* SISTEMAZIONE ALTEZZA: Non supera mai lo schermo in altezza e permette lo scorrimento */
+        max-height: 90vh !important; 
+        overflow-y: auto !important; 
+        overflow-x: hidden !important; /* Evita scorrimenti laterali indesiderati dell'intero box */
+    }
+
+    /* Se hai tabelle larghe, scorrono loro stesse col dito, non tutto il box */
+    .panel-area table {
+        display: block !important;
+        width: 100% !important;
+        overflow-x: auto !important;
+        white-space: nowrap !important;
+        -webkit-overflow-scrolling: touch;
+    }
+}
+
 
 </style>
 
