@@ -2201,25 +2201,33 @@ window.renderNote = function() {
     
     window.note.forEach(n => { 
         const [y, m, d] = n.data.split('-'); 
-        
-        // Anno abbreviato: prende le ultime 2 cifre
         const annoAbbr = y.slice(-2);
-        
-        // Data completa: 19/02/26
         const dataFormattata = `${d}/${m}/${annoAbbr}`;
         
-        div.innerHTML += `<div class="note-card">
-            <div style="display:flex; justify-content:space-between;">
-                <div>
-                    <span style="font-weight:bold;">${dataFormattata}</span> 
-                    <span style="color:#20c997; font-weight:600;">${n.oggetto}</span>
-                </div>
-                <div>
-                    <button class="action-btn btn-edit" onclick="preparaModificaNota(${n.id})">✏️</button>
-                    <button class="action-btn btn-del" onclick="eliminaNota(${n.id})">🗑</button>
+        // Prendiamo esattamente quello che hai salvato nel database (il testo/importo)
+        const valoreSotto = n.testo ? n.testo : '';
+
+        div.innerHTML += `<div class="note-card" style="padding:12px; border-bottom:1px solid #eee;">
+            
+            <!-- RIGA 1: DATA + BOTTONI -->
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+                <span style="font-weight:bold; color:#333; font-size:0.95em;">${dataFormattata}</span>
+                <div style="display:flex; gap:8px;">
+                    <button class="action-btn btn-edit" onclick="preparaModificaNota(${n.id})" style="background:none; border:none; cursor:pointer;" title="Modifica">✏️</button>
+                    <button class="action-btn btn-del" onclick="eliminaNota(${n.id})" style="background:none; border:none; cursor:pointer;" title="Elimina">🗑</button>
                 </div>
             </div>
-            <div style="font-size:0.9em; margin-top:4px;">${n.testo||''}</div>
+            
+            <!-- RIGA 2: OGGETTO/DESCRIZIONE -->
+            <div style="font-size:1.1em; color:#20c997; font-weight:600; margin-bottom:6px;">
+                ${n.oggetto}
+            </div>
+            
+            <!-- RIGA 3: IMPORTO / TESTO -->
+            <div style="font-size:1em; color:#555; font-weight:500;">
+                ${valoreSotto}
+            </div>
+            
         </div>`;
     });
 }
