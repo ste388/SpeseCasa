@@ -2187,11 +2187,42 @@ window.calcolaSaldiGlobali = function() {
         renderNote(); resetFormNota(); await salvaNotaSuFirebase(n);
     }
     window.eliminaNota = async function(id) { if(confirm("Del?")){ window.note=window.note.filter(x=>x.id!==id); renderNote(); await eliminaNotaSuFirebase(id); } }
-    window.renderNote = function() {
-        const div = document.getElementById('listNote'); if(!div) return; div.innerHTML = '';
-        window.note.sort((a,b) => new Date(b.data) - new Date(a.data)); if(window.note.length === 0){ div.innerHTML='<p style="color:#888; text-align:center;">Nessuna nota.</p>'; return; }
-        window.note.forEach(n => { const [y, m, d] = n.data.split('-'); div.innerHTML += `<div class="note-card"><div style="display:flex; justify-content:space-between;"><div><span style="font-weight:bold;">${d}/${m}</span> <span style="color:#20c997; font-weight:600;">${n.oggetto}</span></div><div><button class="action-btn btn-edit" onclick="preparaModificaNota(${n.id})">✏️</button><button class="action-btn btn-del" onclick="eliminaNota(${n.id})">🗑</button></div></div><div style="font-size:0.9em; margin-top:4px;">${n.testo||''}</div></div>`; });
+window.renderNote = function() {
+    const div = document.getElementById('listNote'); 
+    if(!div) return; 
+    div.innerHTML = '';
+    
+    window.note.sort((a,b) => new Date(b.data) - new Date(a.data)); 
+    
+    if(window.note.length === 0){
+        div.innerHTML='<p style="color:#888; text-align:center;">Nessuna nota.</p>'; 
+        return; 
     }
+    
+    window.note.forEach(n => { 
+        const [y, m, d] = n.data.split('-'); 
+        
+        // Anno abbreviato: prende le ultime 2 cifre
+        const annoAbbr = y.slice(-2);
+        
+        // Data completa: 19/02/26
+        const dataFormattata = `${d}/${m}/${annoAbbr}`;
+        
+        div.innerHTML += `<div class="note-card">
+            <div style="display:flex; justify-content:space-between;">
+                <div>
+                    <span style="font-weight:bold;">${dataFormattata}</span> 
+                    <span style="color:#20c997; font-weight:600;">${n.oggetto}</span>
+                </div>
+                <div>
+                    <button class="action-btn btn-edit" onclick="preparaModificaNota(${n.id})">✏️</button>
+                    <button class="action-btn btn-del" onclick="eliminaNota(${n.id})">🗑</button>
+                </div>
+            </div>
+            <div style="font-size:0.9em; margin-top:4px;">${n.testo||''}</div>
+        </div>`;
+    });
+}
     window.preparaModificaNota = function(id) {
         const n = window.note.find(x => x.id === id); if(!n) return; window.idNotaModifica = id;
         document.getElementById('noteDate').value = n.data; document.getElementById('noteOggetto').value = n.oggetto; document.getElementById('noteTesto').value = n.testo;
