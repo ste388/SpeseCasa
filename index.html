@@ -2057,47 +2057,53 @@ window.calcolaSaldiGlobali = function() {
     }
     window.eliminaScadenza = async function(id) { if(confirm("Eliminare?")) { window.scadenze = window.scadenze.filter(x => x.id !== id); renderScadenze(); checkAlertScadenze(); await eliminaScadenzaSuFirebase(id); } }
     window.pagaRinnova = async function(id, mesi) {
-        const s = window.scadenze.find(x => x.id === id);
-        if(!s) return;
-        
-        if(!confirm(`Pagare € ${s.importo} e rinnovare tra ${mesi} mesi?`)) return;
-        
-        let cc = s.categoria; 
-        if(s.rawSub) cc = `${s.categoria} - ${s.rawSub}`;
-        
-        // FIX: Aggiunta esplicita di linkPdf prendendolo da s.link
-        const mov = { 
-            id: Date.now(), 
-            tipo: 'uscita', 
-            data: new Date().toISOString().split('T')[0], 
-            importo: parseFloat(s.importo), 
-            categoria: cc, 
-            rawCat: s.categoria, 
-            rawSub: s.rawSub || null, 
-            descrizione: s.descrizione, 
-            conto: s.conto, 
-            linkPdf: s.link || "" // <--- QUESTA è la correzione importante
-        };
-        
-        await window.salvaNuovo('uscita', mov);
+    const s = window.scadenze.find(x => x.id === id);
+    if(!s) return;
+    
+    if(!confirm(`Pagare € ${s.importo} e rinnovare tra ${mesi} mesi?`)) return;
+    
+    let cc = s.categoria; 
+    if(s.rawSub) cc = `${s.categoria} - ${s.rawSub}`;
+    
+    // Recuperiamo la data della scadenza come stringa (es: "2026-06-01")
+    const dataScadenzaStr = s.data || s.date; 
+    
+    // 1. REGISTRAZIONE SPESA
+    // Usa la data della scadenza, non la data di oggi!
+    const mov = { 
+        id: Date.now(), 
+        tipo: 'uscita', 
+        data: dataScadenzaStr, // <--- Modifica: registra la spesa nel giorno esatto in cui scadeva
+        importo: parseFloat(s.importo), 
+        categoria: cc, 
+        rawCat: s.categoria, 
+        rawSub: s.rawSub || null, 
+        descrizione: s.descrizione, 
+        conto: s.conto, 
+        linkPdf: s.link || "" 
+    };
+    
+    await window.salvaNuovo('uscita', mov);
 
-        // Calcolo nuova data
-        const dateStr = s.data || s.date; // Fallback sicurezza
-        const [y,m,d] = dateStr.split('-'); 
-        const dt = new Date(y, m-1, d);
-        
-        if(mesi === 12) dt.setFullYear(dt.getFullYear() + 1); 
-        else dt.setMonth(dt.getMonth() + mesi);
-        
-        s.data = formatLocalYMD(dt); 
-        s.date = s.data; // Aggiorniamo entrambi i campi per sicurezza
-        
-        renderScadenze(); 
-        if(window.checkBadgeScadenze) window.checkBadgeScadenze(); 
-        
-        await salvaScadenzaSuFirebase(s); 
-        alert("Pagato e Rinnovato!");
+    // 2. CALCOLO NUOVA DATA PER IL RINNOVO
+    const [y, m, d] = dataScadenzaStr.split('-'); 
+    const dt = new Date(y, m-1, d);
+    
+    if(mesi === 12) {
+        dt.setFullYear(dt.getFullYear() + 1); 
+    } else {
+        dt.setMonth(dt.getMonth() + mesi);
     }
+    
+    s.data = formatLocalYMD(dt); 
+    s.date = s.data; // Aggiorniamo entrambi i campi per sicurezza
+    
+    renderScadenze(); 
+    if(window.checkBadgeScadenze) window.checkBadgeScadenze(); 
+    
+    await salvaScadenzaSuFirebase(s); 
+    alert("Pagato e Rinnovato!");
+}
 
     window.renderScadenze = function() {
     const div = document.getElementById('listScadenze'); 
