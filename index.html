@@ -1506,90 +1506,45 @@ window.formatEuro = function(numero) {
     }
     window.closeAllPanels = function() { ['statsPanel','settingsPanel','dataPanel','balancePanel','transferPanel','initBalancePanel','fuelReportPanel','deadlinesPanel','notesPanel', 'autoPanel'].forEach(i => { const el=document.getElementById(i); if(el) el.style.display='none'; }); }
 
-window.salvaNuovo = async function(t, movimentoGiaPronto){
-    let mov;
+window.salvaNuovo = async function(t, movimentoGiaPronto) {
+  let mov;
 
-    const formattaDataIta = (dataString) => {
-        if(!dataString) return "";
-        const [y, m, d] = dataString.split('-');
-        return `${d}/${m}/${y.slice(-2)}`;
-    };
-
-    const ricostruisciDescrizioneBolletta = (baseDesc) => {
-        const subBolletta = document.getElementById('sel_tipo_bolletta_new')?.value || '';
-        const consumo = document.getElementById('inp_consumo_new')?.value || '';
-        const unitaMisura = (document.getElementById('span_unit_new')?.innerText || '').trim();
-        const dataDal = document.getElementById('inp_bolletta_dal')?.value || '';
-        const dataAl = document.getElementById('inp_bolletta_al')?.value || '';
-
-        let descComposta = `Bolletta ${subBolletta}`;
-
-        if (consumo) {
-            descComposta += ` - (${consumo} ${unitaMisura.replace('/','').trim()})`;
-        }
-        if (dataDal && dataAl) {
-            descComposta += ` dal ${formattaDataIta(dataDal)} al ${formattaDataIta(dataAl)}`;
-        } else if (dataDal) {
-            descComposta += ` dal ${formattaDataIta(dataDal)}`;
-        } else if (dataAl) {
-            descComposta += ` fino al ${formattaDataIta(dataAl)}`;
-        }
-
-        return descComposta;
-    };
-
-if(movimentoGiaPronto) {
+  if (movimentoGiaPronto) {
     mov = movimentoGiaPronto;
-} else {
+  } else {
     const d = getDatiForm();
-    if(!d) return alert("Dati mancanti");
+    if (!d) return;
 
     mov = {
       id: Date.now(),
       tipo: t,
-      // Campi originali (se ti servono ancora)
-      categoria: d.categoria,
-      tipoBolletta: d.tipo,
-      consumoDal: d.consumoDal,
-      consumoAl: d.consumoAl,
-      consumo: d.consumo,
+
+      data: d.data,
+      conto: d.conto,
+      importo: d.importo,
       descrizione: d.descrizione,
 
-      // Campi normalizzati per "Spese" (nome esplicito)
-      categoriaBolletta: d.categoria,
-      tipoBolletta: d.tipo,
-      consumoBollettaDal: d.consumoDal,
-      consumoBollettaAl: d.consumoAl,
-      consumoBolletta: d.consumo
+      categoria: d.categoria,
+      rawCat: d.categoria || '',
+      rawSub: d.tipo || '',
+
+      tipoBolletta: d.tipo || '',
+      consumoDal: d.consumoDal || '',
+      consumoAl: d.consumoAl || '',
+      consumo: d.consumo || '',
+
+      categoriaBolletta: d.categoria || '',
+      consumoBollettaDal: d.consumoDal || '',
+      consumoBollettaAl: d.consumoAl || '',
+      consumoBolletta: d.consumo || ''
     };
-
-    resetForm();
-}
-
-function getDatiForm() {
-  const categoria   = document.getElementById('inp_categoria')?.value;
-  const tipo        = document.getElementById('inp_tipo')?.value;
-  const consumoDal  = document.getElementById('inp_bolletta_dal')?.value;
-  const consumoAl   = document.getElementById('inp_bolletta_al')?.value;
-  const consumo     = document.getElementById('inp_consumo_new')?.value;
-  const descrizione = document.getElementById('inp_descrizione')?.value || '';
-
-  if (!categoria || !tipo) return null; // o gestisci come vuoi
-
-  return {
-    categoria,
-    tipo,
-    consumoDal,
-    consumoAl,
-    consumo,
-    descrizione
-  };
-}
 
     window.movimenti.push(mov);
     render();
     calcolaSaldiGlobali();
     await salvaMovimentoSuFirebase(mov);
+    resetForm();
+  }
 };
     window.elimina = async function(id){
         if(confirm("Eliminare?")){ window.movimenti = window.movimenti.filter(x=>x.id!==id); render(); calcolaSaldiGlobali(); await eliminaMovimentoSuFirebase(id); }
