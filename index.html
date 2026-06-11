@@ -819,20 +819,58 @@ tfoot td { border-top: 2px solid #333; font-weight: bold; padding-top: 15px; fon
     🔮
 </button>
 
+            </div>
+<div style="background:#fff3e0; padding:10px; border-radius:5px; border:1px solid #ffe0b2;">
+    <div class="form-grid">
+        <input type="date" id="scadDate">
+        <select id="scadConto">
+            <option value="CC">🏦 CC</option>
+            <option value="Ste">👤 Ste</option>
+            <option value="Vale">👤 Vale</option>
+        </select>
+        <input type="number" id="scadImporto" step="0.01" placeholder="Importo (€)">
+        <select id="scadCategoria" onchange="gestisciCatScadenza()"></select>
 
-            </div>
-            <div style="background:#fff3e0; padding:10px; border-radius:5px; border:1px solid #ffe0b2;">
-                <div class="form-grid">
-                    <input type="date" id="scadDate">
-                    <select id="scadConto"><option value="CC">🏦 CC</option><option value="Ste">👤 Ste</option><option value="Vale">👤 Vale</option></select>
-                    <input type="number" id="scadImporto" step="0.01" placeholder="Importo (€)">
-                    <select id="scadCategoria" onchange="gestisciCatScadenza()"></select>
-                    <div class="full-width"><input type="text" id="scadDesc" placeholder="Descrizione..." autocomplete="off"></div>
-                    <div class="full-width" id="boxScadSub" style="display:none;"><select id="scadSub" onchange="autoDescScad()"></select></div>
-                    <div class="full-width"><input type="url" id="scadLink" placeholder="Link (opzionale)"></div>
-                </div>
-                <button class="btn-scadenza" onclick="salvaNuovaScadenza()" style="width:100%; margin-top:10px;">Salva Scadenza</button>
-            </div>
+        <div class="full-width">
+            <input type="text" id="scadDesc" placeholder="Descrizione..." autocomplete="off">
+        </div>
+
+<div class="full-width" id="boxScadSub" style="display:none;">
+    <select id="scadSub" onchange="gestisciCatScadenza()">
+        <option value="">-- Scegli tipo bolletta --</option>
+        <option value="Enel">Enel</option>
+        <option value="Gas">Gas</option>
+        <option value="Acqua">Acqua</option>
+    </select>
+	
+</div>
+
+<div class="full-width" id="boxScadPeriodo" style="display:none;">
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
+        <!-- Lato sinistro: Consumo + Dal -->
+        <div>
+            <label style="font-size:0.8em; color:#666; display:block; margin-bottom:4px;">Consumo</label>
+            <input type="text" id="scadConsumo" placeholder="Es: 460" oninput="autoDescScad()" style="width:100%; margin-bottom:12px;">
+            <label style="font-size:0.8em; color:#666; display:block; margin-bottom:4px;">Dal</label>
+            <input type="date" id="scadDal" oninput="autoDescScad()" style="width:100%;">
+        </div>
+
+        <!-- Lato destro: Unità + Al -->
+        <div>
+            <label style="font-size:0.8em; color:#666; display:block; margin-bottom:4px;">Unita</label>
+            <input type="text" id="scadUnita" readonly style="width:100%; background:#f5f5f5; margin-bottom:12px;">
+            <label style="font-size:0.8em; color:#666; display:block; margin-bottom:4px;">Al</label>
+            <input type="date" id="scadAl" oninput="autoDescScad()" style="width:100%;">
+        </div>
+    </div>
+</div>
+
+        <div class="full-width">
+            <input type="url" id="scadLink" placeholder="Link (opzionale)">
+        </div>
+    </div>
+    <button class="btn-scadenza" onclick="salvaNuovaScadenza()" style="width:100%; margin-top:10px;">Salva Scadenza</button>
+</div>
             <div id="listScadenze" class="deadlines-list"></div>
         </div>
 
@@ -1070,17 +1108,31 @@ tfoot td { border-top: 2px solid #333; font-weight: bold; padding-top: 15px; fon
             </div>
             
             <!-- SOTTOMENU BOLLETTA (NUOVO) -->
+					<!-- SOTTOMENU BOLLETTA (AGGIORNATO CON DATE DAL/AL) -->
             <div id="wrapper_bolletta_new" style="display:none; width:100%; grid-column: span 2; background:#f8f9fa; padding:10px; border:1px dashed #ccc; margin-top:5px; border-radius:4px;">
                 <label style="font-weight:bold; display:block; margin-bottom:5px;">Tipo Bolletta:</label>
                 <select id="sel_tipo_bolletta_new" onchange="window.logica_consumi_new()" style="width:100%; padding:8px; margin-bottom:10px; border:1px solid #ccc; border-radius:4px;"></select>
+                
                 <div id="box_consumo_new" style="display:none; background:#e3f2fd; padding:10px; border:1px solid #2196f3; border-radius:4px; margin-bottom:10px;">
                     <label id="lbl_consumo_new" style="font-weight:bold; color:#0d47a1; display:block; margin-bottom:5px;">Consumo:</label>
-                    <div style="display:flex; align-items:center;">
+                    <div style="display:flex; align-items:center; margin-bottom:10px;">
                         <input type="number" id="inp_consumo_new" placeholder="0" oninput="window.logica_descrizione_new()" style="width:100px; padding:5px; border:1px solid #2196f3; font-weight:bold;">
                         <span id="span_unit_new" style="font-weight:bold; margin-left:5px; color:#0d47a1;"></span>
                     </div>
+                    
+                    <!-- NUOVI CAMPI DATA DAL / AL -->
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+                        <div>
+                            <label style="font-size:0.85em; color:#0d47a1; font-weight:bold;">Dal:</label>
+                            <input type="date" id="inp_bolletta_dal" onchange="window.logica_descrizione_new()" style="width:100%; padding:5px; border:1px solid #2196f3; border-radius:4px;">
+                        </div>
+                        <div>
+                            <label style="font-size:0.85em; color:#0d47a1; font-weight:bold;">Al:</label>
+                            <input type="date" id="inp_bolletta_al" onchange="window.logica_descrizione_new()" style="width:100%; padding:5px; border:1px solid #2196f3; border-radius:4px;">
+                        </div>
+                    </div>
                 </div>
-            </div>
+            </div>	
 			<!-- NUOVO CONTENITORE PDF INDIPENDENTE -->
 <div id="wrapper_pdf_only" style="display:none; width:100%; grid-column: span 2; margin-top:5px;">
     <label style="font-weight:bold; display:block; margin-bottom:5px;">Link Documento/Busta Paga:</label>
@@ -1270,6 +1322,8 @@ tfoot td { border-top: 2px solid #333; font-weight: bold; padding-top: 15px; fon
 
     window.movimenti = [];
     window.scadenze = [];
+	window.spese = [];
+	window.idScadenzaInModifica = null;
     window.note = [];
     window.idNotaModifica = null;
     window.patrimonioHistory = [];
@@ -1452,12 +1506,91 @@ window.formatEuro = function(numero) {
     }
     window.closeAllPanels = function() { ['statsPanel','settingsPanel','dataPanel','balancePanel','transferPanel','initBalancePanel','fuelReportPanel','deadlinesPanel','notesPanel', 'autoPanel'].forEach(i => { const el=document.getElementById(i); if(el) el.style.display='none'; }); }
 
-    window.salvaNuovo = async function(t, movimentoGiaPronto){
-        let mov;
-        if(movimentoGiaPronto) mov = movimentoGiaPronto;
-        else { const d = getDatiForm(); if(!d) return alert("Dati mancanti"); mov = { id: Date.now(), tipo:t, ...d }; resetForm(); }
-        window.movimenti.push(mov); render(); calcolaSaldiGlobali(); await salvaMovimentoSuFirebase(mov);
-    }
+window.salvaNuovo = async function(t, movimentoGiaPronto){
+    let mov;
+
+    const formattaDataIta = (dataString) => {
+        if(!dataString) return "";
+        const [y, m, d] = dataString.split('-');
+        return `${d}/${m}/${y.slice(-2)}`;
+    };
+
+    const ricostruisciDescrizioneBolletta = (baseDesc) => {
+        const subBolletta = document.getElementById('sel_tipo_bolletta_new')?.value || '';
+        const consumo = document.getElementById('inp_consumo_new')?.value || '';
+        const unitaMisura = (document.getElementById('span_unit_new')?.innerText || '').trim();
+        const dataDal = document.getElementById('inp_bolletta_dal')?.value || '';
+        const dataAl = document.getElementById('inp_bolletta_al')?.value || '';
+
+        let descComposta = `Bolletta ${subBolletta}`;
+
+        if (consumo) {
+            descComposta += ` - (${consumo} ${unitaMisura.replace('/','').trim()})`;
+        }
+        if (dataDal && dataAl) {
+            descComposta += ` dal ${formattaDataIta(dataDal)} al ${formattaDataIta(dataAl)}`;
+        } else if (dataDal) {
+            descComposta += ` dal ${formattaDataIta(dataDal)}`;
+        } else if (dataAl) {
+            descComposta += ` fino al ${formattaDataIta(dataAl)}`;
+        }
+
+        return descComposta;
+    };
+
+if(movimentoGiaPronto) {
+    mov = movimentoGiaPronto;
+} else {
+    const d = getDatiForm();
+    if(!d) return alert("Dati mancanti");
+
+    mov = {
+      id: Date.now(),
+      tipo: t,
+      // Campi originali (se ti servono ancora)
+      categoria: d.categoria,
+      tipoBolletta: d.tipo,
+      consumoDal: d.consumoDal,
+      consumoAl: d.consumoAl,
+      consumo: d.consumo,
+      descrizione: d.descrizione,
+
+      // Campi normalizzati per "Spese" (nome esplicito)
+      categoriaBolletta: d.categoria,
+      tipoBolletta: d.tipo,
+      consumoBollettaDal: d.consumoDal,
+      consumoBollettaAl: d.consumoAl,
+      consumoBolletta: d.consumo
+    };
+
+    resetForm();
+}
+
+function getDatiForm() {
+  const categoria   = document.getElementById('inp_categoria')?.value;
+  const tipo        = document.getElementById('inp_tipo')?.value;
+  const consumoDal  = document.getElementById('inp_bolletta_dal')?.value;
+  const consumoAl   = document.getElementById('inp_bolletta_al')?.value;
+  const consumo     = document.getElementById('inp_consumo_new')?.value;
+  const descrizione = document.getElementById('inp_descrizione')?.value || '';
+
+  if (!categoria || !tipo) return null; // o gestisci come vuoi
+
+  return {
+    categoria,
+    tipo,
+    consumoDal,
+    consumoAl,
+    consumo,
+    descrizione
+  };
+}
+
+    window.movimenti.push(mov);
+    render();
+    calcolaSaldiGlobali();
+    await salvaMovimentoSuFirebase(mov);
+};
     window.elimina = async function(id){
         if(confirm("Eliminare?")){ window.movimenti = window.movimenti.filter(x=>x.id!==id); render(); calcolaSaldiGlobali(); await eliminaMovimentoSuFirebase(id); }
     }
@@ -1477,13 +1610,38 @@ window.formatEuro = function(numero) {
     gestisciCategoria(); 
 
     // 2. Poi popolo i valori nei div appena mostrati
-    if(m.rawCat === 'Bolletta'){
-        document.getElementById('sel_tipo_bolletta_new').value = m.rawSub || ''; 
-        if(m.linkPdf) document.getElementById('inp_pdf_new').value = m.linkPdf; 
-        window.logica_consumi_new(); 
+    if(m.rawCat === 'Bolletta' || m.categoria === 'Bolletta'){
+        // Categoria: usa categoriaBolletta (se esiste) o rawCat come fallback
+        const cat = document.getElementById('categoria');
+        if(cat) {
+            if(m.categoriaBolletta && window.categorie.includes(m.categoriaBolletta)) {
+                cat.value = m.categoriaBolletta;
+            } else if(m.rawCat && window.categorie.includes(m.rawCat)) {
+                cat.value = m.rawCat;
+            } else {
+                cat.value = window.categorie[0];
+            }
+        }
+
+        // Tipo bolletta: usa tipoBolletta (se esiste) o rawSub come fallback
+        const selTipo = document.getElementById('sel_tipo_bolletta_new');
+        if(selTipo) selTipo.value = m.tipoBolletta || m.rawSub || '';
+
+        // PDF
+        if(m.linkPdf) document.getElementById('inp_pdf_new').value = m.linkPdf;
+
+        // Consumo e date
+        const inpConsumo = document.getElementById('inp_consumo_new');
+        const inpDal = document.getElementById('inp_bolletta_dal');
+        const inpAl = document.getElementById('inp_bolletta_al');
+
+        if(inpConsumo) inpConsumo.value = m.consumoBolletta || m.bollettaConsumo || '';
+        if(inpDal) inpDal.value = m.consumoBollettaDal || m.bollettaDal || '';
+        if(inpAl) inpAl.value = m.consumoBollettaAl || m.bollettaAl || '';
+
+        window.logica_consumi_new();
     }
     else if(m.rawCat === 'Stipendio'){ 
-        // NUOVO BLOCCO: Se è Stipendio, popolo il link PDF
         if(m.linkPdf) document.getElementById('inp_pdf_new').value = m.linkPdf;
     }
     else if(m.rawCat === 'Supermercato'){ 
@@ -1505,13 +1663,96 @@ window.formatEuro = function(numero) {
     closeAllPanels(); 
     window.scrollTo({top: 0, behavior: 'smooth'}); 
     render();
+};
+
+window.confermaModifica = async function() {
+    const m = window.movimenti.find(x => String(x.id) === String(window.idInModifica));
+    if(!m) return alert("Errore");
+
+    const cat = document.getElementById('categoria').value;
+    const tipo = document.getElementById('sel_tipo_bolletta_new')?.value || '';
+
+    m.data = document.getElementById('data').value;
+    m.conto = document.getElementById('conto').value;
+    m.importo = parseFloat(document.getElementById('importo').value) || 0;
+
+    m.rawCat = cat;
+    m.rawSub = '';
+
+    if(cat === 'Bolletta') {
+        m.rawSub = document.getElementById('sel_tipo_bolletta_new')?.value || '';
+        m.bollettaConsumo = document.getElementById('inp_consumo_new')?.value || '';
+        m.bollettaDal = document.getElementById('inp_bolletta_dal')?.value || '';
+        m.bollettaAl = document.getElementById('inp_bolletta_al')?.value || '';
+        m.linkPdf = document.getElementById('inp_pdf_new')?.value || '';
+
+        // Campi normalizzati
+        m.categoriaBolletta = cat;
+        m.tipoBolletta = m.rawSub;
+        m.consumoBolletta = m.bollettaConsumo;
+        m.consumoBollettaDal = m.bollettaDal;
+        m.consumoBollettaAl = m.bollettaAl;
+
+        // Descrizione COMPLETA con consumo e date
+        const formattaDataIta = (dataString) => {
+            if(!dataString) return "";
+            const [y, mo, d] = dataString.split('-');
+            return `${d}/${mo}/${y.slice(-2)}`;
+        };
+
+        let descComposta = `Bolletta ${m.rawSub}`;
+
+        if (m.bollettaConsumo) {
+            const unita = (document.getElementById('span_unit_new')?.innerText || '').trim();
+            descComposta += ` - (${m.bollettaConsumo} ${unita.replace('/', '').trim()})`;
+        }
+        if (m.bollettaDal && m.bollettaAl) {
+            descComposta += ` dal ${formattaDataIta(m.bollettaDal)} al ${formattaDataIta(m.bollettaAl)}`;
+        } else if (m.bollettaDal) {
+            descComposta += ` dal ${formattaDataIta(m.bollettaDal)}`;
+        } else if (m.bollettaAl) {
+            descComposta += ` fino al ${formattaDataIta(m.bollettaAl)}`;
+        }
+
+        m.descrizione = descComposta;
+    }
+    else if(cat === 'Stipendio') {
+        m.linkPdf = document.getElementById('inp_pdf_new')?.value || '';
+    }
+    else if(cat === 'Supermercato') {
+        m.rawSub = document.getElementById('selectSuper')?.value || '';
+    }
+    else if(cat === 'Benzina') {
+        m.datiBenzina = {
+            litri: document.getElementById('benLitri')?.value || '',
+            km: document.getElementById('benKm')?.value || '',
+            prezzo: document.getElementById('benPrezzo')?.value || '',
+            distributore: document.getElementById('benDistributore')?.value || ''
+        };
+    }
+
+    if(cat !== 'Bolletta') {
+        const descrizioneOriginale = document.getElementById('descrizione').value.trim();
+        m.descrizione = descrizioneOriginale || m.descrizione;
+    }
+
+    await salvaMovimentoSuFirebase(m);
+
+    const idx = window.movimenti.findIndex(x => String(x.id) === String(m.id));
+    if(idx !== -1) window.movimenti[idx] = m;
+
+    window.idInModifica = null;
+    render();
+    calcolaSaldiGlobali();
+    resetForm();
+};
+
+function formatDataScad(dataString) {
+    if(!dataString) return "";
+    const [y, m, d] = dataString.split('-');
+    return `${d}/${m}/${y.slice(-2)}`;
 }
 
-    window.confermaModifica = async function(){
-        if(!window.idInModifica) return; const d = getDatiForm(); if(!d) return alert("Dati non validi");
-        const i = window.movimenti.findIndex(x => String(x.id) === String(window.idInModifica)); 
-        if(i !== -1) { window.movimenti[i] = { ...window.movimenti[i], ...d }; render(); calcolaSaldiGlobali(); await salvaMovimentoSuFirebase(window.movimenti[i]); annullaModifica(); }
-    }
     window.annullaModifica = function(){
         window.idInModifica = null; resetForm(); 
         document.getElementById('titoloForm').textContent = "Nuova Voce"; document.getElementById('titoloForm').style.color = "#007bff"; document.getElementById('btnDefault').style.display = 'flex'; document.getElementById('btnEdit').style.display = 'none'; render();
@@ -1580,97 +1821,103 @@ window.formatEuro = function(numero) {
     }
 
     window.render = function(){
-        const t=document.getElementById('listaDati'); if(!t) return; t.innerHTML=''; 
+    const t=document.getElementById('listaDati'); if(!t) return; t.innerHTML=''; 
+    
+    // 1. Filtri
+    const txt = document.getElementById('globalSearch') ? document.getElementById('globalSearch').value.toLowerCase().trim() : "";
+    const s=document.getElementById('filterStart').value;
+    const e=document.getElementById('filterEnd').value;
+    
+    let m=window.movimenti.slice(); 
+    
+    if(txt.length > 0) {
+        m = m.filter(x => (x.descrizione + " " + x.categoria + " " + x.conto + " " + x.importo).toLowerCase().includes(txt));
+    } else {
+        if(s && e) m = m.filter(x => x.data >= s && x.data <= e);
+    }
+    
+    // 2. Ordinamento
+    m.sort((a,b)=>{const da=new Date(a.data).getTime(),db=new Date(b.data).getTime();return db!==da?db-da:b.id-a.id;});
+    
+    // 3. CALCOLO TOTALI SEPARATI (Entrate vs Uscite)
+    let totSaldo=0; 
+    let sumEntrate = 0;
+    let sumUscite = 0;
+
+    m.forEach(x=>{
+        // Logica Calcoli
+        if(x.rawCat!=='Ricarica CC'){ 
+            if(x.tipo==='entrata') {
+                totSaldo += x.importo;
+                sumEntrate += x.importo;
+            } else {
+                totSaldo -= x.importo;
+                sumUscite += x.importo;
+            }
+        }
+
+        // Logica Disegno Riga
+        const tr=document.createElement('tr'); 
+        if(window.idInModifica===x.id) tr.className='editing-row'; 
+        else if(x.rawCat==='Bolletta') tr.className='bolletta-row'; 
+        else if(x.rawCat==='Ricarica CC') tr.className='ricarica-row'; 
+        else if(x.rawCat==='Benzina') tr.className='benzina-row';
+
+        const sg=x.tipo==='entrata'?'+':'-'; 
+        const cl=x.tipo==='entrata'?'positivo':(x.rawCat==='Ricarica CC'?'neutro':'negativo');
+        const [y,mm,d]=x.data.split('-');
         
-        // 1. Filtri
-        const txt = document.getElementById('globalSearch') ? document.getElementById('globalSearch').value.toLowerCase().trim() : "";
-        const s=document.getElementById('filterStart').value;
-        const e=document.getElementById('filterEnd').value;
+        let l=x.conto; 
+        if(l==='CC Comune')l='CC'; if(l==='Conto Ste')l='Ste'; if(l==='Conto Vale')l='Vale';
         
-        let m=window.movimenti.slice(); 
+        let b='badge-cc'; 
+        if(l==='Ste')b='badge-ste'; if(l==='Vale')b='badge-vale'; if(l==='Altro')b='badge-altro';
         
-        if(txt.length > 0) {
-            m = m.filter(x => (x.descrizione + " " + x.categoria + " " + x.conto + " " + x.importo).toLowerCase().includes(txt));
-        } else {
-            if(s && e) m = m.filter(x => x.data >= s && x.data <= e);
+        // Costruzione Descrizione con Icona Pompa (se presente)
+        let dh=x.descrizione==="Nessuna descrizione"?`<span style="color:#aaa;font-style:italic;">${x.descrizione}</span>`:`<span style="font-weight:500;">${x.descrizione}</span>`; 
+        if(x.linkPdf) dh+=`<a href="${x.linkPdf}" target="_blank" class="link-pdf" style="margin-left:5px;">🔗</a>`;
+        if(x.rawCat==='Benzina' && x.datiBenzina) {
+            dh+=` <span onclick="mostraDettagliBenzina(${x.id})" style="cursor:pointer; font-size:1.1em; margin-left:5px;">⛽</span>`;
         }
         
-        // 2. Ordinamento
-        m.sort((a,b)=>{const da=new Date(a.data).getTime(),db=new Date(b.data).getTime();return db!==da?db-da:b.id-a.id;});
+        // Prepara testo categoria per la lista
+        let categoriaTesto = x.categoria || '';
+        if(x.rawCat === 'Bolletta' || x.categoria === 'Bolletta') {
+            const tipo = x.tipoBolletta || x.rawSub || '';
+            categoriaTesto = tipo ? `Bolletta - ${tipo}` : 'Bolletta';
+        }
+
+        tr.innerHTML = `
+            <!-- CELLA 1: DESCRIZIONE (Allineata al centro verticalmente) -->
+            <td style="vertical-align: middle;">
+                <span class="data-small">${d}/${mm}/${y}</span>
+                <div style="margin-bottom:4px; word-break:break-word;">${dh}</div>
+                <div><span class="badge ${b}">${l}</span> <span style="font-size:0.85em;color:#666;">• ${categoriaTesto}</span></div>
+            </td>
+            
+            <!-- CELLA 2: IMPORTO (Allineato al centro verticalmente) -->
+            <td class="importo-col ${cl}" style="vertical-align: middle; white-space:nowrap;">
+                ${x.rawCat==='Ricarica CC'?'➡':sg} ${formatEuro(x.importo)}
+            </td>
+            
+            <!-- CELLA 3: AZIONI (Allineate al centro verticalmente) -->
+            <td class="action-cell" style="vertical-align: middle; white-space:nowrap; width:1%; text-align:right;">
+                <button class="action-btn btn-edit" onclick="preparaModifica(${x.id})">✏️</button>
+                <button class="action-btn btn-del" onclick="elimina(${x.id})">🗑️</button>
+            </td>`;
         
-        // 3. CALCOLO TOTALI SEPARATI (Entrate vs Uscite)
-        let totSaldo=0; 
-        let sumEntrate = 0;
-        let sumUscite = 0;
+        t.appendChild(tr);
+    });
 
-        m.forEach(x=>{
-            // Logica Calcoli
-            if(x.rawCat!=='Ricarica CC'){ 
-                if(x.tipo==='entrata') {
-                    totSaldo += x.importo;
-                    sumEntrate += x.importo;
-                } else {
-                    totSaldo -= x.importo;
-                    sumUscite += x.importo;
-                }
-            }
-            
 
-                        // Logica Disegno Riga
-            const tr=document.createElement('tr'); 
-            if(window.idInModifica===x.id) tr.className='editing-row'; 
-            else if(x.rawCat==='Bolletta') tr.className='bolletta-row'; 
-            else if(x.rawCat==='Ricarica CC') tr.className='ricarica-row'; 
-            else if(x.rawCat==='Benzina') tr.className='benzina-row';
+    // 4. Aggiorna Totali Footer (Tabella)
+    const f=document.getElementById('totaleFooter'); if(f) { f.textContent=formatEuro(totSaldo); f.className='importo-col '+(totSaldo>=0?'positivo':'negativo'); }
+    const fh = document.getElementById('totaleHeader'); if(fh) { fh.textContent = formatEuro(totSaldo); fh.style.color = (totSaldo >= 0) ? '#28a745' : '#dc3545'; }
 
-            const sg=x.tipo==='entrata'?'+':'-'; 
-            const cl=x.tipo==='entrata'?'positivo':(x.rawCat==='Ricarica CC'?'neutro':'negativo');
-            const [y,mm,d]=x.data.split('-');
-            
-            let l=x.conto; 
-            if(l==='CC Comune')l='CC'; if(l==='Conto Ste')l='Ste'; if(l==='Conto Vale')l='Vale';
-            
-            let b='badge-cc'; 
-            if(l==='Ste')b='badge-ste'; if(l==='Vale')b='badge-vale'; if(l==='Altro')b='badge-altro';
-            
-            // Costruzione Descrizione con Icona Pompa (se presente)
-            let dh=x.descrizione==="Nessuna descrizione"?`<span style="color:#aaa;font-style:italic;">${x.descrizione}</span>`:`<span style="font-weight:500;">${x.descrizione}</span>`; 
-            if(x.linkPdf) dh+=`<a href="${x.linkPdf}" target="_blank" class="link-pdf" style="margin-left:5px;">🔗</a>`;
-            if(x.rawCat==='Benzina' && x.datiBenzina) {
-                dh+=` <span onclick="mostraDettagliBenzina(${x.id})" style="cursor:pointer; font-size:1.1em; margin-left:5px;">⛽</span>`;
-            }
-            
-            tr.innerHTML = `
-                <!-- CELLA 1: DESCRIZIONE (Allineata al centro verticalmente) -->
-                <td style="vertical-align: middle;">
-                    <span class="data-small">${d}/${mm}/${y}</span>
-                    <div style="margin-bottom:4px; word-break:break-word;">${dh}</div>
-                    <div><span class="badge ${b}">${l}</span> <span style="font-size:0.85em;color:#666;">• ${x.categoria}</span></div>
-                </td>
-                
-                <!-- CELLA 2: IMPORTO (Allineato al centro verticalmente) -->
-                <td class="importo-col ${cl}" style="vertical-align: middle; white-space:nowrap;">
-                    ${x.rawCat==='Ricarica CC'?'➡':sg} ${formatEuro(x.importo)}
-                </td>
-                
-                <!-- CELLA 3: AZIONI (Allineate al centro verticalmente) -->
-                <td class="action-cell" style="vertical-align: middle; white-space:nowrap; width:1%; text-align:right;">
-                    <button class="action-btn btn-edit" onclick="preparaModifica(${x.id})">✏️</button>
-                    <button class="action-btn btn-del" onclick="elimina(${x.id})">🗑️</button>
-                </td>`;
-            
-            t.appendChild(tr);
-        });
+    // 5. AGGIORNA DASHBOARD IN ALTO (Con la nuova funzione!)
+    aggiornaBoxTotaliDashboard(sumEntrate, sumUscite);
 
-        
-        // 4. Aggiorna Totali Footer (Tabella)
-        const f=document.getElementById('totaleFooter'); if(f) { f.textContent=formatEuro(totSaldo); f.className='importo-col '+(totSaldo>=0?'positivo':'negativo'); }
-        const fh = document.getElementById('totaleHeader'); if(fh) { fh.textContent = formatEuro(totSaldo); fh.style.color = (totSaldo >= 0) ? '#28a745' : '#dc3545'; }
-
-        // 5. AGGIORNA DASHBOARD IN ALTO (Con la nuova funzione!)
-        aggiornaBoxTotaliDashboard(sumEntrate, sumUscite);
-
-    } // Fine Render
+} // Fine Render
 
 
 
@@ -2048,62 +2295,173 @@ window.calcolaSaldiGlobali = function() {
     window.rimuoviVoce = async function(t,v){ if(!confirm("Del?"))return; if(t==='cat')window.categorie=window.categorie.filter(x=>x!==v); else if(t==='boll')window.tipiBolletta=window.tipiBolletta.filter(x=>x!==v); else window.nomiSuper=window.nomiSuper.filter(x=>x!==v); renderSettings(); initUI(); await salvaSettingsSuFirebase(); }
     window.spostaVoce = async function(t,i,o){ let a; if(t==='cat')a=window.categorie;else if(t==='boll')a=window.tipiBolletta;else a=window.nomiSuper; const n=i+o; if(n<0||n>=a.length)return; [a[i],a[n]]=[a[n],a[i]]; renderSettings(); initUI(); await salvaSettingsSuFirebase(); }
 
-    window.salvaNuovaScadenza = async function() {
-        const dt = document.getElementById('scadDate').value, c = document.getElementById('scadConto').value, imp = parseFloat(document.getElementById('scadImporto').value), cat = document.getElementById('scadCategoria').value, dsc = document.getElementById('scadDesc').value.trim(), lnk = document.getElementById('scadLink').value.trim();
-        let sub = null; if(!dt || isNaN(imp) || imp <= 0) return alert("Dati mancanti");
-        if(cat === 'Bolletta' || cat === 'Supermercato') sub = document.getElementById('scadSub').value;
-        const obj = { id: Date.now(), data: dt, conto: c, importo: imp, categoria: cat, rawSub: sub, descrizione: dsc||cat, link: lnk };
-        window.scadenze.push(obj); renderScadenze(); checkAlertScadenze(); document.getElementById('scadImporto').value=''; document.getElementById('scadDesc').value=''; await salvaScadenzaSuFirebase(obj); alert("Salvata!");
-    }
-    window.eliminaScadenza = async function(id) { if(confirm("Eliminare?")) { window.scadenze = window.scadenze.filter(x => x.id !== id); renderScadenze(); checkAlertScadenze(); await eliminaScadenzaSuFirebase(id); } }
-    window.pagaRinnova = async function(id, mesi) {
-    const s = window.scadenze.find(x => x.id === id);
-    if(!s) return;
-    
-    if(!confirm(`Pagare € ${s.importo} e rinnovare tra ${mesi} mesi?`)) return;
-    
-    let cc = s.categoria; 
-    if(s.rawSub) cc = `${s.categoria} - ${s.rawSub}`;
-    
-    // Recuperiamo la data della scadenza come stringa (es: "2026-06-01")
-    const dataScadenzaStr = s.data || s.date; 
-    
-    // 1. REGISTRAZIONE SPESA
-    // Usa la data della scadenza, non la data di oggi!
-    const mov = { 
-        id: Date.now(), 
-        tipo: 'uscita', 
-        data: dataScadenzaStr, // <--- Modifica: registra la spesa nel giorno esatto in cui scadeva
-        importo: parseFloat(s.importo), 
-        categoria: cc, 
-        rawCat: s.categoria, 
-        rawSub: s.rawSub || null, 
-        descrizione: s.descrizione, 
-        conto: s.conto, 
-        linkPdf: s.link || "" 
-    };
-    
-    await window.salvaNuovo('uscita', mov);
+   window.salvaNuovaScadenza = async function() {
+    const data = document.getElementById('scadDate').value;
+    const conto = document.getElementById('scadConto').value;
+    const importo = parseFloat(document.getElementById('scadImporto').value);
+    const cat = document.getElementById('scadCategoria').value;
+    const desc = document.getElementById('scadDesc').value.trim();
+    const link = document.getElementById('scadLink').value.trim();
+    const sub = document.getElementById('scadSub')?.value || '';
+    const consumo = document.getElementById('scadConsumo')?.value || '';
+    const unita = document.getElementById('scadUnita')?.value || '';
+    const dataDal = document.getElementById('scadDal')?.value || '';
+    const dataAl = document.getElementById('scadAl')?.value || '';
 
-    // 2. CALCOLO NUOVA DATA PER IL RINNOVO
-    const [y, m, d] = dataScadenzaStr.split('-'); 
-    const dt = new Date(y, m-1, d);
-    
-    if(mesi === 12) {
-        dt.setFullYear(dt.getFullYear() + 1); 
-    } else {
-        dt.setMonth(dt.getMonth() + mesi);
+    if(!data || !cat) {
+        alert('Compila data e categoria.');
+        return;
     }
-    
-    s.data = formatLocalYMD(dt); 
-    s.date = s.data; // Aggiorniamo entrambi i campi per sicurezza
-    
-    renderScadenze(); 
-    if(window.checkBadgeScadenze) window.checkBadgeScadenze(); 
-    
-    await salvaScadenzaSuFirebase(s); 
-    alert("Pagato e Rinnovato!");
-}
+
+    // Se è bolletta ma non ho tipo, non forza descrizione
+    if (cat === 'Bolletta' && !sub) {
+        alert('Per Bolletta, scegli il tipo (Enel/Gas/Acqua).');
+        return;
+    }
+
+    // Oggetto scadenza
+    const nuovaScadenza = {
+        id: Date.now(),
+        data: data,
+        conto: conto,
+        importo: isNaN(importo) ? 0 : importo,
+        categoria: cat,
+        rawSub: sub,
+        bollettaConsumo: consumo,
+        bollettaUnita: unita,
+        bollettaDal: dataDal,
+        bollettaAl: dataAl,
+        descrizione: desc,
+        link: link
+    };
+
+    // Inserimento nella lista
+    window.scadenze.push(nuovaScadenza);
+
+    // Aggiorna grafica
+    renderScadenze();
+    if(typeof checkAlertScadenze === "function") checkAlertScadenze();
+
+    // Reset form
+    document.getElementById('scadDate').value = '';
+    document.getElementById('scadImporto').value = '';
+    document.getElementById('scadDesc').value = '';
+    document.getElementById('scadLink').value = '';
+    document.getElementById('scadConsumo').value = '';
+    document.getElementById('scadDal').value = '';
+    document.getElementById('scadAl').value = '';
+    document.getElementById('scadSub').value = '';
+    window.idScadenzaInModifica = null;
+
+    const btn = document.querySelector('button[onclick="salvaNuovaScadenza()"]');
+    if(btn) {
+        btn.innerHTML = "Salva Scadenza";
+        btn.style.background = "";
+    }
+
+    // Se hai salvataggio Firebase, salva qui
+    try {
+        if(typeof salvaScadenzaSuFirebase === "function") {
+            await salvaScadenzaSuFirebase(nuovaScadenza);
+        }
+    } catch(e) {
+        console.error("Errore salvataggio Firebase:", e);
+        alert("Attenzione: la scadenza non è stata salvata sul server per un problema di rete.");
+    }
+};
+    window.eliminaScadenza = async function(id) { if(confirm("Eliminare?")) { window.scadenze = window.scadenze.filter(x => x.id !== id); renderScadenze(); checkAlertScadenze(); await eliminaScadenzaSuFirebase(id); } }
+	
+   window.pagaRinnova = function(id, mesi) {
+    const s = window.scadenze.find(x => x.id === id);
+    if(!s) return alert("Scadenza non trovata");
+
+    // 1. Calcola la nuova data di scadenza (solo scadenza)
+    const [y, m, d] = s.data.split('-');
+    const dataOrig = new Date(y, m - 1, d);
+    const dataNew = new Date(dataOrig);
+    dataNew.setMonth(dataNew.getMonth() + mesi);
+
+    const newY = dataNew.getFullYear();
+    const newM = String(dataNew.getMonth() + 1).padStart(2, '0');
+    const newD = String(dataNew.getDate()).padStart(2, '0');
+    const newData = `${newY}-${newM}-${newD}`;
+
+    // 2. Crea la spesa con i dati ORIGINALI + campi normalizzati
+    const spesaPagata = {
+        id: Date.now(),
+        data: s.data,
+        conto: s.conto,
+        importo: s.importo,
+
+        // Campi originali
+        rawCat: s.categoria || '',          
+        categoria: s.categoria,
+        rawSub: s.rawSub || '',
+        
+        // MANTIENE IL LINK PER LE SPESE (corretto)
+        link: s.link || '',
+        linkPdf: s.link || s.linkPdf || '', // <-- ECCO LA SOLUZIONE!
+
+        bollettaConsumo: s.bollettaConsumo || '',
+        bollettaUnita: s.bollettaUnita || '',
+        bollettaDal: s.bollettaDal || '',
+        bollettaAl: s.bollettaAl || '',
+
+        // Descrizione: prende la descrizione completa direttamente dalla scadenza
+        descrizione: s.descrizione,
+
+        // Campi normalizzati per il form di "Spese"
+        categoriaBolletta: s.categoria || '',
+        tipoBolletta: s.rawSub || '',
+        consumoBollettaDal: s.bollettaDal || '',
+        consumoBollettaAl: s.bollettaAl || '',
+        consumoBolletta: s.bollettaConsumo || '',
+
+        tipologia: 'spesa'
+    };
+
+    // Assicurati che window.movimenti esiste
+    if (!window.movimenti) {
+        console.warn("window.movimenti non esiste, creo array");
+        window.movimenti = [];
+    }
+
+    // Aggiungi in movimenti (lista principale)
+    window.movimenti.push(spesaPagata);
+    render();
+    calcolaSaldiGlobali();
+
+    // Salva spesa su Firebase
+    if (typeof salvaMovimentoSuFirebase === "function") {
+        salvaMovimentoSuFirebase(spesaPagata).catch(e => {
+            console.error("Errore salvataggio spesa Firebase:", e);
+        });
+    }
+
+    // 3. Aggiorna solo la data di scadenza
+    s.data = newData;
+
+    // Salva scadenza aggiornata su Firebase
+    if (typeof salvaScadenzaSuFirebase === "function") {
+        salvaScadenzaSuFirebase(s).catch(e => {
+            console.error("Errore salvataggio scadenza Firebase:", e);
+        });
+    }
+
+    // 4. Ridisegna liste
+    renderScadenze();
+
+    if(typeof checkAlertScadenze === "function") checkAlertScadenze();
+
+    // 5. Mostra finestrella di conferma
+    const mesiStr = mesi === 1 ? "1 mese" :
+                    mesi === 2 ? "2 mesi" :
+                    mesi === 3 ? "3 mesi" :
+                    mesi === 12 ? "1 anno" :
+                    mesi + " mesi";
+
+    alert(`Spesa pagata e spostata di +${mesiStr}`);
+};
 
     window.renderScadenze = function() {
     const div = document.getElementById('listScadenze'); 
@@ -2112,7 +2470,7 @@ window.calcolaSaldiGlobali = function() {
     
     window.scadenze.sort((a,b) => new Date(a.data) - new Date(b.data)); 
     
-    if(window.scadenze.length === 0) { 
+    if(window.scadenze.length === 0){ 
         div.innerHTML = '<p style="color:#888; text-align:center;">Nessuna scadenza.</p>'; 
         return; 
     }
@@ -2132,39 +2490,28 @@ window.calcolaSaldiGlobali = function() {
 
         const dataFormattata = `${d}/${m}/${y}`;
         
-        // Icona link posizionata in modo che non disturbi il testo lungo
-        let htmlLink = s.link ? `<a href="${s.link}" target="_blank" style="margin-left:5px; text-decoration:none; display:inline-block;" title="Apri Link">🌐</a>` : '';
+        // Icona link
+        let htmlLink = s.link ? `<a href="${s.link}" target="_blank" style="margin-left:8px; text-decoration:none;" title="Apri Link">🌐</a>` : '';
 
         const importoStr = parseFloat(s.importo) > 0 ? `€ ${parseFloat(s.importo).toFixed(2)}` : '€ 0.00';
 
         div.innerHTML += `
         <div class="scad-card ${st}" style="padding:10px;">
-            
-            <!-- RIGA PRINCIPALE CON FLEXBOX (evita che vada a capo) -->
             <div style="display:flex; justify-content:space-between; align-items:center; gap:10px; width:100%; overflow:hidden;">
-                
-                <!-- BLOCCO TESTI (Descrizione e Data) -->
                 <div style="flex:1; min-width:0; overflow:hidden;">
-                    
-                    <!-- DESCRIZIONE (con taglio a 3 puntini se troppo lunga) -->
                     <div style="font-size:1.05em; color:#333; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; display:flex; align-items:center;">
                         <span style="overflow:hidden; text-overflow:ellipsis;">${s.descrizione}</span>
                         ${htmlLink}
                     </div>
-                    
-                    <!-- DATI SOTTO LA DESCRIZIONE -->
                     <div style="font-size:0.85em; color:#666; margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
                         <span style="color:#000;">${dataFormattata}</span> • ${s.conto} • ${cc}
                     </div>
                 </div>
-                
-                <!-- BLOCCO IMPORTO (Fermo a destra, carattere rimpicciolito) -->
                 <div style="font-size:1.1em; color:#d32f2f; white-space:nowrap; flex-shrink:0; text-align:right;">
                     ${importoStr}
                 </div>
             </div>
             
-            <!-- RIGA BOTTONI -->
             <div style="display:flex; justify-content:space-between; align-items:center; margin-top:12px;">
                 <div class="s-btn-group">
                     <button class="s-btn" onclick="pagaRinnova(${s.id},1)">+1M</button>
@@ -2174,7 +2521,7 @@ window.calcolaSaldiGlobali = function() {
                 </div>
                 
                 <div style="display:flex; gap:5px;">
-                    <button class="s-btn" onclick="modificaScadenza(${s.id})" style="background:#ff9800; color:white;">✏️</button>
+                    <button class="s-btn" onclick="preparaModificaScadenza(${s.id})" style="background:#ff9800; color:white;">✏️</button>
                     <button class="s-btn s-btn-del" onclick="eliminaScadenza(${s.id})">🗑</button>
                 </div>
             </div>
@@ -2185,7 +2532,86 @@ window.calcolaSaldiGlobali = function() {
 
 
     window.checkAlertScadenze = function(){ const b = document.getElementById('badgeScadenze'); if(!b)return; const oggi=new Date(); oggi.setHours(0,0,0,0); const dom=new Date(oggi); dom.setDate(dom.getDate()+1); const has = window.scadenze.some(s => { const [y,m,d]=s.data.split('-'); return new Date(y,m-1,d) <= dom; }); b.style.display = has ? 'flex' : 'none'; }
-    window.gestisciCatScadenza = function(){ const c=document.getElementById('scadCategoria').value, b=document.getElementById('boxScadSub'), s=document.getElementById('scadSub'); s.innerHTML=''; if(c==='Bolletta'){b.style.display='block';popolaSelect('scadSub',window.tipiBolletta);} else if(c==='Supermercato'){b.style.display='block';popolaSelect('scadSub',window.nomiSuper);} else b.style.display='none'; }
+window.gestisciCatScadenza = function() {
+    const cat = document.getElementById('scadCategoria').value;
+    const boxSub = document.getElementById('boxScadSub');
+    const boxPeriodo = document.getElementById('boxScadPeriodo');
+    const sub = document.getElementById('scadSub');
+    const unita = document.getElementById('scadUnita');
+
+    if (cat === 'Bolletta') {
+        boxSub.style.display = 'block';
+
+        if (sub && sub.value) {
+            boxPeriodo.style.display = 'block';
+
+            // Unità automatica
+            if (sub.value === 'Enel') {
+                unita.value = 'kWh';
+            } else if (sub.value === 'Gas') {
+                unita.value = 'Smc';
+            } else if (sub.value === 'Acqua') {
+                unita.value = 'mc';
+            } else {
+                unita.value = '';
+            }
+
+            // Ricostruisci descrizione
+            autoDescScad();
+        } else {
+            boxPeriodo.style.display = 'none';
+        }
+    } else {
+        boxSub.style.display = 'none';
+        boxPeriodo.style.display = 'none';
+    }
+};
+
+
+window.autoDescScad = function() {
+    const cat = document.getElementById('scadCategoria').value;
+    const sub = document.getElementById('scadSub')?.value || '';
+    
+    // Leggi i valori esatti dagli input
+    const consumo = document.getElementById('scadConsumo')?.value || '';
+    const unita = document.getElementById('scadUnita')?.value || '';
+    const dataDal = document.getElementById('scadDal')?.value || '';
+    const dataAl = document.getElementById('scadAl')?.value || '';
+
+    const descField = document.getElementById('scadDesc');
+
+    if (cat !== 'Bolletta' || !sub) {
+        return;
+    }
+
+    // Formattazione data italiana: dd/mm/yy
+    const formatDataIta = (dataString) => {
+        if(!dataString) return "";
+        const [y, m, d] = dataString.split('-');
+        return `${d}/${m}/${y.slice(-2)}`;
+    };
+
+    // Inizia la descrizione
+    let descComposta = `Bolletta ${sub}`;
+
+    // Aggiungi il consumo se c'è
+    if (consumo && consumo.trim() !== '') {
+        descComposta += ` - (${consumo.trim()} ${unita.replace('/','').trim()})`;
+    }
+
+    // Aggiungi le date
+    if (dataDal && dataAl) {
+        descComposta += ` dal ${formatDataIta(dataDal)} al ${formatDataIta(dataAl)}`;
+    } else if (dataDal) {
+        descComposta += ` dal ${formatDataIta(dataDal)}`;
+    } else if (dataAl) {
+        descComposta += ` fino al ${formatDataIta(dataAl)}`;
+    }
+
+    // Inserisci la stringa nel campo descrizione
+    descField.value = descComposta;
+};
+
     window.salvaNuovaNota = async function() {
         const dt = document.getElementById('noteDate').value, obj = document.getElementById('noteOggetto').value.trim(), txt = document.getElementById('noteTesto').value.trim(); if(!dt || !obj) return alert("Dati mancanti");
         const n = { id: window.idNotaModifica || Date.now(), data: dt, oggetto: obj, testo: txt };
@@ -2237,12 +2663,83 @@ window.renderNote = function() {
         </div>`;
     });
 }
-    window.preparaModificaNota = function(id) {
-        const n = window.note.find(x => x.id === id); if(!n) return; window.idNotaModifica = id;
-        document.getElementById('noteDate').value = n.data; document.getElementById('noteOggetto').value = n.oggetto; document.getElementById('noteTesto').value = n.testo;
-        document.getElementById('btnSalvaNota').innerHTML = "💾 Aggiorna Nota"; document.getElementById('btnSalvaNota').style.background = "#ffc107"; document.getElementById('btnSalvaNota').style.color="black";
-        document.getElementById('titoloBoxNote').textContent = "Modifica Nota"; document.getElementById('notesPanel').scrollTop = 0;
+window.preparaModifica = function(id){
+    const m = window.movimenti.find(x => String(x.id) === String(id)); 
+    if(!m) return alert("Errore");
+    
+    window.idInModifica = m.id;
+    document.getElementById('data').value = m.data; 
+    document.getElementById('importo').value = m.importo; 
+
+    // Forzare descrizione corretta per bollette
+    let descrizionePerForm = m.descrizione;
+    if(m.rawCat === 'Bolletta' || m.categoria === 'Bolletta') {
+        const tipo = m.tipoBolletta || m.rawSub || '';
+        descrizionePerForm = tipo ? `Bolletta - ${tipo}` : 'Bolletta';
     }
+    document.getElementById('descrizione').value = descrizionePerForm === "Nessuna descrizione" ? "" : descrizionePerForm;
+    
+    if(m.rawCat && window.categorie.includes(m.rawCat)) document.getElementById('categoria').value = m.rawCat; 
+    else document.getElementById('categoria').value = window.categorie[0];
+    
+    // 1. Prima chiamo gestisciCategoria() per mostrare/nascondere i div giusti
+    gestisciCategoria(); 
+
+    // 2. Poi popolo i valori nei div appena mostrati
+    if(m.rawCat === 'Bolletta' || m.categoria === 'Bolletta'){
+        // Categoria: usa categoriaBolletta (se esiste) o rawCat come fallback
+        const cat = document.getElementById('categoria');
+        if(cat) {
+            if(m.categoriaBolletta && window.categorie.includes(m.categoriaBolletta)) {
+                cat.value = m.categoriaBolletta;
+            } else if(m.rawCat && window.categorie.includes(m.rawCat)) {
+                cat.value = m.rawCat;
+            } else {
+                cat.value = window.categorie[0];
+            }
+        }
+
+        // Tipo bolletta: usa tipoBolletta (se esiste) o rawSub come fallback
+        const selTipo = document.getElementById('sel_tipo_bolletta_new');
+        if(selTipo) selTipo.value = m.tipoBolletta || m.rawSub || '';
+
+        // PDF
+        if(m.linkPdf) document.getElementById('inp_pdf_new').value = m.linkPdf;
+
+        // Consumo e date
+        const inpConsumo = document.getElementById('inp_consumo_new');
+        const inpDal = document.getElementById('inp_bolletta_dal');
+        const inpAl = document.getElementById('inp_bolletta_al');
+
+        if(inpConsumo) inpConsumo.value = m.consumoBolletta || m.bollettaConsumo || '';
+        if(inpDal) inpDal.value = m.consumoBollettaDal || m.bollettaDal || '';
+        if(inpAl) inpAl.value = m.consumoBollettaAl || m.bollettaAl || '';
+
+        window.logica_consumi_new();
+    }
+    else if(m.rawCat === 'Stipendio'){ 
+        if(m.linkPdf) document.getElementById('inp_pdf_new').value = m.linkPdf;
+    }
+    else if(m.rawCat === 'Supermercato'){ 
+        document.getElementById('selectSuper').value = m.rawSub || ''; 
+    }
+    else if(m.rawCat === 'Benzina' && m.datiBenzina){ 
+        document.getElementById('benLitri').value = m.datiBenzina.litri || ''; 
+        document.getElementById('benKm').value = m.datiBenzina.km || ''; 
+        document.getElementById('benPrezzo').value = m.datiBenzina.prezzo || ''; 
+        document.getElementById('benDistributore').value = m.datiBenzina.distributore || ''; 
+    }
+    
+    document.getElementById('conto').value = m.conto;
+    document.getElementById('titoloForm').textContent = "Modifica Voce"; 
+    document.getElementById('titoloForm').style.color = "#ffc107"; 
+    document.getElementById('btnDefault').style.display = 'none'; 
+    document.getElementById('btnEdit').style.display = 'flex';
+    
+    closeAllPanels(); 
+    window.scrollTo({top: 0, behavior: 'smooth'}); 
+    render();
+};
     window.resetFormNota = function() { window.idNotaModifica = null; document.getElementById('noteOggetto').value=''; document.getElementById('noteTesto').value=''; document.getElementById('noteDate').value=formatLocalYMD(new Date()); document.getElementById('btnSalvaNota').innerHTML="Salva Nota"; document.getElementById('btnSalvaNota').style.background="#20c997"; document.getElementById('btnSalvaNota').style.color="white"; document.getElementById('titoloBoxNote').textContent="Nuova Nota"; }
 
     window.initPatrimonio = function(){ renderFondiConfig(); if(document.getElementById('patrimonioDate'))document.getElementById('patrimonioDate').value=formatLocalYMD(new Date()); renderPatrimonioTable(); }
@@ -2380,14 +2877,7 @@ window.renderFondiConfig = function() {
         });
     }
     window.eliminaPatrimonio = async function(id){ if(confirm("Del?")){ window.patrimonioHistory=window.patrimonioHistory.filter(x=>x.id!==id); renderPatrimonioTable(); await eliminaPatrimonioSuFirebase(id); } }
-    window.preparaModificaPatrimonio = function(id) {
-        const rec = window.patrimonioHistory.find(x => x.id == id); if(!rec) return; window.idPatrimonioModifica = rec.id;
-        const box = document.getElementById('boxRilevazione'); if(box) box.open = true; renderPatrimonioInputs();
-        document.getElementById('patrimonioDate').value = rec.data;
-        const liqIn = document.getElementById('patrimonioLiq'); if(liqIn) { liqIn.value = rec.liquidita; liqIn.dataset.value = rec.liquidita; liqIn.removeAttribute('readonly'); liqIn.style.border = "2px solid #ffc107"; }
-        (window.fondiConfig || []).forEach(f => { const d = rec.dettagliFondi[f.id]; if(d) { document.getElementById('val_' + f.id).value = d.val; document.getElementById('quote_' + f.id).value = d.quoteVal; calcolaFruttiInput(f.id); } });
-        const btn = document.querySelector("button[onclick='salvaRilevazionePatrimonio()']"); if(btn) { btn.innerHTML = "💾 <b>AGGIORNA</b>"; btn.style.background = "#ffc107"; btn.style.color = "black"; }
-    }
+
     window.aggiornaSuggerimentiDescrizione = function() {
         const cat = document.getElementById('categoria').value, dl = document.getElementById('listaSuggerimenti'); if(!dl) return; dl.innerHTML = '';
         const pertinenti = window.movimenti.filter(x => x.rawCat === cat || x.categoria === cat); pertinenti.sort((a,b) => new Date(b.data) - new Date(a.data));
@@ -2401,7 +2891,8 @@ window.renderFondiConfig = function() {
     window.triggerImport = function() { document.getElementById('fileInput').click(); }
     window.processaFile = function(inp) {
         const f = inp.files[0]; if(!f) return; const r = new FileReader();
-        r.onload = async function(e) { try { const j = JSON.parse(e.target.result); if(j.tipo !== 'bilancio_sv_backup') return alert("File non valido"); if(!confirm("Importare? Dati verranno aggiunti.")) return;
+        r.onload = async function(e) { try { const j = JSON.parse(e.target.result); if(j.tipo !== 'bilancio_sv_backup') return 
+		("File non valido"); if(!confirm("Importare? Dati verranno aggiunti.")) return;
         const unisci = (t, s) => { if(s) s.forEach(x => { if(!t.includes(x)) t.push(x); }); };
         unisci(window.categorie, j.config.categorie); unisci(window.tipiBolletta, j.config.bollette); unisci(window.nomiSuper, j.config.supermercati); if(j.offsets) window.balanceOffsets = j.offsets; await salvaSettingsSuFirebase();
         for (const i of j.dati) if(!window.movimenti.some(x => x.id === i.id)) { window.movimenti.push(i); await salvaMovimentoSuFirebase(i); }
@@ -2559,87 +3050,230 @@ window.modificaScadenza = function(id) {
     document.getElementById('scadDate').scrollIntoView({behavior: "smooth"});
 };
 
+		window.preparaModificaScadenza = function(id) {
+			const s = window.scadenze.find(x => x.id === id);
+			if(!s) return alert("Errore");
+
+			window.idScadenzaInModifica = s.id;
+
+			document.getElementById('scadDate').value = s.data || '';
+			document.getElementById('scadConto').value = s.conto || 'CC';
+			document.getElementById('scadImporto').value = s.importo || '';
+			document.getElementById('scadCategoria').value = s.categoria || '';
+			document.getElementById('scadDesc').value = s.descrizione || '';
+			document.getElementById('scadLink').value = s.link || '';
+
+			// Sottocategoria
+			if(s.rawSub) {
+				document.getElementById('scadSub').value = s.rawSub;
+				document.getElementById('boxScadSub').style.display = 'block';
+			} else {
+				document.getElementById('boxScadSub').style.display = 'none';
+			}
+
+			// Periodo e consumo per bolletta
+			if(s.categoria === 'Bolletta') {
+				if(s.rawSub) document.getElementById('scadSub').value = s.rawSub;
+
+				// CARICAMENTO CORRETTO DI CONSUMO E UNITA
+				if(s.bollettaConsumo) document.getElementById('scadConsumo').value = s.bollettaConsumo;
+				if(s.bollettaUnita) document.getElementById('scadUnita').value = s.bollettaUnita;
+				if(s.bollettaDal) document.getElementById('scadDal').value = s.bollettaDal;
+				if(s.bollettaAl) document.getElementById('scadAl').value = s.bollettaAl;
+
+				document.getElementById('boxScadSub').style.display = 'block';
+				document.getElementById('boxScadPeriodo').style.display = 'block';
+			} else {
+				document.getElementById('scadSub').value = '';
+				document.getElementById('boxScadSub').style.display = 'none';
+				document.getElementById('boxScadPeriodo').style.display = 'none';
+			}
+
+			// Cambia bottone in "Modifica"
+			const btn = document.querySelector('button[onclick="salvaNuovaScadenza()"]');
+			if(btn) {
+				btn.innerHTML = "✏️ Modifica Scadenza";
+				btn.style.background = "#ff9800";
+			}
+
+			document.getElementById('scadDate').scrollIntoView({behavior: "smooth"});
+		};
+
+
 // Devi sovrascrivere la tua funzione salvaNuovaScadenza() esistente con questa:
 window.salvaNuovaScadenza = async function() {
     const data = document.getElementById('scadDate').value;
     const conto = document.getElementById('scadConto').value;
     const importo = parseFloat(document.getElementById('scadImporto').value);
     const cat = document.getElementById('scadCategoria').value;
-    const desc = document.getElementById('scadDesc').value.trim();
+    const descBase = document.getElementById('scadDesc').value.trim();
     const link = document.getElementById('scadLink').value.trim();
     let sub = '';
-    
+
     if (document.getElementById('boxScadSub').style.display !== 'none') {
         sub = document.getElementById('scadSub').value;
     }
 
-    if(!data || !cat || !desc) {
-        alert('Compila data, categoria e descrizione.');
+    if(!data || !cat) {
+        alert('Compila data e categoria.');
         return;
     }
 
+    // Formattazione data italiana
+    const formatDataIta = (dataString) => {
+        if(!dataString) return "";
+        const [y, m, d] = dataString.split('-');
+        return `${d}/${m}/${y.slice(-2)}`;
+    };
+
+    // Estrai consumo e unità CORRETTAMENTE
+    const consumo = document.getElementById('scadConsumo')?.value || '';
+    const unita = document.getElementById('scadUnita')?.value || '';
+    const dataDal = document.getElementById('scadDal')?.value || '';
+    const dataAl = document.getElementById('scadAl')?.value || '';
+
+    // Ricostruzione descrizione per bolletta
+    const ricostruisciDescrizioneBolletta = () => {
+        const subBolletta = document.getElementById('scadSub')?.value || '';
+
+        let descComposta = `Bolletta ${subBolletta}`;
+
+        if (consumo && consumo.trim() !== '') {
+            descComposta += ` - (${consumo.trim()} ${unita.replace('/','').trim()})`;
+        }
+
+        if (dataDal && dataAl) {
+            descComposta += ` dal ${formatDataIta(dataDal)} al ${formatDataIta(dataAl)}`;
+        } else if (dataDal) {
+            descComposta += ` dal ${formatDataIta(dataDal)}`;
+        } else if (dataAl) {
+            descComposta += ` fino al ${formatDataIta(dataAl)}`;
+        }
+
+        return descComposta;
+    };
+
     let scadenzaObj = null;
 
-    if (window.scadenzaInModifica !== null) {
+    if (window.idScadenzaInModifica !== null) {
         // --- MODIFICA SCADENZA ESISTENTE ---
-        const indice = window.scadenze.findIndex(x => x.id === window.scadenzaInModifica);
+        const indice = window.scadenze.findIndex(x => x.id === window.idScadenzaInModifica);
         if(indice !== -1) {
             window.scadenze[indice].data = data;
             window.scadenze[indice].conto = conto;
             window.scadenze[indice].importo = isNaN(importo) ? 0 : importo;
             window.scadenze[indice].categoria = cat;
-            window.scadenze[indice].descrizione = desc;
             window.scadenze[indice].rawSub = sub;
             window.scadenze[indice].link = link;
-            
+
+            // Se è bolletta, aggiorna consumo e periodo CORRETTAMENTE
+            if(cat === 'Bolletta') {
+                window.scadenze[indice].bollettaConsumo = consumo;
+                window.scadenze[indice].bollettaUnita = unita;
+                window.scadenze[indice].bollettaDal = dataDal;
+                window.scadenze[indice].bollettaAl = dataAl;
+                window.scadenze[indice].descrizione = ricostruisciDescrizioneBolletta();
+            }
+
             scadenzaObj = window.scadenze[indice];
         }
     } else {
         // --- CREA NUOVA SCADENZA ---
         scadenzaObj = {
-            id: Date.now(), // Usa il timestamp come ID univoco (perfetto per string(obj.id))
+            id: Date.now(),
             data: data,
             conto: conto,
             importo: isNaN(importo) ? 0 : importo,
             categoria: cat,
-            descrizione: desc,
             rawSub: sub,
-            link: link
+            link: link,
+            bollettaConsumo: consumo,
+            bollettaUnita: unita,
+            bollettaDal: dataDal,
+            bollettaAl: dataAl,
+            descrizione: descBase
         };
         window.scadenze.push(scadenzaObj);
     }
 
-    // Se per qualche motivo l'oggetto non esiste, blocca
     if (!scadenzaObj) return;
 
-    // --- AGGIORNAMENTO GRAFICA IMMEDIATO ---
-    renderScadenze(); 
+    // Aggiornamento grafica
+    renderScadenze();
     if(typeof checkAlertScadenze === "function") checkAlertScadenze();
 
-    // Reset del form e del bottone (torna a "Nuova Scadenza")
+    // Reset form e bottone
     document.getElementById('scadDate').value = '';
     document.getElementById('scadImporto').value = '';
     document.getElementById('scadDesc').value = '';
     document.getElementById('scadLink').value = '';
-    window.scadenzaInModifica = null; 
-    
+    document.getElementById('scadConsumo').value = '';
+    document.getElementById('scadDal').value = '';
+    document.getElementById('scadAl').value = '';
+    document.getElementById('scadSub').value = '';
+    window.idScadenzaInModifica = null;
+
     const btn = document.querySelector('button[onclick="salvaNuovaScadenza()"]');
     if(btn) {
         btn.innerHTML = "Salva Scadenza";
-        btn.style.background = ""; // Rimuove il colore arancione
+        btn.style.background = "";
     }
 
-    // --- SALVATAGGIO DEFINITIVO SU FIREBASE ---
+    // Salvataggio su Firebase
     try {
         await salvaScadenzaSuFirebase(scadenzaObj);
     } catch(e) {
-        console.error("Errore durante il salvataggio su Firebase:", e);
+        console.error("Errore salvataggio Firebase:", e);
         alert("Attenzione: la scadenza non è stata salvata sul server per un problema di rete.");
     }
 };
 
 
+window.renderSpese = function() {
+    const div = document.getElementById('listSpese');
+    if(!div) {
+        console.warn("renderSpese: div listSpese non trovato");
+        return;
+    }
 
+    div.innerHTML = '';
+
+    const spese = window.spese || [];
+    if(spese.length === 0) {
+        div.innerHTML = '<p style="color:#888; text-align:center;">Nessuna spesa.</p>';
+        return;
+    }
+
+    // Ordina per data
+    spese.sort((a, b) => new Date(a.data) - new Date(b.data));
+
+    spese.forEach(v => {
+        const [y, m, d] = v.data.split('-');
+        const dataFmt = `${d}/${m}/${y}`;
+        const importoStr = `€ ${parseFloat(v.importo || 0).toFixed(2)}`;
+
+        let htmlLink = v.link ? `<a href="${v.link}" target="_blank" style="margin-left:8px; text-decoration:none;" title="Apri Link">🌐</a>` : '';
+
+        div.innerHTML += `
+        <div style="padding:10px; border-bottom:1px solid #eee;">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+                <div style="flex:1;">
+                    <div style="font-weight:bold;">${v.descrizione || v.titolo || ''}</div>
+                    <div style="font-size:0.85em; color:#666;">
+                        ${dataFmt} • ${v.conto || ''} • ${v.categoria || ''}
+                    </div>
+                    ${v.bollettaConsumo ? `<div style="font-size:0.8em; color:#666; margin-top:4px;">
+                        Consumo: ${v.bollettaConsumo} ${v.bollettaUnita || ''}
+                        ${v.bollettaDal && v.bollettaAl ? ` dal ${v.bollettaDal.split('-').reverse().slice(0,2).join('/')} al ${v.bollettaAl.split('-').reverse().slice(0,2).join('/')}` : ''}
+                    </div>` : ''}
+                </div>
+                <div style="font-weight:bold; color:#d32f2f;">
+                    ${importoStr} ${htmlLink}
+                </div>
+            </div>
+        </div>`;
+    });
+};
 
 
 
