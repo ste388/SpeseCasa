@@ -836,7 +836,7 @@ tfoot td { border-top: 2px solid #333; font-weight: bold; padding-top: 15px; fon
         </div>
 
 <div class="full-width" id="boxScadSub" style="display:none;">
-    <select id="scadSub" onchange="gestisciCatScadenza()">
+    <select id="scadSub" onchange="gestisciCatScadenza(); autoDescScad()">
         <option value="">-- Scegli tipo bolletta --</option>
         <option value="Enel">Enel</option>
         <option value="Gas">Gas</option>
@@ -1340,31 +1340,44 @@ tfoot td { border-top: 2px solid #333; font-weight: bold; padding-top: 15px; fon
     window.nomiSuper = DEF_SUP;
     window.idInModifica = null;
 
-    window.caricaTuttoDaFirebase = async function() {
-        console.log("⏳ Connessione a Firebase...");
-        try {
-            const snapMov = await getDocs(collection(db, "movimenti")); window.movimenti = snapMov.docs.map(d => d.data());
-            const snapSet = await getDocs(collection(db, "settings"));
-            if(!snapSet.empty) {
-                const s = snapSet.docs[0].data();
-                if(s.categorie) window.categorie = s.categorie;
-                if(s.tipiBolletta) window.tipiBolletta = s.tipiBolletta;
-                if(s.nomiSuper) window.nomiSuper = s.nomiSuper;
-                if(s.balanceOffsets) window.balanceOffsets = s.balanceOffsets;
-                if(s.fondiConfig) window.fondiConfig = s.fondiConfig;
-            } else await window.salvaSettingsSuFirebase();
+window.caricaTuttoDaFirebase = async function() {
+    console.log("⏳ Connessione a Firebase...");
+    try {
+        const snapMov = await getDocs(collection(db, "movimenti"));
+        window.movimenti = snapMov.docs.map(d => d.data());
 
-            const snapScad = await getDocs(collection(db, "scadenze")); window.scadenze = snapScad.docs.map(d => d.data());
-            const snapNote = await getDocs(collection(db, "note")); window.note = snapNote.docs.map(d => d.data());
-            const snapPat = await getDocs(collection(db, "patrimonio")); window.patrimonioHistory = snapPat.docs.map(d => d.data());
+        const snapSet = await getDocs(collection(db, "settings"));
+        if (!snapSet.empty) {
+            const s = snapSet.docs[0].data();
 
-            console.log(`✅ Dati caricati!`);
-            initUI(); 
-            if(typeof checkAlertScadenze === 'function') checkAlertScadenze();
-            if(typeof renderFuelReport === 'function') renderFuelReport(); 
+            if (s.categorie) window.categorie = s.categorie;
+            if (s.tipiBolletta) window.tipiBolletta = [...new Set([...s.tipiBolletta, ...DEF_BOL])];
+            if (s.nomiSuper) window.nomiSuper = s.nomiSuper;
+            if (s.balanceOffsets) window.balanceOffsets = s.balanceOffsets;
+            if (s.fondiConfig) window.fondiConfig = s.fondiConfig;
+        } else {
+            await window.salvaSettingsSuFirebase();
+        }
 
-        } catch (err) { console.error("❌ Errore Firebase:", err); alert("Errore connessione DB"); }
+        const snapScad = await getDocs(collection(db, "scadenze"));
+        window.scadenze = snapScad.docs.map(d => d.data());
+
+        const snapNote = await getDocs(collection(db, "note"));
+        window.note = snapNote.docs.map(d => d.data());
+
+        const snapPat = await getDocs(collection(db, "patrimonio"));
+        window.patrimonioHistory = snapPat.docs.map(d => d.data());
+
+        console.log(`✅ Dati caricati!`);
+        initUI();
+        if (typeof checkAlertScadenze === 'function') checkAlertScadenze();
+        if (typeof renderFuelReport === 'function') renderFuelReport();
+
+    } catch (err) {
+        console.error("❌ Errore Firebase:", err);
+        alert("Errore connessione DB");
     }
+}
 
     window.salvaMovimentoSuFirebase = async function(mov) { await setDoc(doc(db, "movimenti", String(mov.id)), mov); }
     window.eliminaMovimentoSuFirebase = async function(id) { await deleteDoc(doc(db, "movimenti", String(id))); }
@@ -1397,21 +1410,64 @@ window.formatEuro = function(numero) {
 
 
     // --- NUOVA LOGICA CONSUMI ---
-    window.logica_consumi_new = function() {
-        const sel = document.getElementById('sel_tipo_bolletta_new');
-        const box = document.getElementById('box_consumo_new');
-        const lbl = document.getElementById('lbl_consumo_new');
-        const span = document.getElementById('span_unit_new');
-        const inp = document.getElementById('inp_consumo_new');
-        if(!sel || !box) return;
-        const val = sel.value.toLowerCase(); let unit = null;
-        if(val.includes('enel') || val.includes('luce') || val.includes('elett')) unit = 'kWh';
-        else if(val.includes('gas') || val.includes('metano')) unit = 'Smc';
-        else if(val.includes('acqua') || val.includes('idric')) unit = 'mc';
-        if(unit) { box.style.display = 'block'; lbl.innerText = 'Inserisci Consumo (' + unit + '):'; span.innerText = unit; inp.dataset.unit = unit; } 
-        else { box.style.display = 'none'; inp.value = ''; inp.dataset.unit = ''; }
+    window.logica_consumi_new = function () {
+    const sel = document.getElementById('sel_tipo_bolletta_new');
+    const box = document.getElementById('box_consumo_new');
+    const lbl = document.getElementById('lbl_consumo_new');
+    const spanUnit = document.getElementById('span_unit_new');
+    const inpConsumo = document.getElementById('inp_consumo_new');
+    const inpDal = document.getElementById('inp_bolletta_dal');
+    const inpAl = document.getElementById('inp_bolletta_al');
+    const descrizione = document.getElementById('descrizione');
+
+    if (!sel) return;
+
+    const tipo = (sel.value || '').trim();
+    const speciali = ['Enel', 'Gas', 'Acqua'];
+    const isSpeciale = speciali.includes(tipo);
+
+    if (box) {
+        box.style.display = isSpeciale ? 'block' : 'none';
+    }
+
+    if (isSpeciale) {
+        if (tipo === 'Enel') {
+            if (lbl) lbl.innerText = 'Consumo Energia:';
+            if (spanUnit) spanUnit.innerText = 'kWh';
+        } else if (tipo === 'Gas') {
+            if (lbl) lbl.innerText = 'Consumo Gas:';
+            if (spanUnit) spanUnit.innerText = 'Smc';
+        } else if (tipo === 'Acqua') {
+            if (lbl) lbl.innerText = 'Consumo Acqua:';
+            if (spanUnit) spanUnit.innerText = 'm³';
+        }
+
+        if (descrizione && !descrizione.value.trim()) {
+            descrizione.value = `Bolletta ${tipo}`;
+        }
+    } else {
+        if (inpConsumo) inpConsumo.value = '';
+        if (inpDal) inpDal.value = '';
+        if (inpAl) inpAl.value = '';
+        if (spanUnit) spanUnit.innerText = '';
+        if (lbl) lbl.innerText = 'Consumo:';
+
+        if (descrizione) {
+            descrizione.value = tipo ? `Bolletta ${tipo}` : '';
+        }
+    }
+
+    if (typeof window.logica_descrizione_new === 'function') {
         window.logica_descrizione_new();
     }
+};
+
+document.addEventListener('DOMContentLoaded', function () {
+    if (typeof window.logica_consumi_new === 'function') {
+        window.logica_consumi_new();
+    }
+});
+
     window.logica_descrizione_new = function() {
         const sel = document.getElementById('sel_tipo_bolletta_new');
         const inp = document.getElementById('inp_consumo_new');
@@ -1443,12 +1499,30 @@ window.formatEuro = function(numero) {
  window.formatLocalYMD = function(d) { const y=d.getFullYear(), m=String(d.getMonth()+1).padStart(2,'0'), dd=String(d.getDate()).padStart(2,'0'); return `${y}-${m}-${dd}`; }
     window.impostaDataOggi = function() { document.getElementById('data').value = formatLocalYMD(new Date()); }
     window.popolaSelect = function(id, arr, addEmpty) {
-        const sel = document.getElementById(id); if(!sel) return;
-        const val = sel.value; sel.innerHTML='';
-        if(addEmpty) { const o=document.createElement('option'); o.value=""; o.text="-- Seleziona --"; sel.appendChild(o); }
-        arr.forEach(x => { const o=document.createElement('option'); o.value=x; o.text=x; sel.appendChild(o); });
-        if(val && arr.includes(val)) sel.value=val;
+    const sel = document.getElementById(id);
+    if (!sel) return;
+
+    const val = sel.value;
+    sel.innerHTML = '';
+
+    if (addEmpty) {
+        const o = document.createElement('option');
+        o.value = "";
+        o.text = id === 'sel_tipo_bolletta_new'
+            ? 'Scegli il tipo di bolletta'
+            : '-- Seleziona --';
+        sel.appendChild(o);
     }
+
+    arr.forEach(x => {
+        const o = document.createElement('option');
+        o.value = x;
+        o.text = x;
+        sel.appendChild(o);
+    });
+
+    if (val && arr.includes(val)) sel.value = val;
+}
     window.initDateRange = function(s, e) {
         const oggi=new Date(), p=new Date(oggi.getFullYear(), oggi.getMonth(), 1), u=new Date(oggi.getFullYear(), oggi.getMonth()+1, 0);
         document.getElementById(s).value = formatLocalYMD(p); document.getElementById(e).value = formatLocalYMD(u);
@@ -1729,44 +1803,60 @@ function formatDataScad(dataString) {
         document.getElementById('selectSuper').value=''; document.getElementById('benLitri').value=''; document.getElementById('benKm').value=''; document.getElementById('benPrezzo').value=''; document.getElementById('benDistributore').value='';
         gestisciCategoria(); impostaDataOggi();
     }
-    window.gestisciCategoria = function(){
+    window.gestisciCategoria = function() {
     const c = document.getElementById('categoria').value;
-    const bE = document.getElementById('btnEntrata'), bU = document.getElementById('btnUscita');
-    const wrapB = document.getElementById('wrapper_bolletta_new'); 
-    const wrapPDF = document.getElementById('wrapper_pdf_only'); // NUOVO RIFERIMENTO
-    const d2 = document.getElementById('divSottoSuper'), d3 = document.getElementById('divSottoBenzina');
-    
-    // Logica Entrata/Uscita
-    if(c==='Stipendio' || c==='Entrata'){ bE.disabled=false; bU.disabled=true; } 
-    else { bE.disabled=true; bU.disabled=false; }
-    
-    // Reset di tutto
-    if(wrapB) wrapB.style.display = 'none';
-    if(wrapPDF) wrapPDF.style.display = 'none'; // Nascondi PDF di default
-    d2.classList.add('hidden'); 
-    d3.classList.add('hidden');
-    
-    // Logica specifica
-    if(c==='Bolletta') {
-        if(wrapB) { 
-            wrapB.style.display = 'block'; 
-            window.logica_consumi_new(); 
+    const bE = document.getElementById('btnEntrata');
+    const bU = document.getElementById('btnUscita');
+    const wrapB = document.getElementById('wrapper_bolletta_new');
+    const wrapPDF = document.getElementById('wrapper_pdf_only');
+    const d2 = document.getElementById('divSottoSuper');
+    const d3 = document.getElementById('divSottoBenzina');
+    const selTipo = document.getElementById('sel_tipo_bolletta_new');
+
+    if (c === 'Stipendio' || c === 'Entrata') {
+        bE.disabled = false;
+        bU.disabled = true;
+    } else {
+        bE.disabled = true;
+        bU.disabled = false;
+    }
+
+    if (wrapB) wrapB.style.display = 'none';
+    if (wrapPDF) wrapPDF.style.display = 'none';
+    if (d2) d2.classList.add('hidden');
+    if (d3) d3.classList.add('hidden');
+
+    if (c === 'Bolletta') {
+        if (wrapB) {
+            wrapB.style.display = 'block';
+
+            // In inserimento nuova voce, resetta il select
+            // In modifica, NON toccarlo
+            if (selTipo && !window.idInModifica) {
+                selTipo.value = '';
+            }
+
+            window.logica_consumi_new();
         }
-        if(wrapPDF) wrapPDF.style.display = 'block'; // Mostra anche PDF
-    } 
-    else if(c==='Stipendio') {
-        // Niente wrapper bolletta, ma SÌ al PDF
-        if(wrapPDF) {
+
+        if (wrapPDF) wrapPDF.style.display = 'block';
+    }
+    else if (c === 'Stipendio') {
+        if (wrapPDF) {
             wrapPDF.style.display = 'block';
-            // Opzionale: cambia label se vuoi
-            // wrapPDF.querySelector('label').textContent = "Link Busta Paga:";
         }
     }
-    else if(c==='Supermercato') d2.classList.remove('hidden');
-    else if(c==='Benzina') d3.classList.remove('hidden');
-    
-    if(typeof aggiornaSuggerimentiDescrizione === 'function') aggiornaSuggerimentiDescrizione();
-}
+    else if (c === 'Supermercato') {
+        if (d2) d2.classList.remove('hidden');
+    }
+    else if (c === 'Benzina') {
+        if (d3) d3.classList.remove('hidden');
+    }
+
+    if (typeof aggiornaSuggerimentiDescrizione === 'function') {
+        aggiornaSuggerimentiDescrizione();
+    }
+};
 
     window.calcolaPrezzoBenzina = function(){ const i=parseFloat(document.getElementById('importo').value), l=parseFloat(document.getElementById('benLitri').value); if(!isNaN(i)&&!isNaN(l)&&l>0)document.getElementById('benPrezzo').value=(i/l).toFixed(3); else document.getElementById('benPrezzo').value=''; }
     window.autoCompilaDescrizione = function(t){
@@ -2494,31 +2584,54 @@ window.gestisciCatScadenza = function() {
     const sub = document.getElementById('scadSub');
     const unita = document.getElementById('scadUnita');
 
+    if (!boxSub || !boxPeriodo || !sub) return;
+
     if (cat === 'Bolletta') {
         boxSub.style.display = 'block';
 
-        if (sub && sub.value) {
+        const valoreAttuale = sub.value;
+        sub.innerHTML = '';
+
+        const o0 = document.createElement('option');
+        o0.value = '';
+        o0.text = 'Scegli il tipo di bolletta';
+        sub.appendChild(o0);
+
+        (window.tipiBolletta || []).forEach(x => {
+            const o = document.createElement('option');
+            o.value = x;
+            o.text = x;
+            sub.appendChild(o);
+        });
+
+        if (valoreAttuale && (window.tipiBolletta || []).includes(valoreAttuale)) {
+            sub.value = valoreAttuale;
+        } else {
+            sub.value = '';
+        }
+
+        const speciali = ['Enel', 'Gas', 'Acqua'];
+
+        if (speciali.includes(sub.value)) {
             boxPeriodo.style.display = 'block';
 
-            // Unità automatica
-            if (sub.value === 'Enel') {
-                unita.value = 'kWh';
-            } else if (sub.value === 'Gas') {
-                unita.value = 'Smc';
-            } else if (sub.value === 'Acqua') {
-                unita.value = 'mc';
-            } else {
-                unita.value = '';
+            if (unita) {
+                if (sub.value === 'Enel') unita.value = 'kWh';
+                else if (sub.value === 'Gas') unita.value = 'Smc';
+                else if (sub.value === 'Acqua') unita.value = 'mc';
             }
 
-            // Ricostruisci descrizione
-            autoDescScad();
+            if (typeof autoDescScad === 'function') autoDescScad();
         } else {
             boxPeriodo.style.display = 'none';
+            if (unita) unita.value = '';
         }
     } else {
         boxSub.style.display = 'none';
         boxPeriodo.style.display = 'none';
+        sub.innerHTML = '<option value="">-- Seleziona --</option>';
+        sub.value = '';
+        if (unita) unita.value = '';
     }
 };
 
@@ -2526,44 +2639,43 @@ window.gestisciCatScadenza = function() {
 window.autoDescScad = function() {
     const cat = document.getElementById('scadCategoria').value;
     const sub = document.getElementById('scadSub')?.value || '';
-    
-    // Leggi i valori esatti dagli input
+
     const consumo = document.getElementById('scadConsumo')?.value || '';
     const unita = document.getElementById('scadUnita')?.value || '';
     const dataDal = document.getElementById('scadDal')?.value || '';
     const dataAl = document.getElementById('scadAl')?.value || '';
 
     const descField = document.getElementById('scadDesc');
+    if (!descField) return;
 
     if (cat !== 'Bolletta' || !sub) {
         return;
     }
 
-    // Formattazione data italiana: dd/mm/yy
+    const speciali = ['Enel', 'Gas', 'Acqua'];
+
     const formatDataIta = (dataString) => {
-        if(!dataString) return "";
+        if (!dataString) return "";
         const [y, m, d] = dataString.split('-');
         return `${d}/${m}/${y.slice(-2)}`;
     };
 
-    // Inizia la descrizione
     let descComposta = `Bolletta ${sub}`;
 
-    // Aggiungi il consumo se c'è
-    if (consumo && consumo.trim() !== '') {
-        descComposta += ` - (${consumo.trim()} ${unita.replace('/','').trim()})`;
+    if (speciali.includes(sub)) {
+        if (consumo && consumo.trim() !== '') {
+            descComposta += ` - (${consumo.trim()} ${unita.replace('/','').trim()})`;
+        }
+
+        if (dataDal && dataAl) {
+            descComposta += ` dal ${formatDataIta(dataDal)} al ${formatDataIta(dataAl)}`;
+        } else if (dataDal) {
+            descComposta += ` dal ${formatDataIta(dataDal)}`;
+        } else if (dataAl) {
+            descComposta += ` fino al ${formatDataIta(dataAl)}`;
+        }
     }
 
-    // Aggiungi le date
-    if (dataDal && dataAl) {
-        descComposta += ` dal ${formatDataIta(dataDal)} al ${formatDataIta(dataAl)}`;
-    } else if (dataDal) {
-        descComposta += ` dal ${formatDataIta(dataDal)}`;
-    } else if (dataAl) {
-        descComposta += ` fino al ${formatDataIta(dataAl)}`;
-    }
-
-    // Inserisci la stringa nel campo descrizione
     descField.value = descComposta;
 };
 
@@ -3054,6 +3166,52 @@ window.modificaScadenza = function(id) {
 			document.getElementById('scadDate').scrollIntoView({behavior: "smooth"});
 		};
 
+
+window.gestisciCategoriaScadenza = function() {
+    const cat = document.getElementById('scadCategoria').value;
+    const boxSub = document.getElementById('boxScadSub');
+    const boxPeriodo = document.getElementById('boxScadPeriodo');
+    const selSub = document.getElementById('scadSub');
+
+    if (!boxSub || !selSub) return;
+
+    if (cat === 'Bolletta') {
+        boxSub.style.display = 'block';
+
+        selSub.innerHTML = '<option value="">Scegli il tipo di bolletta</option>';
+        window.tipiBolletta.forEach(x => {
+            const opt = document.createElement('option');
+            opt.value = x;
+            opt.text = x;
+            selSub.appendChild(opt);
+        });
+
+        if (boxPeriodo) boxPeriodo.style.display = 'none';
+    } else {
+        selSub.innerHTML = '<option value="">-- Seleziona --</option>';
+        boxSub.style.display = 'none';
+        if (boxPeriodo) boxPeriodo.style.display = 'none';
+    }
+};
+
+
+window.gestisciTipoBollettaScadenza = function() {
+    const tipo = document.getElementById('scadSub').value;
+    const boxPeriodo = document.getElementById('boxScadPeriodo');
+    const unita = document.getElementById('scadUnita');
+
+    const speciali = ['Enel', 'Gas', 'Acqua'];
+    const isSpeciale = speciali.includes(tipo);
+
+    if (boxPeriodo) boxPeriodo.style.display = isSpeciale ? 'block' : 'none';
+
+    if (unita) {
+        if (tipo === 'Enel') unita.value = 'kWh';
+        else if (tipo === 'Gas') unita.value = 'Smc';
+        else if (tipo === 'Acqua') unita.value = 'm³';
+        else unita.value = '';
+    }
+};
 
 // Devi sovrascrivere la tua funzione salvaNuovaScadenza() esistente con questa:
 window.salvaNuovaScadenza = async function() {
