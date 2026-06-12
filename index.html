@@ -2364,21 +2364,20 @@ window.calcolaSaldiGlobali = function() {
         return;
     }
 
-    // Oggetto scadenza
-    const nuovaScadenza = {
-        id: Date.now(),
-        data: data,
-        conto: conto,
-        importo: isNaN(importo) ? 0 : importo,
-        categoria: cat,
-        rawSub: sub,
-        bollettaConsumo: consumo,
-        bollettaUnita: unita,
-        bollettaDal: dataDal,
-        bollettaAl: dataAl,
-        descrizione: desc,
-        link: link
-    };
+   const nuovaScadenza = {
+    id: Date.now(),
+    data: data,
+    conto: conto,
+    importo: isNaN(importo) ? 0 : importo,
+    categoria: cat,
+    rawSub: sub,
+    bollettaConsumo: consumo,
+    bollettaUnita: unita,
+    bollettaDal: dataDal,
+    bollettaAl: dataAl,
+    descrizione: desc,
+    link: ''
+};
 
     // Inserimento nella lista
     window.scadenze.push(nuovaScadenza);
@@ -2417,10 +2416,12 @@ window.calcolaSaldiGlobali = function() {
     window.eliminaScadenza = async function(id) { if(confirm("Eliminare?")) { window.scadenze = window.scadenze.filter(x => x.id !== id); renderScadenze(); checkAlertScadenze(); await eliminaScadenzaSuFirebase(id); } }
 	
    window.pagaRinnova = function(id, mesi) {
-    const s = window.scadenze.find(x => x.id === id);
-    if(!s) return alert("Scadenza non trovata");
+    const idx = window.scadenze.findIndex(x => x.id === id);
+    if (idx === -1) return alert("Scadenza non trovata");
 
-    // 1. Calcola la nuova data di scadenza (solo scadenza)
+    const s = window.scadenze[idx];
+
+    // 1. Calcola la nuova data di scadenza
     const [y, m, d] = s.data.split('-');
     const dataOrig = new Date(y, m - 1, d);
     const dataNew = new Date(dataOrig);
@@ -2431,31 +2432,27 @@ window.calcolaSaldiGlobali = function() {
     const newD = String(dataNew.getDate()).padStart(2, '0');
     const newData = `${newY}-${newM}-${newD}`;
 
-    // 2. Crea la spesa con i dati ORIGINALI + campi normalizzati
+    // 2. Crea la spesa pagata con i dati originali
     const spesaPagata = {
         id: Date.now(),
         data: s.data,
         conto: s.conto,
         importo: s.importo,
 
-        // Campi originali
-        rawCat: s.categoria || '',          
+        rawCat: s.categoria || '',
         categoria: s.categoria,
         rawSub: s.rawSub || '',
-        
-        // MANTIENE IL LINK PER LE SPESE (corretto)
+
         link: s.link || '',
-        linkPdf: s.link || s.linkPdf || '', // <-- ECCO LA SOLUZIONE!
+        linkPdf: s.link || s.linkPdf || '',
 
         bollettaConsumo: s.bollettaConsumo || '',
         bollettaUnita: s.bollettaUnita || '',
         bollettaDal: s.bollettaDal || '',
         bollettaAl: s.bollettaAl || '',
 
-        // Descrizione: prende la descrizione completa direttamente dalla scadenza
         descrizione: s.descrizione,
 
-        // Campi normalizzati per il form di "Spese"
         categoriaBolletta: s.categoria || '',
         tipoBolletta: s.rawSub || '',
         consumoBollettaDal: s.bollettaDal || '',
@@ -2465,40 +2462,41 @@ window.calcolaSaldiGlobali = function() {
         tipologia: 'spesa'
     };
 
-    // Assicurati che window.movimenti esiste
     if (!window.movimenti) {
         console.warn("window.movimenti non esiste, creo array");
         window.movimenti = [];
     }
 
-    // Aggiungi in movimenti (lista principale)
     window.movimenti.push(spesaPagata);
-    render();
-    calcolaSaldiGlobali();
 
-    // Salva spesa su Firebase
     if (typeof salvaMovimentoSuFirebase === "function") {
         salvaMovimentoSuFirebase(spesaPagata).catch(e => {
             console.error("Errore salvataggio spesa Firebase:", e);
         });
     }
 
-    // 3. Aggiorna solo la data di scadenza
-    s.data = newData;
+    // 3. Ricrea la scadenza futura copiando tutto, ma svuotando solo i link
+    const scadenzaAggiornata = {
+        ...s,
+        data: newData,
+        link: '',
+        linkPdf: ''
+    };
 
-    // Salva scadenza aggiornata su Firebase
+    window.scadenze[idx] = scadenzaAggiornata;
+
     if (typeof salvaScadenzaSuFirebase === "function") {
-        salvaScadenzaSuFirebase(s).catch(e => {
+        salvaScadenzaSuFirebase(scadenzaAggiornata).catch(e => {
             console.error("Errore salvataggio scadenza Firebase:", e);
         });
     }
 
-    // 4. Ridisegna liste
+    render();
+    calcolaSaldiGlobali();
     renderScadenze();
 
-    if(typeof checkAlertScadenze === "function") checkAlertScadenze();
+    if (typeof checkAlertScadenze === "function") checkAlertScadenze();
 
-    // 5. Mostra finestrella di conferma
     const mesiStr = mesi === 1 ? "1 mese" :
                     mesi === 2 ? "2 mesi" :
                     mesi === 3 ? "3 mesi" :
