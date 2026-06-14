@@ -3018,12 +3018,20 @@ window.renderFondiConfig = function() {
     fAnno.sort((a,b) => new Date(b.data) - new Date(a.data)); // Ordine decrescente
 
     // Calcolo Totali
-    let totE=0, totL=0, totK=0; 
+    let totE = 0, totL = 0, totK = 0; 
     fAnno.forEach(x => { 
-        totE+=x.importo; 
-        if(x.datiBenzina){ 
-            totL+=(parseFloat(x.datiBenzina.litri)||0); 
-            totK+=(parseFloat(x.datiBenzina.km)||0); 
+        totE += x.importo; 
+        if (x.datiBenzina) { 
+            const kmRiga = parseFloat(x.datiBenzina.km) || 0;
+            const litriRiga = parseFloat(x.datiBenzina.litri) || 0;
+            
+            // Sommo sempre i KM
+            totK += kmRiga; 
+            
+            // Sommo i litri SOLO se i km di questa riga sono maggiori di 0
+            if (kmRiga > 0) {
+                totL += litriRiga; 
+            }
         } 
     });
 
@@ -3075,7 +3083,6 @@ window.renderFondiConfig = function() {
             </tr>`; 
     });
 }
-
 
 // Variabile globale per ricordare quale scadenza stiamo modificando (null = nuova)
 window.scadenzaInModifica = null;
