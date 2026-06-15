@@ -1786,6 +1786,13 @@ function formatDataScad(dataString) {
         window.idInModifica = null; resetForm(); 
         document.getElementById('titoloForm').textContent = "Nuova Voce"; document.getElementById('titoloForm').style.color = "#007bff"; document.getElementById('btnDefault').style.display = 'flex'; document.getElementById('btnEdit').style.display = 'none'; render();
     }
+	
+	window.addEventListener('DOMContentLoaded', function() {
+    if (typeof window.annullaModifica === 'function') {
+        window.annullaModifica();
+    }
+});
+	
     window.getDatiForm = function(){
         const desc=document.getElementById('descrizione').value.trim(), imp=parseFloat(document.getElementById('importo').value), dt=document.getElementById('data').value, cat=document.getElementById('categoria').value, c=document.getElementById('conto').value;
         const subB=document.getElementById('sel_tipo_bolletta_new') ? document.getElementById('sel_tipo_bolletta_new').value : ""; // NUOVO ID
