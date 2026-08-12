@@ -869,7 +869,17 @@ tfoot td { border-top: 2px solid #333; font-weight: bold; padding-top: 15px; fon
             <input type="url" id="scadLink" placeholder="Link (opzionale)">
         </div>
     </div>
-    <button class="btn-scadenza" onclick="salvaNuovaScadenza()" style="width:100%; margin-top:10px;">Salva Scadenza</button>
+	
+	
+    <div style="display:flex; gap:10px; margin-top:10px;">
+    <!-- Bottone originale con ID aggiunto -->
+    <button id="btnSalvaUnico" class="btn-scadenza" onclick="salvaNuovaScadenza()" style="width:100%;">Salva Scadenza</button>
+    
+    <!-- Nuovo bottone Annulla -->
+    <button id="btnAnnullaScadenza" type="button" class="btn-scadenza" onclick="annullaModificaScadenza()" style="width:100%; display:none; background-color:#6c757d;">X Annulla</button>
+</div>
+
+
 </div>
             <div id="listScadenze" class="deadlines-list"></div>
         </div>
@@ -1602,18 +1612,22 @@ window.salvaNuovo = async function(t, movimentoGiaPronto) {
       descrizione: d.descrizione,
 
       categoria: d.categoria,
-      rawCat: d.categoria || '',
-      rawSub: d.tipo || '',
+      
+      // Assicuriamoci che rawCat e rawSub peschino i dati giusti da getDatiForm()
+      rawCat: d.rawCat || d.categoria || '',
+      rawSub: d.rawSub || '',
 
-      tipoBolletta: d.tipo || '',
-      consumoDal: d.consumoDal || '',
-      consumoAl: d.consumoAl || '',
-      consumo: d.consumo || '',
-
-      categoriaBolletta: d.categoria || '',
+      // BOLLETTE
+      tipoBolletta: d.rawSub || '',
       consumoBollettaDal: d.consumoDal || '',
       consumoBollettaAl: d.consumoAl || '',
-      consumoBolletta: d.consumo || ''
+      consumoBolletta: d.consumo || '',
+
+      // PDF
+      linkPdf: d.linkPdf || '',
+
+      // BENZINA - Ecco il pezzo che mancava!
+      datiBenzina: d.datiBenzina || null
     };
 
     window.movimenti.push(mov);
@@ -3132,54 +3146,87 @@ window.modificaScadenza = function(id) {
     document.getElementById('scadDate').scrollIntoView({behavior: "smooth"});
 };
 
-		window.preparaModificaScadenza = function(id) {
-			const s = window.scadenze.find(x => x.id === id);
-			if(!s) return alert("Errore");
+window.preparaModificaScadenza = function(id) {
+    const s = window.scadenze.find(x => x.id === id);
+    if(!s) return alert("Errore");
 
-			window.idScadenzaInModifica = s.id;
+    window.idScadenzaInModifica = s.id;
 
-			document.getElementById('scadDate').value = s.data || '';
-			document.getElementById('scadConto').value = s.conto || 'CC';
-			document.getElementById('scadImporto').value = s.importo || '';
-			document.getElementById('scadCategoria').value = s.categoria || '';
-			document.getElementById('scadDesc').value = s.descrizione || '';
-			document.getElementById('scadLink').value = s.link || '';
+    document.getElementById('scadDate').value = s.data || '';
+    document.getElementById('scadConto').value = s.conto || 'CC';
+    document.getElementById('scadImporto').value = s.importo || '';
+    document.getElementById('scadCategoria').value = s.categoria || '';
+    document.getElementById('scadDesc').value = s.descrizione || '';
+    document.getElementById('scadLink').value = s.link || '';
 
-			// Sottocategoria
-			if(s.rawSub) {
-				document.getElementById('scadSub').value = s.rawSub;
-				document.getElementById('boxScadSub').style.display = 'block';
-			} else {
-				document.getElementById('boxScadSub').style.display = 'none';
-			}
+    if(s.rawSub) {
+        document.getElementById('scadSub').value = s.rawSub;
+        document.getElementById('boxScadSub').style.display = 'block';
+    } else {
+        document.getElementById('boxScadSub').style.display = 'none';
+    }
 
-			// Periodo e consumo per bolletta
-			if(s.categoria === 'Bolletta') {
-				if(s.rawSub) document.getElementById('scadSub').value = s.rawSub;
+    if(s.categoria === 'Bolletta') {
+        if(s.rawSub) document.getElementById('scadSub').value = s.rawSub;
+        if(s.bollettaConsumo) document.getElementById('scadConsumo').value = s.bollettaConsumo;
+        if(s.bollettaUnita) document.getElementById('scadUnita').value = s.bollettaUnita;
+        if(s.bollettaDal) document.getElementById('scadDal').value = s.bollettaDal;
+        if(s.bollettaAl) document.getElementById('scadAl').value = s.bollettaAl;
 
-				// CARICAMENTO CORRETTO DI CONSUMO E UNITA
-				if(s.bollettaConsumo) document.getElementById('scadConsumo').value = s.bollettaConsumo;
-				if(s.bollettaUnita) document.getElementById('scadUnita').value = s.bollettaUnita;
-				if(s.bollettaDal) document.getElementById('scadDal').value = s.bollettaDal;
-				if(s.bollettaAl) document.getElementById('scadAl').value = s.bollettaAl;
+        document.getElementById('boxScadSub').style.display = 'block';
+        document.getElementById('boxScadPeriodo').style.display = 'block';
+    } else {
+        document.getElementById('scadSub').value = '';
+        document.getElementById('boxScadSub').style.display = 'none';
+        document.getElementById('boxScadPeriodo').style.display = 'none';
+    }
 
-				document.getElementById('boxScadSub').style.display = 'block';
-				document.getElementById('boxScadPeriodo').style.display = 'block';
-			} else {
-				document.getElementById('scadSub').value = '';
-				document.getElementById('boxScadSub').style.display = 'none';
-				document.getElementById('boxScadPeriodo').style.display = 'none';
-			}
+    // --- NUOVO: Aggiorna e mostra i bottoni ---
+    const btn = document.getElementById('btnSalvaUnico');
+    if(btn) {
+        btn.innerHTML = "✏️ Modifica Scadenza";
+        btn.style.background = "#ff9800";
+    }
+    if(document.getElementById('btnAnnullaScadenza')) {
+        document.getElementById('btnAnnullaScadenza').style.display = 'block';
+    }
+    // ------------------------------------------
 
-			// Cambia bottone in "Modifica"
-			const btn = document.querySelector('button[onclick="salvaNuovaScadenza()"]');
-			if(btn) {
-				btn.innerHTML = "✏️ Modifica Scadenza";
-				btn.style.background = "#ff9800";
-			}
+    document.getElementById('scadDate').scrollIntoView({behavior: "smooth"});
+};
 
-			document.getElementById('scadDate').scrollIntoView({behavior: "smooth"});
-		};
+
+window.annullaModificaScadenza = function() {
+    window.idScadenzaInModifica = null; 
+
+    // Svuota tutti i campi
+    document.getElementById('scadDate').value = '';
+    document.getElementById('scadConto').value = 'CC'; // o 'Ste' in base al tuo default
+    document.getElementById('scadImporto').value = '';
+    document.getElementById('scadCategoria').value = '';
+    document.getElementById('scadDesc').value = '';
+    document.getElementById('scadLink').value = '';
+    document.getElementById('scadSub').value = '';
+    document.getElementById('scadConsumo').value = '';
+    document.getElementById('scadDal').value = '';
+    document.getElementById('scadAl').value = '';
+    document.getElementById('scadUnita').value = '';
+
+    document.getElementById('boxScadSub').style.display = 'none';
+    document.getElementById('boxScadPeriodo').style.display = 'none';
+
+    // Ripristina il bottone principale (testo e colore CSS originale, di solito l'azzurro primario)
+    const btn = document.getElementById('btnSalvaUnico');
+    if(btn) {
+        btn.innerHTML = "Salva Scadenza";
+        btn.style.background = ""; // Togliendo l'arancione in linea, riprende il colore CSS della classe btn-scadenza
+    }
+
+    // Nasconde Annulla
+    if(document.getElementById('btnAnnullaScadenza')) {
+        document.getElementById('btnAnnullaScadenza').style.display = 'none';
+    }
+};
 
 
 window.gestisciCategoriaScadenza = function() {
@@ -3242,32 +3289,28 @@ window.salvaNuovaScadenza = async function() {
         sub = document.getElementById('scadSub').value;
     }
 
-    if(!data || !cat) {
+    if (!data || !cat) {
         alert('Compila data e categoria.');
         return;
     }
 
-    // Formattazione data italiana
     const formatDataIta = (dataString) => {
-        if(!dataString) return "";
+        if (!dataString) return '';
         const [y, m, d] = dataString.split('-');
         return `${d}/${m}/${y.slice(-2)}`;
     };
 
-    // Estrai consumo e unità CORRETTAMENTE
     const consumo = document.getElementById('scadConsumo')?.value || '';
     const unita = document.getElementById('scadUnita')?.value || '';
     const dataDal = document.getElementById('scadDal')?.value || '';
     const dataAl = document.getElementById('scadAl')?.value || '';
 
-    // Ricostruzione descrizione per bolletta
     const ricostruisciDescrizioneBolletta = () => {
         const subBolletta = document.getElementById('scadSub')?.value || '';
-
         let descComposta = `Bolletta ${subBolletta}`;
 
         if (consumo && consumo.trim() !== '') {
-            descComposta += ` - (${consumo.trim()} ${unita.replace('/','').trim()})`;
+            descComposta += ` - (${consumo.trim()} ${unita.replace('/', '').trim()})`;
         }
 
         if (dataDal && dataAl) {
@@ -3284,9 +3327,9 @@ window.salvaNuovaScadenza = async function() {
     let scadenzaObj = null;
 
     if (window.idScadenzaInModifica !== null) {
-        // --- MODIFICA SCADENZA ESISTENTE ---
         const indice = window.scadenze.findIndex(x => x.id === window.idScadenzaInModifica);
-        if(indice !== -1) {
+
+        if (indice !== -1) {
             window.scadenze[indice].data = data;
             window.scadenze[indice].conto = conto;
             window.scadenze[indice].importo = isNaN(importo) ? 0 : importo;
@@ -3294,19 +3337,23 @@ window.salvaNuovaScadenza = async function() {
             window.scadenze[indice].rawSub = sub;
             window.scadenze[indice].link = link;
 
-            // Se è bolletta, aggiorna consumo e periodo CORRETTAMENTE
-            if(cat === 'Bolletta') {
+            if (cat === 'Bolletta') {
                 window.scadenze[indice].bollettaConsumo = consumo;
                 window.scadenze[indice].bollettaUnita = unita;
                 window.scadenze[indice].bollettaDal = dataDal;
                 window.scadenze[indice].bollettaAl = dataAl;
                 window.scadenze[indice].descrizione = ricostruisciDescrizioneBolletta();
+            } else {
+                window.scadenze[indice].bollettaConsumo = '';
+                window.scadenze[indice].bollettaUnita = '';
+                window.scadenze[indice].bollettaDal = '';
+                window.scadenze[indice].bollettaAl = '';
+                window.scadenze[indice].descrizione = descBase;
             }
 
             scadenzaObj = window.scadenze[indice];
         }
     } else {
-        // --- CREA NUOVA SCADENZA ---
         scadenzaObj = {
             id: Date.now(),
             data: data,
@@ -3319,40 +3366,65 @@ window.salvaNuovaScadenza = async function() {
             bollettaUnita: unita,
             bollettaDal: dataDal,
             bollettaAl: dataAl,
-            descrizione: descBase
+            descrizione: cat === 'Bolletta' ? ricostruisciDescrizioneBolletta() : descBase
         };
+
         window.scadenze.push(scadenzaObj);
     }
 
     if (!scadenzaObj) return;
 
-    // Aggiornamento grafica
-    renderScadenze();
-    if(typeof checkAlertScadenze === "function") checkAlertScadenze();
+    try {
+        await salvaScadenzaSuFirebase(scadenzaObj);
+    } catch (e) {
+        console.error("Errore salvataggio Firebase:", e);
+        alert("Attenzione: la scadenza non è stata salvata sul server per un problema di rete.");
+        return;
+    }
 
-    // Reset form e bottone
-    document.getElementById('scadDate').value = '';
-    document.getElementById('scadImporto').value = '';
-    document.getElementById('scadDesc').value = '';
-    document.getElementById('scadLink').value = '';
-    document.getElementById('scadConsumo').value = '';
-    document.getElementById('scadDal').value = '';
-    document.getElementById('scadAl').value = '';
-    document.getElementById('scadSub').value = '';
+    renderScadenze();
+    if (typeof checkAlertScadenze === "function") checkAlertScadenze();
+
+    if (typeof window.annullaModificaScadenza === 'function') {
+        window.annullaModificaScadenza();
+    }
+};
+
+window.annullaModificaScadenza = function() {
     window.idScadenzaInModifica = null;
 
-    const btn = document.querySelector('button[onclick="salvaNuovaScadenza()"]');
-    if(btn) {
+    const idsDaSvuotare = [
+        'scadDate',
+        'scadImporto',
+        'scadDesc',
+        'scadLink',
+        'scadConsumo',
+        'scadDal',
+        'scadAl',
+        'scadSub',
+        'scadCategoria'
+    ];
+
+    idsDaSvuotare.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.value = '';
+    });
+
+    const boxSub = document.getElementById('boxScadSub');
+    if (boxSub) boxSub.style.display = 'none';
+
+    const boxPeriodo = document.getElementById('boxScadPeriodo');
+    if (boxPeriodo) boxPeriodo.style.display = 'none';
+
+    const btn = document.getElementById('btnSalvaUnico');
+    if (btn) {
         btn.innerHTML = "Salva Scadenza";
         btn.style.background = "";
     }
 
-    // Salvataggio su Firebase
-    try {
-        await salvaScadenzaSuFirebase(scadenzaObj);
-    } catch(e) {
-        console.error("Errore salvataggio Firebase:", e);
-        alert("Attenzione: la scadenza non è stata salvata sul server per un problema di rete.");
+    const btnAnnulla = document.getElementById('btnAnnullaScadenza');
+    if (btnAnnulla) {
+        btnAnnulla.style.display = 'none';
     }
 };
 
