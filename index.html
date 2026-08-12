@@ -1487,7 +1487,10 @@ document.addEventListener('DOMContentLoaded', function () {
         if(document.getElementById('scadCategoria')) popolaSelect('scadCategoria', window.categorie);
         const statSelect = document.getElementById('statCat');
         if(statSelect) { popolaSelect('statCat', window.categorie, false); const o=document.createElement('option'); o.value="Tutte"; o.text="Tutte"; statSelect.insertBefore(o, statSelect.firstChild); statSelect.value="Tutte"; }
-        impostaDataOggi(); initDateRange('exportStart', 'exportEnd'); initDateRange('statStart', 'statEnd');
+        impostaDataOggi(); 
+initDateRange('exportStart', 'exportEnd'); 
+document.getElementById('exportStart').value = '2026-01-01'; // Forza la data Dal per l'esportazione
+initDateRange('statStart', 'statEnd');
         impostaFiltroMese(0); calcolaSaldiGlobali();
         if(window.renderSettings) window.renderSettings();
         if(window.renderScadenze) window.renderScadenze();
