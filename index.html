@@ -726,34 +726,6 @@ tfoot td { border-top: 2px solid #333; font-weight: bold; padding-top: 15px; fon
         white-space: nowrap !important;
         -webkit-overflow-scrolling: touch;
     }
-	
-	
-					/* =========================================
-				   MODALITÀ MODIFICA
-				   ========================================= */
-
-				/* In condizioni normali mostra i pulsanti standard */
-				#btnDefault {
-					display: flex;
-				}
-
-				/* Nasconde sempre i pulsanti di modifica
-				   finché non viene attivata la modifica */
-				#btnEdit {
-					display: none !important;
-				}
-
-				/* Durante la modifica nasconde completamente
-				   Salva normale, +Entrata e -Uscita */
-				body.modalita-modifica #btnDefault {
-					display: none !important;
-				}
-
-				/* Durante la modifica mostra solo:
-				   Salva Modifiche e Annulla */
-				body.modalita-modifica #btnEdit {
-					display: flex !important;
-				}
 }
 
 
@@ -1134,50 +1106,11 @@ tfoot td { border-top: 2px solid #333; font-weight: bold; padding-top: 15px; fon
 
         <!-- FORM PRINCIPALE -->
         <div class="form-grid">
-    <div>
-        <label style="font-size:0.8em; color:#666; display:block; margin-bottom:4px;">
-            📅 Data
-        </label>
-
-        <input type="date" id="data">
-    </div>
-
-    <div>
-        <label style="font-size:0.8em; color:#666; display:block; margin-bottom:4px;">
-            👤 Chi Paga?
-        </label>
-
-        <select id="conto">
-            <option value="CC" selected>🏦 CC</option>
-            <option value="Ste">👤 Ste</option>
-            <option value="Vale">👤 Vale</option>
-        </select>
-    </div>
-
-    <div>
-        <label style="font-size:0.8em; color:#666; display:block; margin-bottom:4px;">
-            🏷️ Categoria
-        </label>
-
-        <select
-            id="categoria"
-            onchange="gestisciCategoria()">
-        </select>
-    </div>
-
-    <div>
-        <label style="font-size:0.8em; color:#666; display:block; margin-bottom:4px;">
-            💰 Importo
-        </label>
-
-        <input
-            type="number"
-            id="importo"
-            step="0.01"
-            placeholder="0.00"
-            oninput="calcolaPrezzoBenzina()">
-    </div>
-</div>
+            <div><label style="font-size:0.8em; color:#666; display:block; margin-bottom:4px;">📅 Data</label><input type="date" id="data"></div>
+            <div><label style="font-size:0.8em; color:#666; display:block; margin-bottom:4px;">👤 Chi Paga?</label><select id="conto"><option value="CC">🏦 CC</option><option value="Ste">👤 Ste</option><option value="Vale">👤 Vale</option></select></div>
+            <div><label style="font-size:0.8em; color:#666; display:block; margin-bottom:4px;">🏷️ Categoria</label><select id="categoria" onchange="gestisciCategoria()"></select></div>
+            <div><label style="font-size:0.8em; color:#666; display:block; margin-bottom:4px;">💰 Importo</label><input type="number" id="importo" step="0.01" placeholder="0.00" oninput="calcolaPrezzoBenzina()"></div>
+            
             <div class="full-width">
                 <label style="font-size:0.8em; color:#666; display:block; margin-bottom:4px;">📝 Descrizione</label>
                 <input type="text" id="descrizione" list="listaSuggerimenti" placeholder="Es: Spesa settimanale..." autocomplete="off">
@@ -1660,628 +1593,204 @@ initDateRange('statStart', 'statEnd');
     }
     window.closeAllPanels = function() { ['statsPanel','settingsPanel','dataPanel','balancePanel','transferPanel','initBalancePanel','fuelReportPanel','deadlinesPanel','notesPanel', 'autoPanel'].forEach(i => { const el=document.getElementById(i); if(el) el.style.display='none'; }); }
 
-window.salvaNuovo = async function(
-    t,
-    movimentoGiaPronto
-) {
-    /*
-     * È una nuova voce, quindi non deve essere
-     * considerata una modifica.
-     */
-    window.idInModifica = null;
+window.salvaNuovo = async function(t, movimentoGiaPronto) {
+  let mov;
 
-    // Mostra i pulsanti normali
-    const btnDefault =
-        document.getElementById('btnDefault');
+  if (movimentoGiaPronto) {
+    mov = movimentoGiaPronto;
+  } else {
+    const d = getDatiForm();
+    if (!d) return;
 
-    const btnEdit =
-        document.getElementById('btnEdit');
+    mov = {
+      id: Date.now(),
+      tipo: t,
 
-    if (btnDefault) {
-        btnDefault.style.setProperty(
-            'display',
-            'flex',
-            'important'
-        );
-    }
+      data: d.data,
+      conto: d.conto,
+      importo: d.importo,
+      descrizione: d.descrizione,
 
-    if (btnEdit) {
-        btnEdit.style.setProperty(
-            'display',
-            'none',
-            'important'
-        );
-    }
+      categoria: d.categoria,
+      
+      // Assicuriamoci che rawCat e rawSub peschino i dati giusti da getDatiForm()
+      rawCat: d.rawCat || d.categoria || '',
+      rawSub: d.rawSub || '',
 
-    let mov;
+      // BOLLETTE
+      tipoBolletta: d.rawSub || '',
+      consumoBollettaDal: d.consumoDal || '',
+      consumoBollettaAl: d.consumoAl || '',
+      consumoBolletta: d.consumo || '',
 
-    if (movimentoGiaPronto) {
-        mov = movimentoGiaPronto;
-    } else {
-        const d = getDatiForm();
+      // PDF
+      linkPdf: d.linkPdf || '',
 
-        if (!d) {
-            return;
-        }
+      // BENZINA - Ecco il pezzo che mancava!
+      datiBenzina: d.datiBenzina || null
+    };
 
-        mov = {
-            id: Date.now(),
-            tipo: t,
-
-            data: d.data,
-            conto: d.conto,
-            importo: d.importo,
-            descrizione: d.descrizione,
-
-            categoria: d.categoria,
-
-            // Categoria e sottocategoria
-            rawCat:
-                d.rawCat ||
-                d.categoria ||
-                '',
-
-            rawSub:
-                d.rawSub ||
-                '',
-
-            // Dati bolletta
-            tipoBolletta:
-                d.rawSub ||
-                '',
-
-            consumoBollettaDal:
-                d.consumoDal ||
-                '',
-
-            consumoBollettaAl:
-                d.consumoAl ||
-                '',
-
-            consumoBolletta:
-                d.consumo ||
-                '',
-
-            // PDF
-            linkPdf:
-                d.linkPdf ||
-                '',
-
-            // Dati benzina
-            datiBenzina:
-                d.datiBenzina ||
-                null
-        };
-
-        window.movimenti.push(mov);
-
-        render();
-        calcolaSaldiGlobali();
-
-        await salvaMovimentoSuFirebase(mov);
-
-        resetForm();
-    }
+    window.movimenti.push(mov);
+    render();
+    calcolaSaldiGlobali();
+    await salvaMovimentoSuFirebase(mov);
+    resetForm();
+  }
 };
     window.elimina = async function(id){
         if(confirm("Eliminare?")){ window.movimenti = window.movimenti.filter(x=>x.id!==id); render(); calcolaSaldiGlobali(); await eliminaMovimentoSuFirebase(id); }
     }
-    window.preparaModifica = function(id) {
-    alert('preparaModifica eseguita. ID: ' + id);
-
-    const m = window.movimenti.find(
-        x => String(x.id) === String(id)
-    );
-
-    if (!m) {
-        alert('Movimento non trovato');
-        return;
-    }
-
-    alert(JSON.stringify({
-        id: m.id,
-        rawCat: m.rawCat,
-        categoria: m.categoria,
-        rawSub: m.rawSub,
-        descrizione: m.descrizione
-    }, null, 2));
-
+    window.preparaModifica = function(id){
+    const m = window.movimenti.find(x => String(x.id) === String(id)); 
+    if(!m) return alert("Errore");
+    
     window.idInModifica = m.id;
+    document.getElementById('data').value = m.data; 
+    document.getElementById('importo').value = m.importo; 
+    document.getElementById('descrizione').value = (m.descrizione === "Nessuna descrizione" ? "" : m.descrizione);
+    
+    if(m.rawCat && window.categorie.includes(m.rawCat)) document.getElementById('categoria').value = m.rawCat; 
+    else document.getElementById('categoria').value = window.categorie[0];
+    
+    // 1. Prima chiamo gestisciCategoria() per mostrare/nascondere i div giusti
+    gestisciCategoria(); 
 
-    document.getElementById('data').value = m.data;
-    document.getElementById('importo').value = m.importo;
-
-    // Riconoscimento categoria
-    const rawCat = String(
-        m.rawCat || ''
-    ).trim();
-
-    const categoriaSalvata = String(
-        m.categoria || ''
-    ).trim();
-
-    const isSupermercato =
-        rawCat === 'Supermercato' ||
-        rawCat.startsWith('Supermercato') ||
-        categoriaSalvata === 'Supermercato' ||
-        categoriaSalvata.startsWith('Supermercato');
-
-    const isBolletta =
-        rawCat === 'Bolletta' ||
-        categoriaSalvata === 'Bolletta';
-
-    /*
-     * Descrizione
-     */
-    let descrizionePerForm =
-        m.descrizione || '';
-
-    if (isBolletta) {
-        const tipo =
-            m.tipoBolletta ||
-            m.rawSub ||
-            '';
-
-        descrizionePerForm = tipo
-            ? `Bolletta - ${tipo}`
-            : 'Bolletta';
-    }
-
-    document.getElementById('descrizione').value =
-        descrizionePerForm === 'Nessuna descrizione'
-            ? ''
-            : descrizionePerForm;
-
-    /*
-     * Categoria
-     *
-     * È importante controllare prima Supermercato,
-     * perché categoria potrebbe contenere:
-     * "Supermercato - Conad".
-     */
-    const campoCategoria =
-        document.getElementById('categoria');
-
-    let categoriaDaImpostare = '';
-
-    if (isSupermercato) {
-        categoriaDaImpostare = 'Supermercato';
-    } else if (
-        rawCat &&
-        window.categorie.includes(rawCat)
-    ) {
-        categoriaDaImpostare = rawCat;
-    } else if (
-        categoriaSalvata &&
-        window.categorie.includes(categoriaSalvata)
-    ) {
-        categoriaDaImpostare =
-            categoriaSalvata;
-    } else {
-        categoriaDaImpostare =
-            window.categorie[0] || '';
-    }
-
-    if (campoCategoria) {
-        campoCategoria.value =
-            categoriaDaImpostare;
-    }
-
-    /*
-     * Mostra o nasconde i campi della categoria.
-     */
-    gestisciCategoria();
-
-    /*
-     * Dati delle bollette
-     */
-    if (isBolletta) {
-        const cat =
-            document.getElementById('categoria');
-
-        if (cat) {
-            if (
-                m.categoriaBolletta &&
-                window.categorie.includes(
-                    m.categoriaBolletta
-                )
-            ) {
-                cat.value =
-                    m.categoriaBolletta;
-            } else if (
-                rawCat &&
-                window.categorie.includes(rawCat)
-            ) {
-                cat.value = rawCat;
+    // 2. Poi popolo i valori nei div appena mostrati
+    if(m.rawCat === 'Bolletta' || m.categoria === 'Bolletta'){
+        // Categoria: usa categoriaBolletta (se esiste) o rawCat come fallback
+        const cat = document.getElementById('categoria');
+        if(cat) {
+            if(m.categoriaBolletta && window.categorie.includes(m.categoriaBolletta)) {
+                cat.value = m.categoriaBolletta;
+            } else if(m.rawCat && window.categorie.includes(m.rawCat)) {
+                cat.value = m.rawCat;
+            } else {
+                cat.value = window.categorie[0];
             }
         }
 
-        const selTipo =
-            document.getElementById(
-                'sel_tipo_bolletta_new'
-            );
+        // Tipo bolletta: usa tipoBolletta (se esiste) o rawSub come fallback
+        const selTipo = document.getElementById('sel_tipo_bolletta_new');
+        if(selTipo) selTipo.value = m.tipoBolletta || m.rawSub || '';
 
-        if (selTipo) {
-            selTipo.value =
-                m.tipoBolletta ||
-                m.rawSub ||
-                '';
-        }
+        // PDF
+        if(m.linkPdf) document.getElementById('inp_pdf_new').value = m.linkPdf;
 
-        const inpPdf =
-            document.getElementById(
-                'inp_pdf_new'
-            );
+        // Consumo e date
+        const inpConsumo = document.getElementById('inp_consumo_new');
+        const inpDal = document.getElementById('inp_bolletta_dal');
+        const inpAl = document.getElementById('inp_bolletta_al');
 
-        if (inpPdf) {
-            inpPdf.value =
-                m.linkPdf || '';
-        }
+        if(inpConsumo) inpConsumo.value = m.consumoBolletta || m.bollettaConsumo || '';
+        if(inpDal) inpDal.value = m.consumoBollettaDal || m.bollettaDal || '';
+        if(inpAl) inpAl.value = m.consumoBollettaAl || m.bollettaAl || '';
 
-        const inpConsumo =
-            document.getElementById(
-                'inp_consumo_new'
-            );
-
-        const inpDal =
-            document.getElementById(
-                'inp_bolletta_dal'
-            );
-
-        const inpAl =
-            document.getElementById(
-                'inp_bolletta_al'
-            );
-
-        if (inpConsumo) {
-            inpConsumo.value =
-                m.consumoBolletta ||
-                m.bollettaConsumo ||
-                '';
-        }
-
-        if (inpDal) {
-            inpDal.value =
-                m.consumoBollettaDal ||
-                m.bollettaDal ||
-                '';
-        }
-
-        if (inpAl) {
-            inpAl.value =
-                m.consumoBollettaAl ||
-                m.bollettaAl ||
-                '';
-        }
-
-        if (
-            typeof window.logica_consumi_new ===
-            'function'
-        ) {
-            window.logica_consumi_new();
-        }
+        window.logica_consumi_new();
     }
-
-    /*
-     * Dati dello stipendio
-     */
-    else if (rawCat === 'Stipendio') {
-        const inpPdf =
-            document.getElementById(
-                'inp_pdf_new'
-            );
-
-        if (inpPdf) {
-            inpPdf.value =
-                m.linkPdf || '';
-        }
+    else if(m.rawCat === 'Stipendio'){ 
+        if(m.linkPdf) document.getElementById('inp_pdf_new').value = m.linkPdf;
     }
-
-    /*
-     * Dati del supermercato
-     */
-    else if (isSupermercato) {
-        const selectSuper =
-            document.getElementById(
-                'selectSuper'
-            );
-
-        if (selectSuper) {
-            selectSuper.value =
-                m.rawSub || '';
-        }
+    else if(m.rawCat === 'Supermercato'){ 
+        document.getElementById('selectSuper').value = m.rawSub || ''; 
     }
-
-    /*
-     * Dati della benzina
-     */
-    else if (
-        rawCat === 'Benzina' &&
-        m.datiBenzina
-    ) {
-        const benLitri =
-            document.getElementById(
-                'benLitri'
-            );
-
-        const benKm =
-            document.getElementById(
-                'benKm'
-            );
-
-        const benPrezzo =
-            document.getElementById(
-                'benPrezzo'
-            );
-
-        const benDistributore =
-            document.getElementById(
-                'benDistributore'
-            );
-
-        if (benLitri) {
-            benLitri.value =
-                m.datiBenzina.litri || '';
-        }
-
-        if (benKm) {
-            benKm.value =
-                m.datiBenzina.km || '';
-        }
-
-        if (benPrezzo) {
-            benPrezzo.value =
-                m.datiBenzina.prezzo || '';
-        }
-
-        if (benDistributore) {
-            benDistributore.value =
-                m.datiBenzina.distributore || '';
-        }
+    else if(m.rawCat === 'Benzina' && m.datiBenzina){ 
+        document.getElementById('benLitri').value = m.datiBenzina.litri || ''; 
+        document.getElementById('benKm').value = m.datiBenzina.km || ''; 
+        document.getElementById('benPrezzo').value = m.datiBenzina.prezzo || ''; 
+        document.getElementById('benDistributore').value = m.datiBenzina.distributore || ''; 
     }
-
-    /*
-     * Conto
-     */
-    document.getElementById('conto').value =
-        m.conto || '';
-
-    /*
-     * Titolo e pulsanti
-     */
-    document.getElementById(
-        'titoloForm'
-    ).textContent = 'Modifica Voce';
-
-    document.getElementById(
-        'titoloForm'
-    ).style.color = '#ffc107';
-
-    document.getElementById(
-        'btnDefault'
-    ).style.display = 'none';
-
-    document.getElementById(
-        'btnEdit'
-    ).style.display = 'flex';
-
-    closeAllPanels();
-
-    window.scrollTo({
-        top: 0,
-        behavior: 'smooth'
-    });
-
+    
+    document.getElementById('conto').value = m.conto;
+    document.getElementById('titoloForm').textContent = "Modifica Voce"; 
+    document.getElementById('titoloForm').style.color = "#ffc107"; 
+    document.getElementById('btnDefault').style.display = 'none'; 
+    document.getElementById('btnEdit').style.display = 'flex';
+    
+    closeAllPanels(); 
+    window.scrollTo({top: 0, behavior: 'smooth'}); 
     render();
 };
 
 window.confermaModifica = async function() {
-    const idDaModificare =
-        window.idInModifica;
+    const m = window.movimenti.find(x => String(x.id) === String(window.idInModifica));
+    if(!m) return alert("Errore");
 
-    const m = window.movimenti.find(
-        x => String(x.id) === String(idDaModificare)
-    );
+    const cat = document.getElementById('categoria').value;
+    const tipo = document.getElementById('sel_tipo_bolletta_new')?.value || '';
 
-    if (!m) {
-        console.error(
-            'Movimento non trovato',
-            {
-                idInModifica: idDaModificare,
-                movimenti: window.movimenti
-            }
-        );
+    m.data = document.getElementById('data').value;
+    m.conto = document.getElementById('conto').value;
+    m.importo = parseFloat(document.getElementById('importo').value) || 0;
 
-        return alert(
-            'Errore: movimento non trovato\nID: ' +
-            idDaModificare
-        );
-    }
-
-    const cat =
-        document.getElementById(
-            'categoria'
-        )?.value || '';
-
-    // Campi principali
-    m.data =
-        document.getElementById(
-            'data'
-        )?.value || '';
-
-    m.conto =
-        document.getElementById(
-            'conto'
-        )?.value || '';
-
-    m.importo =
-        parseFloat(
-            document.getElementById(
-                'importo'
-            )?.value || 0
-        ) || 0;
-
-    // Categoria principale
     m.rawCat = cat;
-    m.categoria = cat;
     m.rawSub = '';
 
-    // Bolletta
-    if (cat === 'Bolletta') {
-        m.rawSub =
-            document.getElementById(
-                'sel_tipo_bolletta_new'
-            )?.value || '';
+    if(cat === 'Bolletta') {
+        m.rawSub = document.getElementById('sel_tipo_bolletta_new')?.value || '';
+        m.bollettaConsumo = document.getElementById('inp_consumo_new')?.value || '';
+        m.bollettaDal = document.getElementById('inp_bolletta_dal')?.value || '';
+        m.bollettaAl = document.getElementById('inp_bolletta_al')?.value || '';
+        m.linkPdf = document.getElementById('inp_pdf_new')?.value || '';
 
-        m.bollettaConsumo =
-            document.getElementById(
-                'inp_consumo_new'
-            )?.value || '';
+        // Campi normalizzati
+        m.categoriaBolletta = cat;
+        m.tipoBolletta = m.rawSub;
+        m.consumoBolletta = m.bollettaConsumo;
+        m.consumoBollettaDal = m.bollettaDal;
+        m.consumoBollettaAl = m.bollettaAl;
 
-        m.bollettaDal =
-            document.getElementById(
-                'inp_bolletta_dal'
-            )?.value || '';
-
-        m.bollettaAl =
-            document.getElementById(
-                'inp_bolletta_al'
-            )?.value || '';
-
-        m.linkPdf =
-            document.getElementById(
-                'inp_pdf_new'
-            )?.value || '';
-
-        m.categoriaBolletta =
-            'Bolletta';
-
-        m.tipoBolletta =
-            m.rawSub;
-
-        m.consumoBolletta =
-            m.bollettaConsumo;
-
-        m.consumoBollettaDal =
-            m.bollettaDal;
-
-        m.consumoBollettaAl =
-            m.bollettaAl;
-
-        const descrizioneBolletta =
-            `Bolletta ${m.rawSub}`;
-
-        m.descrizione =
-            descrizioneBolletta;
-    }
-
-    // Stipendio
-    else if (cat === 'Stipendio') {
-        m.linkPdf =
-            document.getElementById(
-                'inp_pdf_new'
-            )?.value || '';
-
-        const descrizione =
-            document.getElementById(
-                'descrizione'
-            )?.value.trim() || '';
-
-        m.descrizione =
-            descrizione || m.descrizione;
-    }
-
-    // Supermercato
-    else if (cat === 'Supermercato') {
-        m.rawCat = 'Supermercato';
-        m.categoria = 'Supermercato';
-
-        m.rawSub =
-            document.getElementById(
-                'selectSuper'
-            )?.value || '';
-
-        const descrizione =
-            document.getElementById(
-                'descrizione'
-            )?.value.trim() || '';
-
-        m.descrizione =
-            descrizione || m.descrizione;
-    }
-
-    // Benzina
-    else if (cat === 'Benzina') {
-        m.datiBenzina = {
-            litri:
-                document.getElementById(
-                    'benLitri'
-                )?.value || '',
-
-            km:
-                document.getElementById(
-                    'benKm'
-                )?.value || '',
-
-            prezzo:
-                document.getElementById(
-                    'benPrezzo'
-                )?.value || '',
-
-            distributore:
-                document.getElementById(
-                    'benDistributore'
-                )?.value || ''
+        // Descrizione COMPLETA con consumo e date
+        const formattaDataIta = (dataString) => {
+            if(!dataString) return "";
+            const [y, mo, d] = dataString.split('-');
+            return `${d}/${mo}/${y.slice(-2)}`;
         };
 
-        const descrizione =
-            document.getElementById(
-                'descrizione'
-            )?.value.trim() || '';
+        let descComposta = `Bolletta ${m.rawSub}`;
 
-        m.descrizione =
-            descrizione || m.descrizione;
-    }
-
-    // Altre categorie
-    else {
-        const descrizione =
-            document.getElementById(
-                'descrizione'
-            )?.value.trim() || '';
-
-        m.descrizione =
-            descrizione || m.descrizione;
-    }
-
-    try {
-        await salvaMovimentoSuFirebase(m);
-
-        const indice =
-            window.movimenti.findIndex(
-                x => String(x.id) === String(m.id)
-            );
-
-        if (indice !== -1) {
-            window.movimenti[indice] = m;
+        if (m.bollettaConsumo) {
+            const unita = (document.getElementById('span_unit_new')?.innerText || '').trim();
+            descComposta += ` - (${m.bollettaConsumo} ${unita.replace('/', '').trim()})`;
+        }
+        if (m.bollettaDal && m.bollettaAl) {
+            descComposta += ` dal ${formattaDataIta(m.bollettaDal)} al ${formattaDataIta(m.bollettaAl)}`;
+        } else if (m.bollettaDal) {
+            descComposta += ` dal ${formattaDataIta(m.bollettaDal)}`;
+        } else if (m.bollettaAl) {
+            descComposta += ` fino al ${formattaDataIta(m.bollettaAl)}`;
         }
 
-        window.idInModifica = null;
-
-        render();
-        calcolaSaldiGlobali();
-        resetForm();
-
-    } catch (errore) {
-        console.error(
-            'Errore durante il salvataggio:',
-            errore
-        );
-
-        alert(
-            'Errore durante il salvataggio della modifica'
-        );
+        m.descrizione = descComposta;
     }
+    else if(cat === 'Stipendio') {
+        m.linkPdf = document.getElementById('inp_pdf_new')?.value || '';
+    }
+    else if(cat === 'Supermercato') {
+        m.rawSub = document.getElementById('selectSuper')?.value || '';
+    }
+    else if(cat === 'Benzina') {
+        m.datiBenzina = {
+            litri: document.getElementById('benLitri')?.value || '',
+            km: document.getElementById('benKm')?.value || '',
+            prezzo: document.getElementById('benPrezzo')?.value || '',
+            distributore: document.getElementById('benDistributore')?.value || ''
+        };
+    }
+
+    if(cat !== 'Bolletta') {
+        const descrizioneOriginale = document.getElementById('descrizione').value.trim();
+        m.descrizione = descrizioneOriginale || m.descrizione;
+    }
+
+    await salvaMovimentoSuFirebase(m);
+
+    const idx = window.movimenti.findIndex(x => String(x.id) === String(m.id));
+    if(idx !== -1) window.movimenti[idx] = m;
+
+    window.idInModifica = null;
+    render();
+    calcolaSaldiGlobali();
+    resetForm();
 };
 
 function formatDataScad(dataString) {
@@ -2290,56 +1799,10 @@ function formatDataScad(dataString) {
     return `${d}/${m}/${y.slice(-2)}`;
 }
 
-window.annullaModifica = function() {
-    // Esce dalla modalità modifica
-    window.idInModifica = null;
-
-    const btnDefault =
-        document.getElementById('btnDefault');
-
-    const btnEdit =
-        document.getElementById('btnEdit');
-
-    // Mostra i pulsanti normali
-    if (btnDefault) {
-        btnDefault.style.removeProperty('display');
+    window.annullaModifica = function(){
+        window.idInModifica = null; resetForm(); 
+        document.getElementById('titoloForm').textContent = "Nuova Voce"; document.getElementById('titoloForm').style.color = "#007bff"; document.getElementById('btnDefault').style.display = 'flex'; document.getElementById('btnEdit').style.display = 'none'; render();
     }
-
-    // Nasconde Salva Modifiche e Annulla
-    if (btnEdit) {
-        btnEdit.style.setProperty(
-            'display',
-            'none',
-            'important'
-        );
-    }
-
-    // Ripristina il titolo
-    const titoloForm =
-        document.getElementById('titoloForm');
-
-    if (titoloForm) {
-        titoloForm.textContent = 'Nuova Voce';
-        titoloForm.style.color = '';
-    }
-
-    // Svuota e ripristina il modulo
-    resetForm();
-
-    /*
-     * Deve essere eseguito dopo resetForm(),
-     * così Chi paga? torna sempre su CC.
-     */
-    const campoConto =
-        document.getElementById('conto');
-
-    if (campoConto) {
-        campoConto.value = 'CC';
-    }
-
-    // Aggiorna la visualizzazione
-    render();
-};
 	
 	window.addEventListener('DOMContentLoaded', function() {
     if (typeof window.annullaModifica === 'function') {
@@ -2358,50 +1821,12 @@ window.annullaModifica = function() {
         if(cat==='Bolletta'&&subB){cf=`${cat} - ${subB}`;sv=subB;} else if(cat==='Supermercato'&&subS){cf=`${cat} - ${subS}`;sv=subS;} else if(cat==='Benzina'){eb={litri:bL,km:bK,prezzo:bP,distributore:bD};}
         return {descrizione:desc||"Nessuna descrizione",importo:imp,data:dt,categoria:cf,conto:c,rawCat:cat,rawSub:sv,linkPdf:pdf,datiBenzina:eb};
     }
-window.resetForm = function() {
-    document.getElementById('descrizione').value = '';
-    document.getElementById('importo').value = '';
-
-    // Conto predefinito
-    document.getElementById('conto').value = 'CC';
-
-    document.getElementById('categoria').value =
-        window.categorie[0];
-
-    document.getElementById(
-        'sel_tipo_bolletta_new'
-    ).value = '';
-
-    document.getElementById(
-        'inp_pdf_new'
-    ).value = '';
-
-    document.getElementById(
-        'selectSuper'
-    ).value = '';
-
-    document.getElementById(
-        'benLitri'
-    ).value = '';
-
-    document.getElementById(
-        'benKm'
-    ).value = '';
-
-    document.getElementById(
-        'benPrezzo'
-    ).value = '';
-
-    document.getElementById(
-        'benDistributore'
-    ).value = '';
-
-    // Non siamo più in modalità modifica
-    window.idInModifica = null;
-
-    gestisciCategoria();
-    impostaDataOggi();
-};
+    window.resetForm = function(){
+        document.getElementById('descrizione').value=''; document.getElementById('importo').value=''; document.getElementById('categoria').value=window.categorie[0];
+        document.getElementById('sel_tipo_bolletta_new').value=''; document.getElementById('inp_pdf_new').value=''; // RESET NUOVI ID
+        document.getElementById('selectSuper').value=''; document.getElementById('benLitri').value=''; document.getElementById('benKm').value=''; document.getElementById('benPrezzo').value=''; document.getElementById('benDistributore').value='';
+        gestisciCategoria(); impostaDataOggi();
+    }
     window.gestisciCategoria = function() {
     const c = document.getElementById('categoria').value;
     const bE = document.getElementById('btnEntrata');
@@ -3327,341 +2752,83 @@ window.renderNote = function() {
         </div>`;
     });
 }
-window.preparaModifica = function(id) {
-    const m = window.movimenti.find(
-        x => String(x.id) === String(id)
-    );
+window.preparaModifica = function(id){
+    const m = window.movimenti.find(x => String(x.id) === String(id)); 
+    if(!m) return alert("Errore");
+    
+    window.idInModifica = m.id;
+    document.getElementById('data').value = m.data; 
+    document.getElementById('importo').value = m.importo; 
 
-    if (!m) {
-        return alert("Errore: movimento non trovato");
+    // Forzare descrizione corretta per bollette
+    let descrizionePerForm = m.descrizione;
+    if(m.rawCat === 'Bolletta' || m.categoria === 'Bolletta') {
+        const tipo = m.tipoBolletta || m.rawSub || '';
+        descrizionePerForm = tipo ? `Bolletta - ${tipo}` : 'Bolletta';
     }
+    document.getElementById('descrizione').value = descrizionePerForm === "Nessuna descrizione" ? "" : descrizionePerForm;
+    
+    if(m.rawCat && window.categorie.includes(m.rawCat)) document.getElementById('categoria').value = m.rawCat; 
+    else document.getElementById('categoria').value = window.categorie[0];
+    
+    // 1. Prima chiamo gestisciCategoria() per mostrare/nascondere i div giusti
+    gestisciCategoria(); 
 
-    // Salva l'ID come stringa
-    window.idInModifica = String(m.id);
-
-    // Campi principali
-    document.getElementById('data').value =
-        m.data || '';
-
-    document.getElementById('importo').value =
-        m.importo || '';
-
-    // Riconoscimento categoria
-    const rawCat = String(
-        m.rawCat || ''
-    ).trim();
-
-    const categoriaSalvata = String(
-        m.categoria || ''
-    ).trim();
-
-    const isBolletta =
-        rawCat === 'Bolletta' ||
-        categoriaSalvata === 'Bolletta';
-
-    const isSupermercato =
-        rawCat === 'Supermercato' ||
-        rawCat.startsWith('Supermercato') ||
-        categoriaSalvata === 'Supermercato' ||
-        categoriaSalvata.startsWith('Supermercato');
-
-    // Descrizione
-    let descrizionePerForm =
-        m.descrizione || '';
-
-    if (isBolletta) {
-        const tipo =
-            m.tipoBolletta ||
-            m.rawSub ||
-            '';
-
-        descrizionePerForm = tipo
-            ? `Bolletta - ${tipo}`
-            : 'Bolletta';
-    }
-
-    document.getElementById(
-        'descrizione'
-    ).value =
-        descrizionePerForm === 'Nessuna descrizione'
-            ? ''
-            : descrizionePerForm;
-
-    // Categoria
-    const campoCategoria =
-        document.getElementById('categoria');
-
-    let categoriaDaImpostare = '';
-
-    if (isSupermercato) {
-        categoriaDaImpostare = 'Supermercato';
-    } else if (
-        rawCat &&
-        window.categorie.includes(rawCat)
-    ) {
-        categoriaDaImpostare = rawCat;
-    } else if (
-        categoriaSalvata &&
-        window.categorie.includes(categoriaSalvata)
-    ) {
-        categoriaDaImpostare =
-            categoriaSalvata;
-    } else {
-        categoriaDaImpostare =
-            window.categorie[0] || '';
-    }
-
-    if (campoCategoria) {
-        campoCategoria.value =
-            categoriaDaImpostare;
-    }
-
-    // Mostra i campi corretti della categoria
-    gestisciCategoria();
-
-    // Bolletta
-    if (isBolletta) {
-        const selTipo =
-            document.getElementById(
-                'sel_tipo_bolletta_new'
-            );
-
-        const inpPdf =
-            document.getElementById(
-                'inp_pdf_new'
-            );
-
-        const inpConsumo =
-            document.getElementById(
-                'inp_consumo_new'
-            );
-
-        const inpDal =
-            document.getElementById(
-                'inp_bolletta_dal'
-            );
-
-        const inpAl =
-            document.getElementById(
-                'inp_bolletta_al'
-            );
-
-        if (selTipo) {
-            selTipo.value =
-                m.tipoBolletta ||
-                m.rawSub ||
-                '';
+    // 2. Poi popolo i valori nei div appena mostrati
+    if(m.rawCat === 'Bolletta' || m.categoria === 'Bolletta'){
+        // Categoria: usa categoriaBolletta (se esiste) o rawCat come fallback
+        const cat = document.getElementById('categoria');
+        if(cat) {
+            if(m.categoriaBolletta && window.categorie.includes(m.categoriaBolletta)) {
+                cat.value = m.categoriaBolletta;
+            } else if(m.rawCat && window.categorie.includes(m.rawCat)) {
+                cat.value = m.rawCat;
+            } else {
+                cat.value = window.categorie[0];
+            }
         }
 
-        if (inpPdf) {
-            inpPdf.value =
-                m.linkPdf || '';
-        }
+        // Tipo bolletta: usa tipoBolletta (se esiste) o rawSub come fallback
+        const selTipo = document.getElementById('sel_tipo_bolletta_new');
+        if(selTipo) selTipo.value = m.tipoBolletta || m.rawSub || '';
 
-        if (inpConsumo) {
-            inpConsumo.value =
-                m.consumoBolletta ||
-                m.bollettaConsumo ||
-                '';
-        }
+        // PDF
+        if(m.linkPdf) document.getElementById('inp_pdf_new').value = m.linkPdf;
 
-        if (inpDal) {
-            inpDal.value =
-                m.consumoBollettaDal ||
-                m.bollettaDal ||
-                '';
-        }
+        // Consumo e date
+        const inpConsumo = document.getElementById('inp_consumo_new');
+        const inpDal = document.getElementById('inp_bolletta_dal');
+        const inpAl = document.getElementById('inp_bolletta_al');
 
-        if (inpAl) {
-            inpAl.value =
-                m.consumoBollettaAl ||
-                m.bollettaAl ||
-                '';
-        }
+        if(inpConsumo) inpConsumo.value = m.consumoBolletta || m.bollettaConsumo || '';
+        if(inpDal) inpDal.value = m.consumoBollettaDal || m.bollettaDal || '';
+        if(inpAl) inpAl.value = m.consumoBollettaAl || m.bollettaAl || '';
 
-        if (
-            typeof window.logica_consumi_new ===
-            'function'
-        ) {
-            window.logica_consumi_new();
-        }
+        window.logica_consumi_new();
     }
-
-    // Stipendio
-    else if (rawCat === 'Stipendio') {
-        const inpPdf =
-            document.getElementById(
-                'inp_pdf_new'
-            );
-
-        if (inpPdf) {
-            inpPdf.value =
-                m.linkPdf || '';
-        }
+    else if(m.rawCat === 'Stipendio'){ 
+        if(m.linkPdf) document.getElementById('inp_pdf_new').value = m.linkPdf;
     }
-
-    // Supermercato
-    else if (isSupermercato) {
-        const selectSuper =
-            document.getElementById(
-                'selectSuper'
-            );
-
-        if (selectSuper) {
-            selectSuper.value =
-                m.rawSub || '';
-        }
+    else if(m.rawCat === 'Supermercato'){ 
+        document.getElementById('selectSuper').value = m.rawSub || ''; 
     }
-
-    // Benzina
-    else if (
-        rawCat === 'Benzina' &&
-        m.datiBenzina
-    ) {
-        document.getElementById(
-            'benLitri'
-        ).value =
-            m.datiBenzina.litri || '';
-
-        document.getElementById(
-            'benKm'
-        ).value =
-            m.datiBenzina.km || '';
-
-        document.getElementById(
-            'benPrezzo'
-        ).value =
-            m.datiBenzina.prezzo || '';
-
-        document.getElementById(
-            'benDistributore'
-        ).value =
-            m.datiBenzina.distributore || '';
+    else if(m.rawCat === 'Benzina' && m.datiBenzina){ 
+        document.getElementById('benLitri').value = m.datiBenzina.litri || ''; 
+        document.getElementById('benKm').value = m.datiBenzina.km || ''; 
+        document.getElementById('benPrezzo').value = m.datiBenzina.prezzo || ''; 
+        document.getElementById('benDistributore').value = m.datiBenzina.distributore || ''; 
     }
-
-    // Conto
-    document.getElementById('conto').value =
-        m.conto || '';
-
-    // Titolo
-    document.getElementById(
-        'titoloForm'
-    ).textContent = 'Modifica Voce';
-
-    document.getElementById(
-        'titoloForm'
-    ).style.color = '#ffc107';
-
-    // Pulsanti
-    const btnDefault =
-        document.getElementById('btnDefault');
-
-    const btnEdit =
-        document.getElementById('btnEdit');
-
-    if (btnDefault) {
-        btnDefault.style.setProperty(
-            'display',
-            'none',
-            'important'
-        );
-    }
-
-    if (btnEdit) {
-        btnEdit.style.setProperty(
-            'display',
-            'flex',
-            'important'
-        );
-    }
-
-    closeAllPanels();
-
-    window.scrollTo({
-        top: 0,
-        behavior: 'smooth'
-    });
-
+    
+    document.getElementById('conto').value = m.conto;
+    document.getElementById('titoloForm').textContent = "Modifica Voce"; 
+    document.getElementById('titoloForm').style.color = "#ffc107"; 
+    document.getElementById('btnDefault').style.display = 'none'; 
+    document.getElementById('btnEdit').style.display = 'flex';
+    
+    closeAllPanels(); 
+    window.scrollTo({top: 0, behavior: 'smooth'}); 
     render();
-
-    /*
-     * Ripristina l'ID dopo render().
-     * Serve se render() modifica o azzera variabili globali.
-     */
-    window.idInModifica = String(m.id);
 };
-
-window.aggiornaPulsantiMovimento = function() {
-    const categoria = document.getElementById('categoria')?.value || '';
-
-    const btnDefault = document.getElementById('btnDefault');
-    const btnEdit = document.getElementById('btnEdit');
-
-    const pulsantiEntrata =
-        document.querySelectorAll('.btn-entrata');
-
-    const pulsantiUscita =
-        document.querySelectorAll('.btn-uscita');
-
-    /*
-     * Se siamo in modalità modifica,
-     * non modificare la visualizzazione dei pulsanti normali.
-     */
-    if (window.idInModifica !== null &&
-        window.idInModifica !== undefined) {
-        return;
-    }
-
-    // Mostra i pulsanti normali
-    if (btnDefault) {
-        btnDefault.style.setProperty(
-            'display',
-            'flex',
-            'important'
-        );
-    }
-
-    // Nasconde i pulsanti di modifica
-    if (btnEdit) {
-        btnEdit.style.setProperty(
-            'display',
-            'none',
-            'important'
-        );
-    }
-
-    const isEntrata =
-        categoria === 'Entrata' ||
-        categoria === 'Stipendio';
-
-    if (isEntrata) {
-        // Entrata o stipendio: mostra + Entrata
-        pulsantiEntrata.forEach(function(btn) {
-            btn.style.display = '';
-            btn.disabled = false;
-        });
-
-        // Nasconde - Uscita
-        pulsantiUscita.forEach(function(btn) {
-            btn.style.display = 'none';
-            btn.disabled = true;
-        });
-    } else {
-        // Spesa: mostra - Uscita
-        pulsantiUscita.forEach(function(btn) {
-            btn.style.display = '';
-            btn.disabled = false;
-        });
-
-        // Nasconde + Entrata
-        pulsantiEntrata.forEach(function(btn) {
-            btn.style.display = 'none';
-            btn.disabled = true;
-        });
-    }
-};
-
-
     window.resetFormNota = function() { window.idNotaModifica = null; document.getElementById('noteOggetto').value=''; document.getElementById('noteTesto').value=''; document.getElementById('noteDate').value=formatLocalYMD(new Date()); document.getElementById('btnSalvaNota').innerHTML="Salva Nota"; document.getElementById('btnSalvaNota').style.background="#20c997"; document.getElementById('btnSalvaNota').style.color="white"; document.getElementById('titoloBoxNote').textContent="Nuova Nota"; }
 
     window.initPatrimonio = function(){ renderFondiConfig(); if(document.getElementById('patrimonioDate'))document.getElementById('patrimonioDate').value=formatLocalYMD(new Date()); renderPatrimonioTable(); }
@@ -4226,67 +3393,33 @@ window.salvaNuovaScadenza = async function() {
 window.annullaModificaScadenza = function() {
     window.idScadenzaInModifica = null;
 
-    const idsDaSvuotare = [
-        'scadDate',
-        'scadImporto',
-        'scadDesc',
-        'scadLink',
-        'scadConsumo',
-        'scadDal',
-        'scadAl',
-        'scadSub',
-        'scadCategoria'
-    ];
+    // Reset campi e visibilità
+    document.getElementById('scadDate').value = '';
+    document.getElementById('scadImporto').value = '';
+    document.getElementById('scadDesc').value = '';
+    document.getElementById('scadLink').value = '';
+    document.getElementById('scadConsumo').value = '';
+    document.getElementById('scadDal').value = '';
+    document.getElementById('scadAl').value = '';
+    document.getElementById('scadSub').value = '';
+    document.getElementById('scadCategoria').value = '';
+    
+    document.getElementById('boxScadSub').style.display = 'none';
+    document.getElementById('boxScadPeriodo').style.display = 'none';
 
-    idsDaSvuotare.forEach(id => {
-        const el = document.getElementById(id);
-        if (el) el.value = '';
-    });
-
-    const boxSub = document.getElementById('boxScadSub');
-    if (boxSub) boxSub.style.display = 'none';
-
-    const boxPeriodo = document.getElementById('boxScadPeriodo');
-    if (boxPeriodo) boxPeriodo.style.display = 'none';
-
+    // Ripristino bottone Salva usando il suo nuovo ID
     const btn = document.getElementById('btnSalvaUnico');
-    if (btn) {
+    if(btn) {
         btn.innerHTML = "Salva Scadenza";
-        btn.style.background = "";
+        btn.style.background = ""; 
     }
 
+    // Nascondo tasto Annulla
     const btnAnnulla = document.getElementById('btnAnnullaScadenza');
-    if (btnAnnulla) {
+    if(btnAnnulla) {
         btnAnnulla.style.display = 'none';
     }
 };
-
-function forzaContoPredefinito() {
-    const campoConto =
-        document.getElementById('conto');
-
-    if (campoConto) {
-        campoConto.value = 'CC';
-    }
-}
-
-// Quando il DOM è pronto
-if (document.readyState === 'loading') {
-    document.addEventListener(
-        'DOMContentLoaded',
-        forzaContoPredefinito
-    );
-} else {
-    forzaContoPredefinito();
-}
-
-// Ulteriore esecuzione al caricamento completo
-window.addEventListener('load', function() {
-    setTimeout(
-        forzaContoPredefinito,
-        100
-    );
-});
 
 
 window.renderSpese = function() {
