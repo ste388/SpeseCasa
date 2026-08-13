@@ -1793,6 +1793,39 @@ window.confermaModifica = async function() {
     resetForm();
 };
 
+
+window.aggiornaBottoniVisibili = function() {
+    const cat = document.getElementById('categoria')?.value || '';
+    const btnDefault = document.getElementById('btnDefault');
+    const btnEdit = document.getElementById('btnEdit');
+    const btnEntrata = document.getElementById('btnEntrata');
+    const btnUscita = document.getElementById('btnUscita');
+
+    // 1. Se stiamo MODIFICANDO una spesa esistente
+    if (window.idInModifica !== null && window.idInModifica !== undefined && window.idInModifica !== '') {
+        // Nasconde il contenitore standard (+Entrata, -Uscita) forzando su mobile
+        if (btnDefault) btnDefault.style.setProperty('display', 'none', 'important');
+        // Mostra il contenitore di modifica (Salva Modifiche, Annulla)
+        if (btnEdit) btnEdit.style.setProperty('display', 'flex', 'important');
+    } 
+    // 2. Se stiamo inserendo una NUOVA VOCE
+    else {
+        // Nasconde i pulsanti di modifica
+        if (btnEdit) btnEdit.style.setProperty('display', 'none', 'important');
+        // Mostra il contenitore standard
+        if (btnDefault) btnDefault.style.setProperty('display', 'flex', 'important');
+
+        // Mostra solo Entrata o solo Uscita in base alla categoria
+        if (cat === 'Entrata' || cat === 'Stipendio') {
+            if (btnEntrata) btnEntrata.style.setProperty('display', 'block', 'important');
+            if (btnUscita) btnUscita.style.setProperty('display', 'none', 'important');
+        } else {
+            if (btnEntrata) btnEntrata.style.setProperty('display', 'none', 'important');
+            if (btnUscita) btnUscita.style.setProperty('display', 'block', 'important');
+        }
+    }
+};
+
 function formatDataScad(dataString) {
     if(!dataString) return "";
     const [y, m, d] = dataString.split('-');
@@ -1826,6 +1859,7 @@ function formatDataScad(dataString) {
         document.getElementById('sel_tipo_bolletta_new').value=''; document.getElementById('inp_pdf_new').value=''; // RESET NUOVI ID
         document.getElementById('selectSuper').value=''; document.getElementById('benLitri').value=''; document.getElementById('benKm').value=''; document.getElementById('benPrezzo').value=''; document.getElementById('benDistributore').value='';
         gestisciCategoria(); impostaDataOggi();
+		aggiornaBottoniVisibili(); // <-- AGGIUNGI ALLA FINE
     }
     window.gestisciCategoria = function() {
     const c = document.getElementById('categoria').value;
@@ -1880,6 +1914,7 @@ function formatDataScad(dataString) {
     if (typeof aggiornaSuggerimentiDescrizione === 'function') {
         aggiornaSuggerimentiDescrizione();
     }
+	aggiornaBottoniVisibili(); // <-- AGGIUNGI ALLA FINE
 };
 
     window.calcolaPrezzoBenzina = function(){ const i=parseFloat(document.getElementById('importo').value), l=parseFloat(document.getElementById('benLitri').value); if(!isNaN(i)&&!isNaN(l)&&l>0)document.getElementById('benPrezzo').value=(i/l).toFixed(3); else document.getElementById('benPrezzo').value=''; }
@@ -2828,6 +2863,8 @@ window.preparaModifica = function(id){
     closeAllPanels(); 
     window.scrollTo({top: 0, behavior: 'smooth'}); 
     render();
+	
+	aggiornaBottoniVisibili(); // <-- AGGIUNGI ALLA FINE
 };
     window.resetFormNota = function() { window.idNotaModifica = null; document.getElementById('noteOggetto').value=''; document.getElementById('noteTesto').value=''; document.getElementById('noteDate').value=formatLocalYMD(new Date()); document.getElementById('btnSalvaNota').innerHTML="Salva Nota"; document.getElementById('btnSalvaNota').style.background="#20c997"; document.getElementById('btnSalvaNota').style.color="white"; document.getElementById('titoloBoxNote').textContent="Nuova Nota"; }
 
@@ -3226,6 +3263,8 @@ window.annullaModificaScadenza = function() {
     if(document.getElementById('btnAnnullaScadenza')) {
         document.getElementById('btnAnnullaScadenza').style.display = 'none';
     }
+	
+	aggiornaBottoniVisibili(); // <-- AGGIUNGI ALLA FINE
 };
 
 
@@ -3726,6 +3765,7 @@ window.apriProiezioneSpese = function() {
 
 
 
+
 </script>
 
 <script>
@@ -3763,7 +3803,9 @@ window.apriProiezioneSpese = function() {
                     style="background:#6c757d; color:white; padding:6px 15px; border:none; border-radius:4px; cursor:pointer;">Chiudi</button>
         </div>
     </div>
+	
 </div>
+
 
 <!-- MODALE PROIEZIONE SPESE -->
 <div id="modalProiezione" class="modal-overlay" style="display:none; align-items:center; justify-content:center; z-index:30000; background-color:rgba(0,0,0,0.5);">
