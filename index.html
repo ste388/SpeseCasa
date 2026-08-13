@@ -836,7 +836,7 @@ tfoot td { border-top: 2px solid #333; font-weight: bold; padding-top: 15px; fon
         <div id="deadlinesPanel" class="panel-area">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 10px;">
                 <h4 style="margin:0; color:#fd7e14;">Gestione Scadenze</h4>
-                <button onclick="document.getElementById('deadlinesPanel').style.display='none'" style="background:transparent; border:none; color:#999; font-size:1.5em; cursor:pointer;">&times;</button>
+                <button onclick="closeAllPanels()" style="background:transparent; border:none; color:#999; font-size:1.5em; cursor:pointer;">&times;</button>
 				
 				<!-- Bottone Previsione (Solo Icona) -->
 <button onclick="apriProiezioneSpese()" 
@@ -928,7 +928,7 @@ tfoot td { border-top: 2px solid #333; font-weight: bold; padding-top: 15px; fon
         <div id="notesPanel" class="panel-area">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 10px;">
                 <h4 style="margin:0; color:#20c997;">Note & Acquisti</h4>
-                <button onclick="document.getElementById('notesPanel').style.display='none'" style="background:transparent; border:none; color:#999; font-size:1.5em; cursor:pointer;">&times;</button>
+                <button onclick="closeAllPanels()" style="background:transparent; border:none; color:#999; font-size:1.5em; cursor:pointer;">&times;</button>
             </div>
             <div style="background:#e6fffa; padding:10px; border-radius:5px; border:1px solid #b2f5ea;">
                 <h5 id="titoloBoxNote" style="margin:0 0 10px 0;">Nuova Nota</h5>
@@ -945,7 +945,7 @@ tfoot td { border-top: 2px solid #333; font-weight: bold; padding-top: 15px; fon
         <div id="transferPanel" class="panel-area">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 10px;">
                 <h4 style="margin:0; color:#17a2b8;">Ricarica Conto Comune</h4>
-                <button onclick="document.getElementById('transferPanel').style.display='none'" style="background:transparent; border:none; color:#999; font-size:1.5em; cursor:pointer;">&times;</button>
+                <button onclick="closeAllPanels()" style="background:transparent; border:none; color:#999; font-size:1.5em; cursor:pointer;">&times;</button>
             </div>
             <div class="form-grid">
                 <div class="data-control"><label>Data:</label><input type="date" id="transDate"></div>
@@ -959,7 +959,7 @@ tfoot td { border-top: 2px solid #333; font-weight: bold; padding-top: 15px; fon
         <div id="balancePanel" class="info-panel" style="display:none;">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 10px;">
                 <h4 style="margin:0; color:#0d47a1;">🏦 Saldi Conti Attuali</h4>
-                <button onclick="document.getElementById('balancePanel').style.display='none'" style="background:transparent; border:none; color:#999; font-size:1.5em; cursor:pointer;">&times;</button>
+                <button onclick="closeAllPanels()" style="background:transparent; border:none; color:#999; font-size:1.5em; cursor:pointer;">&times;</button>
             </div>
 			<!-- GRIGLIA SALDI PULITA: Gli ID sono sui box esterni così il JS riempie tutto -->
 			<div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 20px;">
@@ -989,7 +989,7 @@ tfoot td { border-top: 2px solid #333; font-weight: bold; padding-top: 15px; fon
         <div id="initBalancePanel" class="info-panel" style="display:none; border-color:#607d8b;">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 10px;">
                 <h4 style="margin:0; color:#455a64;">🔧 Inizializza Saldi</h4>
-                <button onclick="document.getElementById('initBalancePanel').style.display='none'" style="background:transparent; border:none; color:#999; font-size:1.5em; cursor:pointer;">&times;</button>
+                <button onclick="closeAllPanels()" style="background:transparent; border:none; color:#999; font-size:1.5em; cursor:pointer;">&times;</button>
             </div>
             <div class="form-grid">
                 <div><label>Saldo Reale Ste</label><input type="number" id="offsetSte" step="0.01"></div>
@@ -1002,7 +1002,7 @@ tfoot td { border-top: 2px solid #333; font-weight: bold; padding-top: 15px; fon
         <div id="statsPanel" class="info-panel" style="display:none;">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 15px; border-bottom:1px solid #eee; padding-bottom:10px;">
                 <h4 style="margin:0; color:#673ab7;">📊 Statistiche</h4>
-                <button onclick="document.getElementById('statsPanel').style.display='none'" style="background:transparent; border:none; color:#999; font-size:1.5em; cursor:pointer;">&times;</button>
+                <button onclick="closeAllPanels()" style="background:transparent; border:none; color:#999; font-size:1.5em; cursor:pointer;">&times;</button>
             </div>
             <div class="form-grid" style="grid-template-columns: 1fr 1fr; margin-bottom: 10px;">
                 <div><label style="font-size:0.8em; color:#666;">Dal:</label><input type="date" id="statStart" style="padding:5px;"></div>
@@ -1052,7 +1052,7 @@ tfoot td { border-top: 2px solid #333; font-weight: bold; padding-top: 15px; fon
         <div id="autoPanel" class="info-panel" style="display:none;">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 15px;">
                 <h4 style="margin:0; color: #6610f2;">⛽ Report Auto</h4>
-                <button onclick="document.getElementById('autoPanel').style.display='none'" style="background:transparent; border:none; color:#999; font-size:1.5em; cursor:pointer;">&times;</button>
+                <button onclick="closeAllPanels()" style="background:transparent; border:none; color:#999; font-size:1.5em; cursor:pointer;">&times;</button>
             </div>
             <div style="background: #6610f2; color: white; padding: 20px; border-radius: 12px; margin-bottom: 25px;">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 15px;">
@@ -1095,7 +1095,7 @@ tfoot td { border-top: 2px solid #333; font-weight: bold; padding-top: 15px; fon
         <div id="dataPanel" class="panel-area">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 10px;">
                 <h4 style="margin:0; color:#6f42c1;">Gestione Dati</h4>
-                <button onclick="document.getElementById('dataPanel').style.display='none'" style="background:transparent; border:none; color:#999; font-size:1.5em; cursor:pointer;">&times;</button>
+                <button onclick="closeAllPanels()" style="background:transparent; border:none; color:#999; font-size:1.5em; cursor:pointer;">&times;</button>
             </div>
             <div class="form-grid">
                 <div class="data-control"><label>Dal:</label><input type="date" id="exportStart"></div>
@@ -1116,7 +1116,7 @@ tfoot td { border-top: 2px solid #333; font-weight: bold; padding-top: 15px; fon
         <div id="settingsPanel" class="panel-area">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 10px;">
                 <h4 style="margin:0;">Gestione Elenchi</h4>
-                <button onclick="document.getElementById('settingsPanel').style.display='none'" style="background:transparent; border:none; color:#999; font-size:1.5em; cursor:pointer;">&times;</button>
+                <button onclick="closeAllPanels()" style="background:transparent; border:none; color:#999; font-size:1.5em; cursor:pointer;">&times;</button>
             </div>
             <div class="section-title">Categorie Principali</div><div class="tag-container" id="listCategorie"></div>
             <div class="add-box"><input type="text" id="newCat" placeholder="Nuova..."><button onclick="aggiungiVoce('cat')" style="background:#007bff; width:auto;">+</button></div>
@@ -1711,13 +1711,12 @@ initDateRange('statStart', 'statEnd');
 
     const main = document.getElementById('mainEntrySection');
     if(main) main.style.display = 'block';
-	
-	
+		
 	const titolo = document.getElementById('titoloForm');
-if(titolo) titolo.style.display = 'block';
+	if(titolo) titolo.style.display = 'block';
 
-const movements = document.getElementById('movementsCard');
-if(movements) movements.style.display = 'block';
+	const movements = document.getElementById('movementsCard');
+	if(movements) movements.style.display = 'block';
 	
 }
 
