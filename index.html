@@ -840,6 +840,53 @@ tfoot td { border-top: 2px solid #333; font-weight: bold; padding-top: 15px; fon
     position: fixed !important;
     z-index: 2147483647 !important;
 }
+/* Barra menu: comportamento stabile su PC */
+.header-icons {
+    position: fixed !important;
+    top: 0 !important;
+    left: 50% !important;
+    right: auto !important;
+    transform: translateX(-50%) !important;
+
+    width: 600px !important;
+    max-width: 100vw !important;
+    height: 70px !important;
+
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+
+    padding: 0 20px !important;
+    box-sizing: border-box !important;
+    background: #fff !important;
+    z-index: 2147483647 !important;
+}
+
+/* Barra menu: scorrimento completo su telefono */
+@media screen and (max-width: 600px) {
+    .header-icons {
+        left: 0 !important;
+        right: auto !important;
+        transform: none !important;
+
+        width: 100vw !important;
+        max-width: 100vw !important;
+
+        justify-content: flex-start !important;
+        overflow-x: auto !important;
+        overflow-y: hidden !important;
+        white-space: nowrap !important;
+
+        padding: 0 10px !important;
+        -webkit-overflow-scrolling: touch !important;
+    }
+
+    .header-icons .icon-btn,
+    .header-icons button {
+        flex: 0 0 auto !important;
+        width: auto !important;
+    }
+}
 
 </style>
 
@@ -3128,36 +3175,12 @@ window.toggleModalPatrimonio = function() {
         closeAllPanels();
     }
 
-    const menu = document.querySelector('.header-icons');
-
-    /* Patrimonio va nel body per occupare tutta la finestra */
     if (m.parentElement !== document.body) {
         document.body.appendChild(m);
     }
 
-    /* Il menu viene spostato dopo Patrimonio: quindi è sopra di lui */
-    if (menu && menu.parentElement === document.body) {
-        document.body.appendChild(menu);
-    }
-
     m.classList.add('patrimonio-aperto');
-
-    m.style.cssText =
-        'display:block !important;' +
-        'position:fixed !important;' +
-        'top:70px !important;' +
-        'left:0 !important;' +
-        'right:0 !important;' +
-        'bottom:0 !important;' +
-        'width:100vw !important;' +
-        'max-width:none !important;' +
-        'height:calc(100vh - 70px) !important;' +
-        'max-height:none !important;' +
-        'z-index:2147483646 !important;' +
-        'background:#f8f9fa !important;' +
-        'overflow:auto !important;' +
-        'padding:20px !important;' +
-        'box-sizing:border-box !important;';
+    m.style.display = 'block';
 
     const contenuto = m.querySelector('.modal-content');
 
@@ -3179,46 +3202,17 @@ window.toggleModalPatrimonio = function() {
             'overflow:visible !important;';
     }
 
-if (menu) {
-    const isMobile = window.innerWidth <= 600;
+    if (typeof renderFondiConfig === 'function') {
+        renderFondiConfig();
+    }
 
-    menu.style.cssText += isMobile
-        ? 'position:fixed !important;' +
-          'top:0 !important;' +
-          'left:0 !important;' +
-          'transform:none !important;' +
-          'width:100vw !important;' +
-          'max-width:100vw !important;' +
-          'height:70px !important;' +
-          'background:#ffffff !important;' +
-          'z-index:2147483647 !important;' +
-          'display:flex !important;' +
-          'align-items:center !important;' +
-          'justify-content:flex-start !important;' +
-          'overflow-x:auto !important;' +
-          'overflow-y:hidden !important;' +
-          'white-space:nowrap !important;' +
-          'padding:0 10px !important;' +
-          'box-sizing:border-box !important;'
-        : 'position:fixed !important;' +
-          'top:0 !important;' +
-          'left:50% !important;' +
-          'transform:translateX(-50%) !important;' +
-          'width:600px !important;' +
-          'max-width:100vw !important;' +
-          'height:70px !important;' +
-          'background:#ffffff !important;' +
-          'z-index:2147483647 !important;' +
-          'display:flex !important;' +
-          'align-items:center !important;' +
-          'justify-content:center !important;' +
-          'padding:0 20px !important;' +
-          'box-sizing:border-box !important;';
-}
+    if (typeof aggiornaLiquiditaSte === 'function') {
+        aggiornaLiquiditaSte();
+    }
 
-    if (typeof renderFondiConfig === 'function') renderFondiConfig();
-    if (typeof aggiornaLiquiditaSte === 'function') aggiornaLiquiditaSte();
-    if (typeof renderPatrimonioTable === 'function') renderPatrimonioTable();
+    if (typeof renderPatrimonioTable === 'function') {
+        renderPatrimonioTable();
+    }
 };
 
 
