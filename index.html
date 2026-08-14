@@ -3182,12 +3182,6 @@ window.toggleModalPatrimonio = function() {
     m.classList.add('patrimonio-aperto');
     m.style.display = 'block';
 
-    /* Su cellulare il menu torna all'inizio: Saldi conti resta visibile */
-    const menu = document.querySelector('.header-icons');
-    if (menu && window.innerWidth <= 600) {
-        menu.scrollLeft = 0;
-    }
-
     const contenuto = m.querySelector('.modal-content');
 
     if (contenuto) {
@@ -3218,6 +3212,18 @@ window.toggleModalPatrimonio = function() {
 
     if (typeof renderPatrimonioTable === 'function') {
         renderPatrimonioTable();
+    }
+
+    /* Solo su mobile, dopo il rendering completo della pagina */
+    if (window.innerWidth <= 600) {
+        requestAnimationFrame(() => {
+            requestAnimationFrame(() => {
+                const menu = document.querySelector('.header-icons');
+                if (menu) {
+                    menu.scrollLeft = 0;
+                }
+            });
+        });
     }
 };
 
