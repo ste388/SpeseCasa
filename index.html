@@ -259,476 +259,141 @@ tfoot td { border-top: 2px solid #333; font-weight: bold; padding-top: 15px; fon
 /* ============================================
    RESPONSIVE MOBILE
    ============================================ */
-@media screen and (max-width: 600px) {
+/* CSS corretto: mantieni qui il CSS originale fino alla fine della sezione base. */
 
-    /* 1. LAYOUT DEL CORPO PAGINA */
+/* =====================================================
+   RESET HEADER
+   Questo blocco deve stare per ultimo nel tag <style>.
+   ===================================================== */
+
+.header-icons,
+.header-icons * {
+    box-sizing: border-box;
+}
+
+.more-menu-wrapper {
+    display: none;
+}
+
+.desktop-only-menu {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+/* =====================================================
+   MOBILE
+   ===================================================== */
+@media screen and (max-width: 600px) {
+    html,
     body {
-        padding-top: 80px !important;    /* Spazio per la barra header fissa */
-        padding-bottom: 150px !important; /* Spazio extra in fondo per scrollare tutto */
-        padding-left: 8px !important;     /* Margini laterali ridotti */
-        padding-right: 8px !important;
-        overflow-y: auto !important;      /* Scroll verticale sempre attivo */
+        width: 100%;
+        max-width: 100%;
+        overflow-x: hidden;
     }
 
-    /* 2. BARRA MENU (HEADER) SCORREVOLE */
+    body {
+        padding-top: 80px !important;
+        padding-bottom: 150px !important;
+        padding-left: 8px !important;
+        padding-right: 8px !important;
+        overflow-y: auto !important;
+    }
+
     .header-icons {
         position: fixed !important;
         top: 0 !important;
         left: 0 !important;
-        width: 100% !important;
+        right: 0 !important;
+        width: 100vw !important;
+        max-width: 100vw !important;
         height: 70px !important;
-        
-        background-color: white !important;
-        border-bottom: 2px solid #ddd !important;
-        z-index: 99999 !important;
-        
+        transform: none !important;
+
         display: flex !important;
         align-items: center !important;
-        justify-content: flex-start !important; /* Allineato a sinistra per scorrere */
-        
-        overflow-x: auto !important;      /* Abilita scroll orizzontale */
-        white-space: nowrap !important;   /* Impedisce a capo */
+        justify-content: flex-start !important;
+        gap: 4px !important;
         padding: 0 10px !important;
-        gap: 15px !important;
-        
-        /* Nasconde scrollbar brutta */
-        -webkit-overflow-scrolling: touch;
-        scrollbar-width: none;
+        margin: 0 !important;
+
+        background: #fff !important;
+        border-bottom: 2px solid #ddd !important;
+        overflow: visible !important;
+        z-index: 2147483647 !important;
     }
 
-    /* Tasti dentro l'Header (devono rimanere normali, non 100% width) */
-    .header-icons .icon-btn, .header-icons button {
+    .header-icons > .icon-btn,
+    .header-icons .icon-btn,
+    .header-icons > button {
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        flex: 0 0 auto !important;
         width: auto !important;
         height: auto !important;
+        min-height: 0 !important;
+        margin: 0 !important;
+        padding: 5px 7px !important;
         background: transparent !important;
         color: #333 !important;
         font-size: 24px !important;
-        margin: 0 !important;
-        padding: 5px 10px !important;
-        flex-shrink: 0 !important; /* Non si schiacciano se c'è poco spazio */
     }
 
-    /* 3. INPUT, SELECT E BOTTONI GRANDI (Inserimento Dati) */
-    #app input, #app select, .card button {
-        width: 100% !important;
-        min-height: 45px !important;
-        font-size: 16px !important; /* Evita zoom su iPhone */
-        margin-bottom: 10px !important;
-        box-sizing: border-box !important;
+    .desktop-only-menu {
+        display: none !important;
     }
 
-    /* 4. LAYOUT A COLONNA PER GRIGLIE */
-    /* Nota: ho tolto .balance-grid da qui per gestirlo separatamente sotto */
-    .form-grid, .fuel-year-summary, .btn-container {
-        display: flex !important;
-        flex-direction: column !important;
-        gap: 10px !important;
-    }
-
-    /* 5. TABELLA COMPATTA "NO-SCROLL" (Tutto in una schermata) */
-    table {
-        table-layout: fixed !important;  /* Forza colonne rigide */
-        width: 100% !important;
-        display: table !important;
-        overflow-x: hidden !important;   /* Niente scroll orizzontale */
-        font-size: 13px !important;      /* Font leggermente più piccolo */
-    }
-
-    th, td {
-        padding: 8px 4px !important;     /* Padding laterale minimo */
-        overflow: hidden !important;
-    }
-
-    /* Colonna Descrizione: Tronca il testo col "..." */
-    #tabellaMovimenti td:nth-child(2) {
-        width: 40% !important;           /* Riserva spazio */
-        white-space: nowrap !important;
-        text-overflow: ellipsis !important;
-    }
-
-    /* Colonna Importo: Allineata a destra */
-    .importo-col {
-        width: 20% !important;
-        text-align: right !important;
-    }
-
-    /* Colonna Azioni: Compatta e vicina */
-    .action-cell {
-        width: 15% !important;           /* Spazio minimo per 2 icone */
-        min-width: 0 !important;
-        text-align: right !important;
-        padding-right: 0 !important;
-        white-space: nowrap !important;
-    }
-
-    /* Icone Azione (Matita/Cestino) */
-    .action-cell .action-btn {
-        width: auto !important;          /* Reset larghezza 100% */
-        height: auto !important;
-        font-size: 16px !important;
-        padding: 4px !important;
-        margin: 0 !important;
-        display: inline-block !important;
-    }
-
-    /* --- FIX BALANCE GRID (Etichette sopra, Numeri sotto) --- */
-    
-    /* 1. Mantiene i 3 box affiancati sulla stessa riga (non colonna!) */
-    .balance-grid {
-        display: flex !important;       /* Usa flex invece di grid */
-        flex-direction: row !important; /* Forza riga orizzontale */
-        justify-content: space-between !important;
-        gap: 5px !important;            /* Spazio minimo tra i box */
-        width: 100% !important;
-    }
-
-    /* 2. Configura ogni card per avere testo sopra e numero sotto */
-    .balance-card {
-        flex: 1 !important;             /* Si dividono lo spazio in 3 parti uguali */
-        padding: 8px 4px !important;    /* Padding ridotto */
-        display: flex !important;
-        flex-direction: column !important; /* Flex colonna INTERNO alla card */
-        align-items: center !important;    /* Centrato orizzontalmente */
-        justify-content: center !important;
-        min-height: 60px !important;
-    }
-
-    /* 3. Forza l'etichetta ad andare a capo e stare sopra */
-    .balance-card > *:first-child,
-    .balance-card span, 
-    .balance-card .stat-label {
+    .more-menu-wrapper {
         display: block !important;
-        width: 100% !important;
-        font-size: 11px !important;     /* Testo piccolo */
-        margin-bottom: 4px !important;  /* Spazio tra testo e numero */
-        text-transform: uppercase !important;
-        white-space: nowrap !important; 
-    }
-
-    /* 4. Forza il numero ad andare a capo e stare sotto */
-    .balance-card > *:last-child,
-    .balance-card strong, 
-    .balance-card .stat-value {      
-        display: block !important;
-        width: 100% !important;
-        font-size: 13px !important;     /* Numero leggibile */
-        font-weight: bold !important;
-        white-space: nowrap !important;
-    }
-
-    /* 6. PANNELLI E MODALI (Scrollabili e non tagliati) */
-    .panel-area, .info-panel {
-        position: absolute !important;   /* Scrolla con la pagina */
-        top: 70px !important;
-        left: 0 !important;
-        width: 100% !important;
-        height: auto !important;
-        min-height: calc(100vh - 70px) !important;
-        
-        margin: 0 !important;
-        border-radius: 0 !important;
-        z-index: 20000 !important;
-        background: #f8f9fa !important;
-        padding: 15px !important;
-        padding-bottom: 200px !important; /* Spazio vitale in fondo */
-        overflow: visible !important;
-    }
-
-    .modal-content {
         position: relative !important;
-        width: 90% !important;
-        max-height: 80vh !important;
-        overflow-y: auto !important;
-        margin: 10% auto !important;
+        flex: 0 0 auto !important;
+        margin-left: auto !important;
     }
 
-    /* 7. FILTRI DATE E MESI (Layout a due piani) */
-    .filter-bar {
-        display: flex !important;
-        flex-wrap: wrap !important;
-        justify-content: space-between !important;
-        gap: 10px !important;
-        width: 100% !important;
-        padding: 0 !important;
-        margin-bottom: 15px !important;
-    }
-
-    /* Date sopra (48% l'una) */
-    .filter-item {
-        flex: 0 0 48% !important;
-        width: 48% !important;
-        margin: 0 !important;
-    }
-    .filter-item input { margin: 0 !important; }
-
-    /* Bottoni Mesi sotto (48% l'uno) */
-    .filter-bar button {
-        flex: 0 0 48% !important;
-        width: 48% !important;
-        height: 45px !important;
-        margin: 0 !important;
+    .more-menu-btn {
         display: flex !important;
         align-items: center !important;
         justify-content: center !important;
-        font-size: 14px !important;
+        width: 42px !important;
+        height: 42px !important;
         padding: 0 !important;
+        font-size: 28px !important;
+        line-height: 1 !important;
     }
 
-    /* 8. FIX TASTINO X RICERCA (Piccolo e a destra) */
-    body .search-wrapper .search-clear-btn,
-    .search-wrapper button.search-cl
-	
-	/* FIX: Impedisce a qualsiasi finestra/modale di superare la larghezza schermo */
-	.panel-area, 
-	.info-panel, 
-	.modal-content, 
-	.card {
-		max-width: 100vw !important;      /* Mai più largo dello schermo */
-		width: 100% !important;           /* Occupa tutto lo spazio disponibile */
-		box-sizing: border-box !important;/* Include il padding nel calcolo della larghezza */
-		overflow-x: hidden !important;    /* Taglia via eventuali sbavature orizzontali */
-		margin-left: 0 !important;        /* Resetta margini che potrebbero spostarlo */
-		margin-right: 0 !important;
-		left: 0 !important;               /* Ancora a sinistra */
-	}
-
-	/* FIX: Assicura che il padding non spinga fuori il contenuto */
-	.form-grid, 
-	.full-width input, 
-	.full-width select {
-		width: 100% !important;
-		box-sizing: border-box !important; /* Fondamentale per input e griglie */
-		max-width: 100% !important;
-	}
-
-	/* FIX EXTRA: Se usi 'position: fixed' o 'absolute', questo resetta la posizione */
-	.panel-area, .info-panel {
-		right: 0 !important; /* Forza l'ancoraggio anche a destra */
-	}
-
-/* FIX MOBILE PER PANNELLO STATISTICHE */
-@media screen and (max-width: 600px) {
-    
-    /* 1. Il contenitore che ha Utente/Categoria/Bottoni */
-    /* Lo identifichiamo perché è un div flex dentro statsPanel */
-    #statsPanel > div[style*="display:flex; gap:10px"] {
-        display: flex !important;
-        flex-wrap: wrap !important; /* Permette di andare a capo */
-        gap: 15px !important;       /* Più spazio verticale */
+    .more-menu-dropdown {
+        display: none;
+        position: fixed;
+        top: 62px;
+        right: 8px;
+        width: 220px;
+        padding: 6px;
+        box-sizing: border-box;
+        background: #fff;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        box-shadow: 0 6px 18px rgba(0, 0, 0, .22);
+        z-index: 2147483647;
     }
 
-    /* 2. I blocchi Utente e Categoria (figli diretti) */
-    #statsPanel > div[style*="display:flex; gap:10px"] > div {
-        flex: 0 0 100% !important; /* Forza larghezza 100% */
-        width: 100% !important;
-        min-width: 100% !important;
+    .more-menu-dropdown.open {
+        display: block !important;
     }
 
-    /* 3. Assicura che le select dentro siano larghe 100% */
-    #statsPanel select {
-        width: 100% !important;
-        height: 40px !important; /* Altezza comoda */
-        font-size: 16px !important;
-    }
-
-    /* 4. Il blocco dei bottoni (Lente e X) */
-    /* Riconoscibile perché contiene button */
-    #statsPanel > div[style*="display:flex; gap:10px"] > div:last-child {
-        display: flex !important;
-        flex-direction: row !important; /* I bottoni restano affiancati TRA LORO */
-        gap: 10px !important;
-        margin-top: 5px !important;
-    }
-
-    /* 5. Stile dei bottoni stessi */
-    #statsPanel button {
-        flex: 1 !important; /* 50% spazio a testa */
-        height: 45px !important; /* Bottoni alti */
-        padding: 0 !important;
-        font-size: 18px !important; /* Icone grandi */
-    }
-}
-
-
-    /* Contenitore della riga (o della parte superiore Descrizione - Importo) */
-    .riga-spesa-mobile { 
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        gap: 10px; /* Spazio minimo tra descrizione e prezzo */
-    }
-
-    /* 1. La Descrizione si accorcia con i puntini (...) */
-    .descrizione-mobile {
-        flex: 1;                /* Prende tutto lo spazio disponibile */
-        white-space: nowrap;    /* Niente a capo */
-        overflow: hidden;       /* Nascondi l'eccesso */
-        text-overflow: ellipsis;/* Metti i tre puntini ... */
-        min-width: 0;           /* Trucco fondamentale per far funzionare ellipsis nei flex */
-    }
-
-    /* 2. L'Importo NON si tocca */
-    .importo-mobile {
-        flex-shrink: 0;         /* VIETATO restringere questo elemento */
-        white-space: nowrap;    /* Mai andare a capo */
-        font-weight: bold;      /* Opzionale: per renderlo leggibile */
-        text-align: right;
-    }
-
-
-/* =========================================
-   FIX MOBILE SALDI (Uno sotto l'altro)
-   ========================================= */
-@media screen and (max-width: 600px) {
-    /* Seleziona il div con la griglia dentro il pannello saldi */
-    #balancePanel > div[style*="display:grid"] {
-        grid-template-columns: 1fr !important; /* 1 sola colonna */
-        gap: 15px !important; /* Un po' più di spazio tra i box */
-    }
-}
-
-/* Stile per l'importo in evidenza (vedi punto 2) */
-.saldo-highlight {
-    font-size: 1.4em;       /* Molto più grande */
-    font-weight: 800;       /* Molto grassetto */
-    color: #2e7d32;         /* Un bel verde scuro (o cambia a tuo piacere) */
-    display: block;         /* Va a capo forzatamente */
-    margin-top: 5px;
-}
-
-
-/* ============================================================
-   FIX DEFINITIVO "NOTE & ACQUISTI" MOBILE
-   Struttura a 3 piani: Descrizione -> Importo -> Bottoni
-   ============================================================ */
-@media screen and (max-width: 600px) {
-
-    /* 1. La Riga diventa una Colonna Verticale (Elementi uno sotto l'altro) */
-    #listNote table tbody tr,
-    #listNote tr {
-        display: flex !important;
-        flex-direction: column !important; 
-        padding: 12px 5px !important;
-        border-bottom: 2px solid #e0e0e0 !important; 
-        background-color: #fff !important;
-    }
-
-    /* 2. Tutte le celle diventano larghe 100% e blocchi separati */
-    #listNote table tbody tr td,
-    #listNote td {
+    .more-menu-dropdown button {
         display: block !important;
         width: 100% !important;
-        box-sizing: border-box !important;
-        padding: 2px 0 !important;
-        border: none !important; 
-    }
-
-    /* 3. DESCRIZIONE (e Data): Allineate a Sinistra */
-    #listNote td:nth-child(2), 
-    #listNote td:nth-child(1) {
-        text-align: left !important;
-        white-space: normal !important; /* Testo va a capo se lungo */
-        font-size: 14px !important;
-    }
-
-    /* 4. IMPORTO: A Destra, Grassetto, Grande, A CAPO SOTTO LA DESCRIZIONE */
-    #listNote td:nth-last-child(2) {
-        text-align: right !important;
-        font-size: 18px !important; 
-        font-weight: bold !important;
+        min-height: 44px !important;
+        margin: 0 !important;
+        padding: 10px 12px !important;
+        background: transparent !important;
         color: #333 !important;
-        margin-top: 5px !important;
+        border: 0 !important;
+        text-align: left !important;
+        font-size: 15px !important;
     }
 
-    /* 5. BOTTONI: In fondo, A Destra, Affiancati */
-    #listNote td:last-child {
-        display: flex !important;
-        flex-direction: row !important; /* Affiancati orizzontalmente */
-        justify-content: flex-end !important; /* Spinti a destra */
-        gap: 20px !important; 
-        
-        border-top: 1px dashed #ccc !important; 
-        padding-top: 10px !important;
-        margin-top: 5px !important;
-    }
-
-    /* Stile Bottoni */
-    #listNote .action-btn, 
-    #listNote button {
-        font-size: 18px !important; 
-        padding: 5px 10px !important;
-        width: auto !important; /* Importante: non 100% */
-    }
-}
-
-/* OTTIMIZZAZIONE MOBILE: GESTIONE PATRIMONIO */
-@media screen and (max-width: 768px) {
-    /* 1. Impila gli input "Configura Titoli" uno sull'altro invece di schiacciarli */
-    #modalPatrimonioMain .add-box {
-        display: flex !important;
-        flex-direction: column !important;
-        gap: 8px;
-    }
-    #modalPatrimonioMain .add-box input, 
-    #modalPatrimonioMain .add-box button {
-        width: 100% !important;
-        box-sizing: border-box !important;
-        padding: 10px !important;
-        font-size: 16px !important; /* Evita lo zoom automatico su iPhone */
-    }
-
-    /* 2. Impila le date e la liquidità */
-    #modalPatrimonioMain .form-grid {
-        display: flex !important;
-        flex-direction: column !important;
-        gap: 10px;
-    }
-
-    /* 3. IL FIX PER LA TABELLA: La rende scorrevole col dito a destra/sinistra */
-    #modalPatrimonioMain table {
-        display: block !important;
-        width: 100% !important;
-        overflow-x: auto !important;
-        white-space: nowrap !important; /* Impedisce ai numeri di andare a capo */
-        -webkit-overflow-scrolling: touch; /* Scorrimento fluido su iOS */
-    }
-    
-    #modalPatrimonioMain th, 
-    #modalPatrimonioMain td {
-        padding: 8px 12px !important; /* Dà respiro ai valori */
-    }
-}
-
-
-/* FORZA I PANNELLI A STARE DENTRO LO SCHERMO SU MOBILE */
-@media screen and (max-width: 768px) {
-    .panel-area {
-        width: 95% !important; 
-        max-width: 95vw !important; 
-        box-sizing: border-box !important;
-        
-        /* SISTEMAZIONE POSIZIONE: Lo posizioniamo a un po' dal bordo superiore */
-        top: 5% !important; 
-        left: 50% !important; 
-        transform: translateX(-50%) !important; /* Centrato solo orizzontalmente */
-        
-        /* SISTEMAZIONE ALTEZZA: Non supera mai lo schermo in altezza e permette lo scorrimento */
-        max-height: 90vh !important; 
-        overflow-y: auto !important; 
-        overflow-x: hidden !important; /* Evita scorrimenti laterali indesiderati dell'intero box */
-    }
-
-    /* Se hai tabelle larghe, scorrono loro stesse col dito, non tutto il box */
-    .panel-area table {
-        display: block !important;
-        width: 100% !important;
-        overflow-x: auto !important;
-        white-space: nowrap !important;
-        -webkit-overflow-scrolling: touch;
-    }
-}
-
-@media screen and (max-width: 600px) {
     .panel-area,
     .info-panel {
         position: fixed !important;
@@ -743,41 +408,101 @@ tfoot td { border-top: 2px solid #333; font-weight: bold; padding-top: 15px; fon
         margin: 0 !important;
         padding: 15px !important;
         box-sizing: border-box !important;
-        overflow-y: auto !important;
         overflow-x: hidden !important;
+        overflow-y: auto !important;
         border-radius: 0 !important;
         z-index: 20000 !important;
     }
-}
-@media screen and (max-width: 600px) {
-    .panel-area,
-    .info-panel {
-        position: fixed !important;
-        top: 70px !important;
-        left: 50% !important;
-        transform: translateX(-50%) !important;
-        width: 100vw !important;
-        max-width: 100vw !important;
-        height: calc(100vh - 70px) !important;
-        min-height: 0 !important;
-        max-height: none !important;
-        margin: 0 !important;
-        padding: 15px !important;
+
+    .form-grid,
+    .fuel-year-summary,
+    .btn-container {
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 10px !important;
+    }
+
+    #app input,
+    #app select,
+    .card button {
+        width: 100% !important;
+        min-height: 45px !important;
         box-sizing: border-box !important;
-        overflow-y: auto !important;
-        overflow-x: hidden !important;
-        border-radius: 0 !important;
-        z-index: 20000 !important;
+        font-size: 16px !important;
     }
-}
-/* GESTIONE PATRIMONIO: pannello a tutta larghezza */
-#modalPatrimonioMain {
-    display: none;
 }
 
-/* PATRIMONIO: pannello intero */
+/* =====================================================
+   DESKTOP
+   ===================================================== */
+@media screen and (min-width: 601px) {
+    html,
+    body {
+        overflow-x: hidden;
+    }
+
+    .header-icons {
+        position: absolute !important;
+        top: 20px !important;
+        right: 20px !important;
+        left: auto !important;
+        transform: none !important;
+
+        display: flex !important;
+        align-items: center !important;
+        justify-content: flex-end !important;
+        gap: 10px !important;
+
+        width: auto !important;
+        max-width: none !important;
+        height: auto !important;
+        margin: 0 !important;
+        padding: 0 !important;
+
+        background: transparent !important;
+        border: 0 !important;
+        overflow: visible !important;
+        z-index: 1000 !important;
+    }
+
+    /* Nasconde anche quando .more-menu-wrapper non è figlio diretto. */
+    .header-icons .more-menu-wrapper,
+    .more-menu-wrapper,
+    .more-menu-dropdown {
+        display: none !important;
+    }
+
+    .header-icons .desktop-only-menu,
+    .desktop-only-menu {
+        display: flex !important;
+        align-items: center !important;
+        gap: 10px !important;
+    }
+
+    .header-icons .icon-btn,
+    .header-icons button {
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        flex: 0 0 auto !important;
+        width: auto !important;
+        min-width: 0 !important;
+        height: auto !important;
+        min-height: 0 !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        background: transparent !important;
+        border: 0 !important;
+        color: #666 !important;
+        font-size: 1.5em !important;
+    }
+}
+
+/* =====================================================
+   PATRIMONIO
+   ===================================================== */
 #modalPatrimonioMain {
-    display: none !important;
+    display: none;
 }
 
 #modalPatrimonioMain.patrimonio-aperto {
@@ -787,21 +512,16 @@ tfoot td { border-top: 2px solid #333; font-weight: bold; padding-top: 15px; fon
     right: 0 !important;
     bottom: 0 !important;
     left: 0 !important;
-
     width: 100vw !important;
     max-width: 100vw !important;
     height: calc(100vh - 70px) !important;
-    max-height: 100vh !important;
-
     margin: 0 !important;
     padding: 20px !important;
     box-sizing: border-box !important;
-
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
     background: #f8f9fa !important;
     z-index: 200000 !important;
-
-    overflow-y: auto !important;
-    overflow-x: hidden !important;
 }
 
 #modalPatrimonioMain.patrimonio-aperto .modal-content {
@@ -810,83 +530,91 @@ tfoot td { border-top: 2px solid #333; font-weight: bold; padding-top: 15px; fon
     max-width: none !important;
     min-height: 100% !important;
     height: auto !important;
-    max-height: none !important;
-
     margin: 0 !important;
     padding: 0 !important;
-
     background: transparent !important;
-    border: none !important;
+    border: 0 !important;
     border-radius: 0 !important;
     box-shadow: none !important;
     overflow: visible !important;
 }
 
-/* Mobile: lascia la barra menu e il tasto X visibili */
+/* MOBILE: date sopra, pulsanti mese sotto e affiancati */
 @media screen and (max-width: 600px) {
-    #modalPatrimonioMain.patrimonio-aperto {
-        top: 70px !important;
-        height: calc(100vh - 70px) !important;
-        padding: 15px 15px 80px !important;
+    .filter-bar {
+        display: grid !important;
+        grid-template-columns: 1fr 1fr !important;
+        gap: 10px !important;
+        align-items: end !important;
     }
 
-    .header-icons {
-        z-index: 300000 !important;
-    }
-}
-
-/* Menu sempre visibile sopra Gestione Patrimonio */
-.header-icons {
-    position: fixed !important;
-    z-index: 2147483647 !important;
-}
-/* Barra menu: comportamento stabile su PC */
-.header-icons {
-    position: fixed !important;
-    top: 0 !important;
-    left: 50% !important;
-    right: auto !important;
-    transform: translateX(-50%) !important;
-
-    width: 600px !important;
-    max-width: 100vw !important;
-    height: 70px !important;
-
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-
-    padding: 0 20px !important;
-    box-sizing: border-box !important;
-    background: #fff !important;
-    z-index: 2147483647 !important;
-}
-
-/* Barra menu: scorrimento completo su telefono */
-@media screen and (max-width: 600px) {
-    .header-icons {
-        left: 0 !important;
-        right: auto !important;
-        transform: none !important;
-
-        width: 100vw !important;
-        max-width: 100vw !important;
-
-        justify-content: flex-start !important;
-        overflow-x: auto !important;
-        overflow-y: hidden !important;
-        white-space: nowrap !important;
-
-        padding: 0 10px !important;
-        -webkit-overflow-scrolling: touch !important;
-    }
-
-    .header-icons .icon-btn,
-    .header-icons button {
-        flex: 0 0 auto !important;
+    /* I due campi data: prima riga */
+    .filter-bar .filter-item {
+        grid-column: span 1 !important;
         width: auto !important;
+        min-width: 0 !important;
+        margin: 0 !important;
+    }
+
+    /* I due pulsanti: seconda riga, affiancati */
+    .filter-bar > button {
+        grid-column: span 1 !important;
+        width: 100% !important;
+        min-width: 0 !important;
+        height: 36px !important;
+        min-height: 36px !important;
+        margin: 0 !important;
+        padding: 5px 4px !important;
+
+        font-size: 11px !important;
+        line-height: 1 !important;
+        white-space: nowrap !important;
     }
 }
+
+/* MOBILE: azioni centrate verticalmente rispetto alla voce */
+@media screen and (max-width: 600px) {
+    .action-cell,
+    td.action-cell {
+        display: table-cell !important;
+        width: 56px !important;
+        min-width: 56px !important;
+        height: auto !important;
+
+        padding: 0 2px !important;
+        text-align: center !important;
+        vertical-align: middle !important;
+        white-space: nowrap !important;
+    }
+
+    .action-cell .action-btn,
+    .action-cell button {
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        vertical-align: middle !important;
+
+        width: 24px !important;
+        min-width: 24px !important;
+        height: 28px !important;
+        min-height: 28px !important;
+
+        margin: 0 1px !important;
+        padding: 2px !important;
+        font-size: 16px !important;
+        line-height: 1 !important;
+    }
+}
+
+/* MOBILE: voci del menu ⋯ con testo normale */
+@media screen and (max-width: 600px) {
+    .more-menu-dropdown button {
+        font-weight: 400 !important;
+    }
+}
+
+
+
 
 </style>
 
@@ -933,20 +661,48 @@ tfoot td { border-top: 2px solid #333; font-weight: bold; padding-top: 15px; fon
 		Nuova Voce
 	</h3>
         
-        <div class="header-icons">
-            <button class="icon-btn" onclick="togglePanel('balancePanel')" title="Saldi Conti">💰</button>
-            <button class="icon-btn" onclick="togglePanel('transferPanel')" title="Ricarica CC">💸</button>
-            <button class="icon-btn" onclick="togglePanel('autoPanel'); renderFuelReport();" title="Report Auto">🚗</button>
-            <button class="icon-btn" onclick="togglePanel('statsPanel')" title="Statistiche">📊</button>
-            <button class="icon-btn" onclick="togglePanel('deadlinesPanel')" title="Scadenze">
-                ⏰ <span id="badgeScadenze" class="alert-badge">!</span>
+<div class="header-icons">
+    <!-- Icone sempre visibili su cellulare -->
+    <button class="icon-btn" onclick="togglePanel('balancePanel')" title="Saldi Conti">💰</button>
+    <button class="icon-btn" onclick="togglePanel('transferPanel')" title="Ricarica CC">💸</button>
+    <button class="icon-btn" onclick="togglePanel('autoPanel'); renderFuelReport();" title="Report Auto">🚗</button>
+    <button class="icon-btn" onclick="togglePanel('statsPanel')" title="Statistiche">📊</button>
+
+    <button class="icon-btn" onclick="togglePanel('deadlinesPanel')" title="Scadenze">
+        ⏰ <span id="badgeScadenze" class="alert-badge">!</span>
+    </button>
+
+    <button class="icon-btn" onclick="togglePanel('notesPanel')" title="Note & Acquisti">📝</button>
+
+    <!-- Su cellulare apre i menu rimanenti -->
+    <div class="more-menu-wrapper">
+        <button class="icon-btn more-menu-btn" type="button" onclick="toggleMoreMenu(event)" title="Altri menu">
+            ⋯
+        </button>
+
+        <div id="moreMenuDropdown" class="more-menu-dropdown">
+            <button type="button" onclick="toggleModalPatrimonio(); closeMoreMenu();">
+                🏛️ Patrimonio
             </button>
-            <button class="icon-btn" onclick="togglePanel('notesPanel')" title="Note & Acquisti">📝</button>
-            <button class="icon-btn" onclick="toggleModalPatrimonio()" title="Patrimonio">🏛️</button>
-            <div class="header-separator"></div>
-            <button class="icon-btn" onclick="togglePanel('dataPanel')" title="Importa/Esporta Dati">📂</button>
-            <button class="icon-btn" onclick="togglePanel('settingsPanel')" title="Gestisci Categorie">⚙️</button>
+
+            <button type="button" onclick="togglePanel('dataPanel'); closeMoreMenu();">
+                📂 Importa / Esporta dati
+            </button>
+
+            <button type="button" onclick="togglePanel('settingsPanel'); closeMoreMenu();">
+                ⚙️ Gestisci categorie
+            </button>
         </div>
+    </div>
+
+    <!-- Solo PC: mostra direttamente gli ultimi menu -->
+    <div class="desktop-only-menu">
+        <button class="icon-btn" onclick="toggleModalPatrimonio()" title="Patrimonio">🏛️</button>
+        <div class="header-separator"></div>
+        <button class="icon-btn" onclick="togglePanel('dataPanel')" title="Importa/Esporta Dati">📂</button>
+        <button class="icon-btn" onclick="togglePanel('settingsPanel')" title="Gestisci Categorie">⚙️</button>
+    </div>
+</div>
 
         <input type="hidden" id="editId">
 
@@ -1928,76 +1684,7 @@ window.salvaNuovo = async function(t, movimentoGiaPronto) {
     window.elimina = async function(id){
         if(confirm("Eliminare?")){ window.movimenti = window.movimenti.filter(x=>x.id!==id); render(); calcolaSaldiGlobali(); await eliminaMovimentoSuFirebase(id); }
     }
-    window.preparaModifica = function(id){
-    const m = window.movimenti.find(x => String(x.id) === String(id)); 
-    if(!m) return alert("Errore");
     
-    window.idInModifica = m.id;
-    document.getElementById('data').value = m.data; 
-    document.getElementById('importo').value = m.importo; 
-    document.getElementById('descrizione').value = (m.descrizione === "Nessuna descrizione" ? "" : m.descrizione);
-    
-    if(m.rawCat && window.categorie.includes(m.rawCat)) document.getElementById('categoria').value = m.rawCat; 
-    else document.getElementById('categoria').value = window.categorie[0];
-    
-    // 1. Prima chiamo gestisciCategoria() per mostrare/nascondere i div giusti
-    gestisciCategoria(); 
-
-    // 2. Poi popolo i valori nei div appena mostrati
-    if(m.rawCat === 'Bolletta' || m.categoria === 'Bolletta'){
-        // Categoria: usa categoriaBolletta (se esiste) o rawCat come fallback
-        const cat = document.getElementById('categoria');
-        if(cat) {
-            if(m.categoriaBolletta && window.categorie.includes(m.categoriaBolletta)) {
-                cat.value = m.categoriaBolletta;
-            } else if(m.rawCat && window.categorie.includes(m.rawCat)) {
-                cat.value = m.rawCat;
-            } else {
-                cat.value = window.categorie[0];
-            }
-        }
-
-        // Tipo bolletta: usa tipoBolletta (se esiste) o rawSub come fallback
-        const selTipo = document.getElementById('sel_tipo_bolletta_new');
-        if(selTipo) selTipo.value = m.tipoBolletta || m.rawSub || '';
-
-        // PDF
-        if(m.linkPdf) document.getElementById('inp_pdf_new').value = m.linkPdf;
-
-        // Consumo e date
-        const inpConsumo = document.getElementById('inp_consumo_new');
-        const inpDal = document.getElementById('inp_bolletta_dal');
-        const inpAl = document.getElementById('inp_bolletta_al');
-
-        if(inpConsumo) inpConsumo.value = m.consumoBolletta || m.bollettaConsumo || '';
-        if(inpDal) inpDal.value = m.consumoBollettaDal || m.bollettaDal || '';
-        if(inpAl) inpAl.value = m.consumoBollettaAl || m.bollettaAl || '';
-
-        window.logica_consumi_new();
-    }
-    else if(m.rawCat === 'Stipendio'){ 
-        if(m.linkPdf) document.getElementById('inp_pdf_new').value = m.linkPdf;
-    }
-    else if(m.rawCat === 'Supermercato'){ 
-        document.getElementById('selectSuper').value = m.rawSub || ''; 
-    }
-    else if(m.rawCat === 'Benzina' && m.datiBenzina){ 
-        document.getElementById('benLitri').value = m.datiBenzina.litri || ''; 
-        document.getElementById('benKm').value = m.datiBenzina.km || ''; 
-        document.getElementById('benPrezzo').value = m.datiBenzina.prezzo || ''; 
-        document.getElementById('benDistributore').value = m.datiBenzina.distributore || ''; 
-    }
-    
-    document.getElementById('conto').value = m.conto;
-    document.getElementById('titoloForm').textContent = "Modifica Voce"; 
-    document.getElementById('titoloForm').style.color = "#ffc107"; 
-    document.getElementById('btnDefault').style.display = 'none'; 
-    document.getElementById('btnEdit').style.display = 'flex';
-    
-    closeAllPanels(); 
-    window.scrollTo({top: 0, behavior: 'smooth'}); 
-    render();
-};
 
 window.confermaModifica = async function() {
     const m = window.movimenti.find(x => String(x.id) === String(window.idInModifica));
@@ -2920,6 +2607,28 @@ window.calcolaSaldiGlobali = function() {
 };
 
 
+window.toggleMoreMenu = function(event) {
+    event.stopPropagation();
+
+    const menu = document.getElementById('moreMenuDropdown');
+    if (menu) {
+        menu.classList.toggle('open');
+    }
+};
+
+window.closeMoreMenu = function() {
+    const menu = document.getElementById('moreMenuDropdown');
+    if (menu) {
+        menu.classList.remove('open');
+    }
+};
+
+document.addEventListener('click', function() {
+    if (typeof closeMoreMenu === 'function') {
+        closeMoreMenu();
+    }
+});
+
 
     window.checkAlertScadenze = function(){ const b = document.getElementById('badgeScadenze'); if(!b)return; const oggi=new Date(); oggi.setHours(0,0,0,0); const dom=new Date(oggi); dom.setDate(dom.getDate()+1); const has = window.scadenze.some(s => { const [y,m,d]=s.data.split('-'); return new Date(y,m-1,d) <= dom; }); b.style.display = has ? 'flex' : 'none'; }
 window.gestisciCatScadenza = function() {
@@ -3031,6 +2740,92 @@ window.autoDescScad = function() {
         renderNote(); resetFormNota(); await salvaNotaSuFirebase(n);
     }
     window.eliminaNota = async function(id) { if(confirm("Del?")){ window.note=window.note.filter(x=>x.id!==id); renderNote(); await eliminaNotaSuFirebase(id); } }
+
+
+window.modificaNota = function(id) {
+    const n = window.note.find(x => String(x.id) === String(id));
+
+    if (!n) return;
+
+    const card = document.querySelector(`.note-card[data-id="${id}"]`);
+
+    /* Se la card non ha data-id, la cerchiamo dal pulsante cliccato */
+    const cards = document.querySelectorAll('#listNote .note-card');
+    let cardNota = null;
+
+    cards.forEach(cardCorrente => {
+        const btn = cardCorrente.querySelector(`button[onclick="modificaNota(${id})"]`);
+        if (btn) cardNota = cardCorrente;
+    });
+
+    if (!cardNota) return;
+
+    cardNota.innerHTML = `
+        <input
+            id="edit-nota-data-${id}"
+            type="date"
+            value="${n.data || ''}"
+            style="width:100%; box-sizing:border-box; margin-bottom:8px;"
+        >
+
+        <input
+            id="edit-nota-oggetto-${id}"
+            type="text"
+            value="${String(n.oggetto || '').replace(/"/g, '&quot;')}"
+            placeholder="Oggetto"
+            style="width:100%; box-sizing:border-box; margin-bottom:8px;"
+        >
+
+        <input
+            id="edit-nota-testo-${id}"
+            type="text"
+            value="${String(n.testo || '').replace(/"/g, '&quot;')}"
+            placeholder="Dettagli / Prezzo"
+            style="width:100%; box-sizing:border-box; margin-bottom:8px;"
+        >
+
+        <div style="display:flex; gap:8px;">
+            <button
+                type="button"
+                onclick="salvaModificaNota(${id})"
+                style="background:#20c997; color:white;"
+            >Salva</button>
+
+            <button
+                type="button"
+                onclick="renderNote()"
+                style="background:#6c757d; color:white;"
+            >Annulla</button>
+        </div>
+    `;
+};
+
+
+window.salvaModificaNota = function(id) {
+    const n = window.note.find(x => String(x.id) === String(id));
+
+    if (!n) return;
+
+    const data = document.getElementById(`edit-nota-data-${id}`).value;
+    const oggetto = document.getElementById(`edit-nota-oggetto-${id}`).value.trim();
+    const testo = document.getElementById(`edit-nota-testo-${id}`).value.trim();
+
+    if (!data || !oggetto) {
+        return alert('Inserisci almeno data e oggetto.');
+    }
+
+    n.data = data;
+    n.oggetto = oggetto;
+    n.testo = testo;
+
+    /* Usa la tua funzione di salvataggio, se presente */
+    if (typeof window.salvaDati === 'function') {
+        window.salvaDati();
+    }
+
+    window.renderNote();
+};
+
 window.renderNote = function() {
     const div = document.getElementById('listNote'); 
     if(!div) return; 
@@ -3057,8 +2852,8 @@ window.renderNote = function() {
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
                 <span style="font-weight:bold; color:#333; font-size:0.95em;">${dataFormattata}</span>
                 <div style="display:flex; gap:8px;">
-                    <button class="action-btn btn-edit" onclick="preparaModificaNota(${n.id})" style="background:none; border:none; cursor:pointer;" title="Modifica">✏️</button>
-                    <button class="action-btn btn-del" onclick="eliminaNota(${n.id})" style="background:none; border:none; cursor:pointer;" title="Elimina">🗑</button>
+                    <button class="action-btn btn-edit" onclick="modificaNota(${n.id})" style="background:none; border:none; cursor:pointer;" title="Modifica">✏️</button>
+					<button class="action-btn btn-del" onclick="eliminaNota(${n.id})" style="background:none; border:none; cursor:pointer;" title="Elimina">🗑</button>
                 </div>
             </div>
             
@@ -3075,85 +2870,123 @@ window.renderNote = function() {
         </div>`;
     });
 }
-window.preparaModifica = function(id){
-    const m = window.movimenti.find(x => String(x.id) === String(id)); 
-    if(!m) return alert("Errore");
-    
-    window.idInModifica = m.id;
-    document.getElementById('data').value = m.data; 
-    document.getElementById('importo').value = m.importo; 
+window.preparaModifica = function(id) {
+    const m = window.movimenti.find(x => String(x.id) === String(id));
 
-    // Forzare descrizione corretta per bollette
-    let descrizionePerForm = m.descrizione;
-    if(m.rawCat === 'Bolletta' || m.categoria === 'Bolletta') {
+    if (!m) {
+        return alert("Errore");
+    }
+
+    window.idInModifica = m.id;
+
+    document.getElementById('data').value = m.data || '';
+    document.getElementById('importo').value = m.importo || '';
+
+    /* Descrizione corretta per le bollette */
+    let descrizionePerForm = m.descrizione || '';
+
+    if (m.rawCat === 'Bolletta' || m.categoria === 'Bolletta') {
         const tipo = m.tipoBolletta || m.rawSub || '';
         descrizionePerForm = tipo ? `Bolletta - ${tipo}` : 'Bolletta';
     }
-    document.getElementById('descrizione').value = descrizionePerForm === "Nessuna descrizione" ? "" : descrizionePerForm;
-    
-    if(m.rawCat && window.categorie.includes(m.rawCat)) document.getElementById('categoria').value = m.rawCat; 
-    else document.getElementById('categoria').value = window.categorie[0];
-    
-    // 1. Prima chiamo gestisciCategoria() per mostrare/nascondere i div giusti
-    gestisciCategoria(); 
 
-    // 2. Poi popolo i valori nei div appena mostrati
-    if(m.rawCat === 'Bolletta' || m.categoria === 'Bolletta'){
-        // Categoria: usa categoriaBolletta (se esiste) o rawCat come fallback
-        const cat = document.getElementById('categoria');
-        if(cat) {
-            if(m.categoriaBolletta && window.categorie.includes(m.categoriaBolletta)) {
-                cat.value = m.categoriaBolletta;
-            } else if(m.rawCat && window.categorie.includes(m.rawCat)) {
-                cat.value = m.rawCat;
-            } else {
-                cat.value = window.categorie[0];
-            }
+    document.getElementById('descrizione').value =
+        descrizionePerForm === 'Nessuna descrizione' ? '' : descrizionePerForm;
+
+    /* Categoria */
+    const categoria = document.getElementById('categoria');
+
+    if (m.rawCat && window.categorie.includes(m.rawCat)) {
+        categoria.value = m.rawCat;
+    } else {
+        categoria.value = window.categorie[0];
+    }
+
+    /* Mostra i campi corretti della categoria */
+    gestisciCategoria();
+
+    /* Campi specifici: Bolletta */
+    if (m.rawCat === 'Bolletta' || m.categoria === 'Bolletta') {
+        if (m.categoriaBolletta && window.categorie.includes(m.categoriaBolletta)) {
+            categoria.value = m.categoriaBolletta;
+        } else if (m.rawCat && window.categorie.includes(m.rawCat)) {
+            categoria.value = m.rawCat;
         }
 
-        // Tipo bolletta: usa tipoBolletta (se esiste) o rawSub come fallback
         const selTipo = document.getElementById('sel_tipo_bolletta_new');
-        if(selTipo) selTipo.value = m.tipoBolletta || m.rawSub || '';
-
-        // PDF
-        if(m.linkPdf) document.getElementById('inp_pdf_new').value = m.linkPdf;
-
-        // Consumo e date
+        const inpPdf = document.getElementById('inp_pdf_new');
         const inpConsumo = document.getElementById('inp_consumo_new');
         const inpDal = document.getElementById('inp_bolletta_dal');
         const inpAl = document.getElementById('inp_bolletta_al');
 
-        if(inpConsumo) inpConsumo.value = m.consumoBolletta || m.bollettaConsumo || '';
-        if(inpDal) inpDal.value = m.consumoBollettaDal || m.bollettaDal || '';
-        if(inpAl) inpAl.value = m.consumoBollettaAl || m.bollettaAl || '';
+        if (selTipo) selTipo.value = m.tipoBolletta || m.rawSub || '';
+        if (inpPdf) inpPdf.value = m.linkPdf || '';
+        if (inpConsumo) inpConsumo.value = m.consumoBolletta || m.bollettaConsumo || '';
+        if (inpDal) inpDal.value = m.consumoBollettaDal || m.bollettaDal || '';
+        if (inpAl) inpAl.value = m.consumoBollettaAl || m.bollettaAl || '';
 
-        window.logica_consumi_new();
+        if (typeof window.logica_consumi_new === 'function') {
+            window.logica_consumi_new();
+        }
     }
-    else if(m.rawCat === 'Stipendio'){ 
-        if(m.linkPdf) document.getElementById('inp_pdf_new').value = m.linkPdf;
+
+    /* Campi specifici: Stipendio */
+    else if (m.rawCat === 'Stipendio') {
+        const inpPdf = document.getElementById('inp_pdf_new');
+
+        if (inpPdf) {
+            inpPdf.value = m.linkPdf || '';
+        }
     }
-    else if(m.rawCat === 'Supermercato'){ 
-        document.getElementById('selectSuper').value = m.rawSub || ''; 
+
+    /* Campi specifici: Supermercato */
+    else if (m.rawCat === 'Supermercato') {
+        const selectSuper = document.getElementById('selectSuper');
+
+        if (selectSuper) {
+            selectSuper.value = m.rawSub || '';
+        }
     }
-    else if(m.rawCat === 'Benzina' && m.datiBenzina){ 
-        document.getElementById('benLitri').value = m.datiBenzina.litri || ''; 
-        document.getElementById('benKm').value = m.datiBenzina.km || ''; 
-        document.getElementById('benPrezzo').value = m.datiBenzina.prezzo || ''; 
-        document.getElementById('benDistributore').value = m.datiBenzina.distributore || ''; 
+
+    /* Campi specifici: Benzina */
+    else if (m.rawCat === 'Benzina' && m.datiBenzina) {
+        const benLitri = document.getElementById('benLitri');
+        const benKm = document.getElementById('benKm');
+        const benPrezzo = document.getElementById('benPrezzo');
+        const benDistributore = document.getElementById('benDistributore');
+
+        if (benLitri) benLitri.value = m.datiBenzina.litri || '';
+        if (benKm) benKm.value = m.datiBenzina.km || '';
+        if (benPrezzo) benPrezzo.value = m.datiBenzina.prezzo || '';
+        if (benDistributore) benDistributore.value = m.datiBenzina.distributore || '';
     }
-    
-    document.getElementById('conto').value = m.conto;
-    document.getElementById('titoloForm').textContent = "Modifica Voce"; 
-    document.getElementById('titoloForm').style.color = "#ffc107"; 
-    document.getElementById('btnDefault').style.display = 'none'; 
-    document.getElementById('btnEdit').style.display = 'flex';
-    
-    closeAllPanels(); 
-    window.scrollTo({top: 0, behavior: 'smooth'}); 
+
+    /* Impostazioni finali del form */
+    const conto = document.getElementById('conto');
+    const titoloForm = document.getElementById('titoloForm');
+    const btnDefault = document.getElementById('btnDefault');
+    const btnEdit = document.getElementById('btnEdit');
+
+    if (conto) conto.value = m.conto || '';
+    if (titoloForm) {
+        titoloForm.textContent = 'Modifica Voce';
+        titoloForm.style.color = '#ffc107';
+    }
+
+    if (btnDefault) btnDefault.style.display = 'none';
+    if (btnEdit) btnEdit.style.display = 'flex';
+
+    closeAllPanels();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+
     render();
-	
-	aggiornaBottoniVisibili(); // <-- AGGIUNGI ALLA FINE
+
+    if (typeof aggiornaBottoniVisibili === 'function') {
+        aggiornaBottoniVisibili();
+    }
 };
+
+
     window.resetFormNota = function() { window.idNotaModifica = null; document.getElementById('noteOggetto').value=''; document.getElementById('noteTesto').value=''; document.getElementById('noteDate').value=formatLocalYMD(new Date()); document.getElementById('btnSalvaNota').innerHTML="Salva Nota"; document.getElementById('btnSalvaNota').style.background="#20c997"; document.getElementById('btnSalvaNota').style.color="white"; document.getElementById('titoloBoxNote').textContent="Nuova Nota"; }
 
     window.initPatrimonio = function(){ renderFondiConfig(); if(document.getElementById('patrimonioDate'))document.getElementById('patrimonioDate').value=formatLocalYMD(new Date()); renderPatrimonioTable(); }
@@ -3212,18 +3045,6 @@ window.toggleModalPatrimonio = function() {
 
     if (typeof renderPatrimonioTable === 'function') {
         renderPatrimonioTable();
-    }
-
-    /* Solo su mobile, dopo il rendering completo della pagina */
-    if (window.innerWidth <= 600) {
-        requestAnimationFrame(() => {
-            requestAnimationFrame(() => {
-                const menu = document.querySelector('.header-icons');
-                if (menu) {
-                    menu.scrollLeft = 0;
-                }
-            });
-        });
     }
 };
 
