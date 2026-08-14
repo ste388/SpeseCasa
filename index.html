@@ -770,6 +770,77 @@ tfoot td { border-top: 2px solid #333; font-weight: bold; padding-top: 15px; fon
         z-index: 20000 !important;
     }
 }
+/* GESTIONE PATRIMONIO: pannello a tutta larghezza */
+#modalPatrimonioMain {
+    display: none;
+}
+
+/* PATRIMONIO: pannello intero */
+#modalPatrimonioMain {
+    display: none !important;
+}
+
+#modalPatrimonioMain.patrimonio-aperto {
+    display: block !important;
+    position: fixed !important;
+    top: 70px !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    left: 0 !important;
+
+    width: 100vw !important;
+    max-width: 100vw !important;
+    height: calc(100vh - 70px) !important;
+    max-height: 100vh !important;
+
+    margin: 0 !important;
+    padding: 20px !important;
+    box-sizing: border-box !important;
+
+    background: #f8f9fa !important;
+    z-index: 200000 !important;
+
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+}
+
+#modalPatrimonioMain.patrimonio-aperto .modal-content {
+    display: block !important;
+    width: 100% !important;
+    max-width: none !important;
+    min-height: 100% !important;
+    height: auto !important;
+    max-height: none !important;
+
+    margin: 0 !important;
+    padding: 0 !important;
+
+    background: transparent !important;
+    border: none !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    overflow: visible !important;
+}
+
+/* Mobile: lascia la barra menu e il tasto X visibili */
+@media screen and (max-width: 600px) {
+    #modalPatrimonioMain.patrimonio-aperto {
+        top: 70px !important;
+        height: calc(100vh - 70px) !important;
+        padding: 15px 15px 80px !important;
+    }
+
+    .header-icons {
+        z-index: 300000 !important;
+    }
+}
+
+/* Menu sempre visibile sopra Gestione Patrimonio */
+.header-icons {
+    position: fixed !important;
+    z-index: 2147483647 !important;
+}
+
 </style>
 
 </head>
@@ -1270,42 +1341,76 @@ tfoot td { border-top: 2px solid #333; font-weight: bold; padding-top: 15px; fon
     </div>
 
     <!-- MODALE PATRIMONIO -->
-    <div id="modalPatrimonioMain" class="modal-overlay" style="z-index:2000;">
-        <div class="modal-content" style="max-width:900px; width:95%; max-height:90vh; overflow-y:auto; display:flex; flex-direction:column;" onclick="event.stopPropagation()">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; border-bottom:1px solid #eee; padding-bottom:10px; width:100%;">
-                <h3 style="margin:0; color:#2c3e50;">🏛️ Gestione Patrimonio</h3>
-                <button onclick="toggleModalPatrimonio()" style="background:transparent; color:#666; font-size:1.5em; padding:0; width:auto; line-height:1; cursor:pointer;">&times;</button>
-            </div>
-            <div style="flex:1; width:100%;">
-                <details style="background:#fff; border:1px solid #ddd; padding:10px; border-radius:5px; margin-bottom:10px; width:100%; box-sizing:border-box;">
-                    <summary style="font-weight:bold; cursor:pointer; color:#007bff;">⚙️ Configura Titoli / Fondi</summary>
-                    <div style="margin-top:10px;">
-                        <div id="listFondiConfig"></div>
-<div class="add-box" style="margin-top:10px; border-top:1px dashed #ccc; padding-top:10px; display:flex; flex-wrap:wrap; gap:5px;">
-    <input type="text" id="newFondoNome" placeholder="Nome Titolo / ISIN" style="flex: 1 1 100px; min-width: 120px;">
-    <input type="number" id="newFondoInvestito" placeholder="Caricato (€)" step="0.01" style="flex: 1 1 80px; min-width: 90px;">
-    <input type="number" id="newFondoQuote" placeholder="N. Quote" step="0.001" style="flex: 1 1 80px; min-width: 80px;">
-    <button onclick="aggiungiFondo()" style="background:#28a745; padding:8px 15px; color:white; border:none; border-radius:4px; cursor:pointer;">+ Aggiungi</button>
-</div>
+<div id="modalPatrimonioMain">
+    <div class="modal-content">
+
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; border-bottom:1px solid #eee; padding-bottom:10px; width:100%;">
+            <h3 style="margin:0; color:#2c3e50;">🏛️ Gestione Patrimonio</h3>
+
+            <button onclick="toggleModalPatrimonio()"
+                style="background:transparent; color:#666; font-size:1.5em; padding:0; width:auto; line-height:1; cursor:pointer;">
+                &times;
+            </button>
+        </div>
+
+        <div style="width:100%;">
+            <details style="background:#fff; border:1px solid #ddd; padding:10px; border-radius:5px; margin-bottom:10px; width:100%; box-sizing:border-box;">
+                <summary style="font-weight:bold; cursor:pointer; color:#007bff;">
+                    ⚙️ Configura Titoli / Fondi
+                </summary>
+
+                <div style="margin-top:10px;">
+                    <div id="listFondiConfig"></div>
+
+                    <div class="add-box" style="margin-top:10px; border-top:1px dashed #ccc; padding-top:10px; display:flex; flex-wrap:wrap; gap:5px;">
+                        <input type="text" id="newFondoNome" placeholder="Nome Titolo / ISIN" style="flex:1 1 100px; min-width:120px;">
+
+                        <input type="number" id="newFondoInvestito" placeholder="Caricato (€)" step="0.01" style="flex:1 1 80px; min-width:90px;">
+
+                        <input type="number" id="newFondoQuote" placeholder="N. Quote" step="0.001" style="flex:1 1 80px; min-width:80px;">
+
+                        <button onclick="aggiungiFondo()" style="background:#28a745; padding:8px 15px; color:white; border:none; border-radius:4px; cursor:pointer;">
+                            + Aggiungi
+                        </button>
                     </div>
-                </details>
-                <details id="boxRilevazione" style="background:#f1f8e9; border:1px solid #c5e1a5; padding:10px; border-radius:5px; margin-bottom:20px; width:100%; box-sizing:border-box;">
-                    <summary style="font-weight:bold; cursor:pointer; color:#33691e; display:flex; align-items:center;"><span style="margin-right:5px;">➕</span> Nuova Rilevazione</summary>
-                    <div style="margin-top:15px; border-top:1px solid #c5e1a5; padding-top:10px;">
-                        <div class="form-grid">
-                            <div class="data-control"><label>Data Rilevazione:</label><input type="date" id="patrimonioDate"></div>
-                            <div class="data-control"><label>Liquidità Ste (Auto):</label><input type="text" id="patrimonioLiq" readonly style="font-weight:bold; color:#007bff;"></div>
+                </div>
+            </details>
+
+            <details id="boxRilevazione" style="background:#f1f8e9; border:1px solid #c5e1a5; padding:10px; border-radius:5px; margin-bottom:20px; width:100%; box-sizing:border-box;">
+                <summary style="font-weight:bold; cursor:pointer; color:#33691e; display:flex; align-items:center;">
+                    <span style="margin-right:5px;">➕</span>
+                    Nuova Rilevazione
+                </summary>
+
+                <div style="margin-top:15px; border-top:1px solid #c5e1a5; padding-top:10px;">
+                    <div class="form-grid">
+                        <div class="data-control">
+                            <label>Data Rilevazione:</label>
+                            <input type="date" id="patrimonioDate">
                         </div>
-                        <div id="patrimonioInputsContainer" style="margin-top:10px;"></div>
-                        <button class="btn-offset" onclick="salvaRilevazionePatrimonio()" style="width:100%; margin-top:10px; background:#33691e;">💾 Salva Rilevazione</button>
+
+                        <div class="data-control">
+                            <label>Liquidità Ste (Auto):</label>
+                            <input type="text" id="patrimonioLiq" readonly style="font-weight:bold; color:#007bff;">
+                        </div>
                     </div>
-                </details>
-<!-- MODIFICA QUI: Aggiunto max-height e sticky header -->
-<div style="width:100%; overflow:auto; max-height:calc(100vh - 250px); border:1px solid #eee;">
-    <table style="font-size:0.85em; white-space:nowrap; width:100%; border-collapse:collapse;">
-        <thead id="patrimonioThead" style="position:sticky; top:0; background:#f1f1f1; z-index:5; box-shadow:0 1px 2px rgba(0,0,0,0.1);"></thead>
-        <tbody id="patrimonioTbody"></tbody>
-    </table>
+
+                    <div id="patrimonioInputsContainer" style="margin-top:10px;"></div>
+
+                    <button class="btn-offset" onclick="salvaRilevazionePatrimonio()" style="width:100%; margin-top:10px; background:#33691e;">
+                        💾 Salva Rilevazione
+                    </button>
+                </div>
+            </details>
+
+            <div style="width:100%; overflow:auto; max-height:calc(100vh - 250px); border:1px solid #eee;">
+                <table style="font-size:0.85em; white-space:nowrap; width:100%; border-collapse:collapse;">
+                    <thead id="patrimonioThead" style="position:sticky; top:0; background:#f1f1f1; z-index:5; box-shadow:0 1px 2px rgba(0,0,0,0.1);"></thead>
+                    <tbody id="patrimonioTbody"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
 </div>
 
             </div>
@@ -1693,6 +1798,14 @@ initDateRange('statStart', 'statEnd');
 };
     
 	window.closeAllPanels = function() {
+	
+	    const patrimonio = document.getElementById('modalPatrimonioMain');
+
+    if (patrimonio) {
+        patrimonio.classList.remove('patrimonio-aperto');
+        patrimonio.style.display = 'none';
+    }
+	
     [
         'statsPanel',
         'settingsPanel',
@@ -2997,7 +3110,99 @@ window.preparaModifica = function(id){
     window.resetFormNota = function() { window.idNotaModifica = null; document.getElementById('noteOggetto').value=''; document.getElementById('noteTesto').value=''; document.getElementById('noteDate').value=formatLocalYMD(new Date()); document.getElementById('btnSalvaNota').innerHTML="Salva Nota"; document.getElementById('btnSalvaNota').style.background="#20c997"; document.getElementById('btnSalvaNota').style.color="white"; document.getElementById('titoloBoxNote').textContent="Nuova Nota"; }
 
     window.initPatrimonio = function(){ renderFondiConfig(); if(document.getElementById('patrimonioDate'))document.getElementById('patrimonioDate').value=formatLocalYMD(new Date()); renderPatrimonioTable(); }
-    window.toggleModalPatrimonio = function() { const m=document.getElementById('modalPatrimonioMain'); if(m.style.display==='none'||m.style.display===''){ m.style.display='flex'; renderFondiConfig(); aggiornaLiquiditaSte(); renderPatrimonioTable(); } else m.style.display='none'; }
+
+
+window.toggleModalPatrimonio = function() {
+    const m = document.getElementById('modalPatrimonioMain');
+    if (!m) return;
+
+    const aperto = m.classList.contains('patrimonio-aperto');
+
+    if (aperto) {
+        m.classList.remove('patrimonio-aperto');
+        m.style.display = 'none';
+        return;
+    }
+
+    if (typeof closeAllPanels === 'function') {
+        closeAllPanels();
+    }
+
+    const menu = document.querySelector('.header-icons');
+
+    /* Patrimonio va nel body per occupare tutta la finestra */
+    if (m.parentElement !== document.body) {
+        document.body.appendChild(m);
+    }
+
+    /* Il menu viene spostato dopo Patrimonio: quindi è sopra di lui */
+    if (menu && menu.parentElement === document.body) {
+        document.body.appendChild(menu);
+    }
+
+    m.classList.add('patrimonio-aperto');
+
+    m.style.cssText =
+        'display:block !important;' +
+        'position:fixed !important;' +
+        'top:70px !important;' +
+        'left:0 !important;' +
+        'right:0 !important;' +
+        'bottom:0 !important;' +
+        'width:100vw !important;' +
+        'max-width:none !important;' +
+        'height:calc(100vh - 70px) !important;' +
+        'max-height:none !important;' +
+        'z-index:2147483646 !important;' +
+        'background:#f8f9fa !important;' +
+        'overflow:auto !important;' +
+        'padding:20px !important;' +
+        'box-sizing:border-box !important;';
+
+    const contenuto = m.querySelector('.modal-content');
+
+    if (contenuto) {
+        contenuto.style.cssText =
+            'display:block !important;' +
+            'width:100% !important;' +
+            'max-width:none !important;' +
+            'min-width:0 !important;' +
+            'height:auto !important;' +
+            'max-height:none !important;' +
+            'margin:0 !important;' +
+            'padding:0 !important;' +
+            'box-sizing:border-box !important;' +
+            'background:transparent !important;' +
+            'border:0 !important;' +
+            'border-radius:0 !important;' +
+            'box-shadow:none !important;' +
+            'overflow:visible !important;';
+    }
+
+if (menu) {
+    menu.style.cssText +=
+        'position:fixed !important;' +
+        'top:0 !important;' +
+        'left:50% !important;' +
+        'transform:translateX(-50%) !important;' +
+        'width:600px !important;' +
+        'max-width:100vw !important;' +
+        'height:70px !important;' +
+        'background:#ffffff !important;' +
+        'z-index:2147483647 !important;' +
+        'display:flex !important;' +
+        'align-items:center !important;' +
+        'justify-content:center !important;' +
+        'padding:0 20px !important;' +
+        'box-sizing:border-box !important;';
+}
+
+    if (typeof renderFondiConfig === 'function') renderFondiConfig();
+    if (typeof aggiornaLiquiditaSte === 'function') aggiornaLiquiditaSte();
+    if (typeof renderPatrimonioTable === 'function') renderPatrimonioTable();
+};
+
+
 window.renderFondiConfig = function() {
     const div = document.getElementById('listFondiConfig'); 
     if(!div) return;
@@ -3130,6 +3335,74 @@ window.renderFondiConfig = function() {
             h += `<td class="td-base"><button class="action-btn btn-edit" onclick="preparaModificaPatrimonio(${r.id})">✏️</button><button class="action-btn btn-del" onclick="eliminaPatrimonio(${r.id})">🗑</button></td></tr>`; tb.innerHTML += h;
         });
     }
+	
+	window.preparaModificaPatrimonio = function(id) {
+    const r = (window.patrimonioHistory || []).find(x => String(x.id) === String(id));
+
+    if (!r) {
+        alert("Rilevazione patrimonio non trovata.");
+        return;
+    }
+
+    window.idPatrimonioModifica = r.id;
+
+    const dateInput = document.getElementById('patrimonioDate');
+    const liqInput = document.getElementById('patrimonioLiq');
+
+    if (dateInput) dateInput.value = r.data;
+
+    if (liqInput) {
+        liqInput.value = Number(r.liquidita || 0).toFixed(2);
+        liqInput.dataset.value = r.liquidita || 0;
+        liqInput.removeAttribute('readonly');
+        liqInput.style.border = '2px solid #1565c0';
+    }
+
+    (window.fondiConfig || []).forEach(f => {
+        const dettaglio = (r.dettagliFondi || {})[f.id] || {
+            val: 0,
+            quoteVal: 0,
+            numQuote: 0
+        };
+
+        const valore = document.getElementById('val_' + f.id);
+        const quote = document.getElementById('quote_' + f.id);
+        const frutti = document.getElementById('numQuote_' + f.id);
+
+        if (valore) valore.value = Number(dettaglio.val || 0).toFixed(2);
+        if (quote) quote.value = Number(dettaglio.quoteVal || 0).toFixed(2);
+
+        if (frutti) {
+            const diff = Number(dettaglio.numQuote || 0);
+            frutti.value = diff.toFixed(2);
+            frutti.style.color = diff >= 0 ? 'green' : 'red';
+        }
+    });
+
+    const btn = document.querySelector(
+        "button[onclick='salvaRilevazionePatrimonio()']"
+    );
+
+    if (btn) {
+        btn.textContent = "✏️ Aggiorna rilevazione";
+        btn.style.background = "#1565c0";
+        btn.style.color = "white";
+    }
+
+    const nuovaRilevazione = document.getElementById('patrimonioForm')
+        || document.getElementById('sezioneNuovaRilevazione')
+        || document.querySelector('.patrimonio-form');
+
+    if (nuovaRilevazione) {
+        nuovaRilevazione.style.display = 'block';
+        nuovaRilevazione.scrollIntoView({
+            behavior: 'smooth',
+            block: 'start'
+        });
+    }
+};
+	
+	
     window.eliminaPatrimonio = async function(id){ if(confirm("Del?")){ window.patrimonioHistory=window.patrimonioHistory.filter(x=>x.id!==id); renderPatrimonioTable(); await eliminaPatrimonioSuFirebase(id); } }
 
     window.aggiornaSuggerimentiDescrizione = function() {
@@ -3703,83 +3976,115 @@ window.renderSpese = function() {
 window.apriBilancioAnnuale = function() {
     const div = document.getElementById('contenutoBilancio');
     const modal = document.getElementById('modalBilancio');
-    if(!div || !modal) return;
-    
-    div.innerHTML = '<p style="text-align:center;">Calcolo in corso...</p>';
-    modal.style.display = 'flex'; // Mostra la modale
+    if (!div || !modal) return;
 
-    // 1. Struttura Dati: { "2024": { "01": 100, "02": -50, ... }, "2025": ... }
-    let dati = {};
+    modal.style.display = 'flex';
+
+    const dati = {};
 
     window.movimenti.forEach(m => {
-        // Ignoriamo le Ricariche CC nel bilancio globale per evitare doppi conteggi?
-        // Di solito sì, perché è solo spostamento soldi, non guadagno/perdita reale.
         if (m.rawCat === 'Ricarica CC' || m.categoria === 'Ricarica CC') return;
+        if (!m.data) return;
 
-        let data = m.data; // Formato YYYY-MM-DD
-        if (!data) return;
-        
-        let [anno, mese, giorno] = data.split('-');
-        
+        const [anno, mese] = m.data.split('-');
+        if (!anno || !mese) return;
+
         if (!dati[anno]) dati[anno] = {};
         if (!dati[anno][mese]) dati[anno][mese] = 0;
-        
-        let imp = parseFloat(m.importo);
+
+        const importo = parseFloat(m.importo) || 0;
+
         if (m.tipo === 'entrata') {
-            dati[anno][mese] += imp;
+            dati[anno][mese] += importo;
         } else {
-            dati[anno][mese] -= imp;
+            dati[anno][mese] -= importo;
         }
     });
 
-    // 2. Ordina gli anni (dal più recente al più vecchio)
-    let anni = Object.keys(dati).sort().reverse();
-    
-    let html = '';
+    const annoCorrente = String(new Date().getFullYear());
 
-    if (anni.length === 0) {
-        html = '<p style="text-align:center; color:#666;">Nessun dato disponibile.</p>';
-    } else {
-        anni.forEach(anno => {
-            // Calcolo Totale Anno
-            let totAnno = 0;
-            let mesi = Object.keys(dati[anno]).sort().reverse(); // Gennaio (01) -> Dicembre (12)
-            
-            mesi.forEach(m => totAnno += dati[anno][m]);
+    // Mostra l'anno corrente anche se non ci sono ancora movimenti in quell'anno.
+    const anni = [...new Set([...Object.keys(dati), annoCorrente])]
+        .sort()
+        .reverse();
 
-            let colorAnno = totAnno >= 0 ? '#28a745' : '#dc3545';
-            
-            // Intestazione Anno (Cliccabile per espandere? Per ora lasciamo tutto aperto)
+    const renderBilancioAnno = function(annoSelezionato) {
+        const mesiDati = dati[annoSelezionato] || {};
+        const mesi = Object.keys(mesiDati).sort();
+        const totaleAnno = mesi.reduce((totale, mese) => {
+            return totale + mesiDati[mese];
+        }, 0);
+
+        const coloreTotale = totaleAnno >= 0 ? '#28a745' : '#dc3545';
+
+        let html = `
+            <div style="display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:15px;">
+                <label for="selectAnnoBilancio" style="font-weight:bold; color:#555;">
+                    📅 Anno
+                </label>
+
+                <select id="selectAnnoBilancio"
+                    onchange="window.renderBilancioAnno(this.value)"
+                    style="width:auto; min-width:120px; padding:8px; border:1px solid #ccc; border-radius:5px; background:white;">
+                    ${anni.map(anno => `
+                        <option value="${anno}" ${anno === annoSelezionato ? 'selected' : ''}>
+                            ${anno}
+                        </option>
+                    `).join('')}
+                </select>
+            </div>
+        `;
+
+        if (mesi.length === 0) {
             html += `
-            <div style="background:#f8f9fa; border:1px solid #ddd; border-radius:8px; margin-bottom:15px; overflow:hidden;">
-                <div style="background:#e9ecef; padding:10px 15px; display:flex; justify-content:space-between; align-items:center; font-weight:bold; color:#333;">
-                    <span style="font-size:1.1em;">${anno}</span>
-                    <span style="color:${colorAnno}; font-size:1.1em;">${formatEuro(totAnno)}</span>
+                <div style="background:#f8f9fa; border:1px solid #ddd; border-radius:8px; padding:20px; text-align:center; color:#666;">
+                    Nessun movimento disponibile per il ${annoSelezionato}.
                 </div>
-                <table style="width:100%; border-collapse:collapse; font-size:0.9em;">
             `;
 
-            // Righe Mesi
-            mesi.forEach(mese => {
-                let val = dati[anno][mese];
-                let colorMese = val >= 0 ? '#28a745' : '#dc3545';
-                let nomeMese = getNomiMesi(mese);
-                
-                html += `
-                    <tr style="border-bottom:1px solid #eee;">
-                        <td style="padding:8px 15px; color:#555;">${nomeMese}</td>
-                        <td style="padding:8px 15px; text-align:right; font-weight:bold; color:${colorMese};">
-                            ${formatEuro(val)}
-                        </td>
-                    </tr>
-                `;
-            });
-            
-            html += `</table></div>`;
-        });
-    }
+            div.innerHTML = html;
+            return;
+        }
 
-    div.innerHTML = html;
+        html += `
+            <div style="background:#f8f9fa; border:1px solid #ddd; border-radius:8px; overflow:hidden;">
+                <div style="background:#e9ecef; padding:10px 15px; display:flex; justify-content:space-between; align-items:center; font-weight:bold; color:#333;">
+                    <span style="font-size:1.1em;">Bilancio ${annoSelezionato}</span>
+                    <span style="color:${coloreTotale}; font-size:1.1em;">
+                        ${formatEuro(totaleAnno)}
+                    </span>
+                </div>
+                <table style="width:100%; border-collapse:collapse; font-size:0.9em;">
+        `;
+
+        mesi.forEach(mese => {
+            const valore = mesiDati[mese];
+            const coloreMese = valore >= 0 ? '#28a745' : '#dc3545';
+
+            html += `
+                <tr style="border-bottom:1px solid #eee;">
+                    <td style="padding:8px 15px; color:#555;">
+                        ${getNomiMesi(mese)}
+                    </td>
+                    <td style="padding:8px 15px; text-align:right; font-weight:bold; color:${coloreMese};">
+                        ${formatEuro(valore)}
+                    </td>
+                </tr>
+            `;
+        });
+
+        html += `
+                </table>
+            </div>
+        `;
+
+        div.innerHTML = html;
+    };
+
+    window.renderBilancioAnno = renderBilancioAnno;
+
+    // Default: anno corrente. Se non ha dati, mostra comunque il messaggio.
+    renderBilancioAnno(annoCorrente);
 };
 
 // Funzione helper per chiudere cliccando fuori
