@@ -3182,6 +3182,12 @@ window.toggleModalPatrimonio = function() {
     m.classList.add('patrimonio-aperto');
     m.style.display = 'block';
 
+    /* Su cellulare il menu torna all'inizio: Saldi conti resta visibile */
+    const menu = document.querySelector('.header-icons');
+    if (menu && window.innerWidth <= 600) {
+        menu.scrollLeft = 0;
+    }
+
     const contenuto = m.querySelector('.modal-content');
 
     if (contenuto) {
