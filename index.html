@@ -656,6 +656,37 @@ tfoot td { border-top: 2px solid #333; font-weight: bold; padding-top: 15px; fon
     padding-right: 8px !important;
 }
 
+/* Contenitore compatto del pulsante vocale */
+.contenitore-vocale {
+    display: inline-flex !important;
+    width: auto !important;
+    max-width: max-content !important;
+    margin: 0 0 10px 0;
+    padding: 0;
+}
+
+/* Pulsante quadrato e stretto */
+#btnVocale {
+    width: 34px !important;
+    min-width: 34px !important;
+    max-width: 34px !important;
+    height: 34px !important;
+    min-height: 34px !important;
+    padding: 0 !important;
+
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+
+    background: #4caf50;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 17px;
+    line-height: 1;
+}
+
 </style>
 
 </head>
@@ -1068,6 +1099,19 @@ tfoot td { border-top: 2px solid #333; font-weight: bold; padding-top: 15px; fon
 			<span style="font-weight:bold; font-size:0.9em; text-transform:uppercase; letter-spacing:1px;">
 				Inserimento Nuova Voce
 			</span>
+			
+			<!-- bottone inserimento vocale -->
+
+<div class="contenitore-vocale" style="margin-left:auto;">
+    <button
+        type="button"
+        id="btnVocale"
+        onclick="avviaInputVocale()"
+        title="Inserimento vocale"
+        aria-label="Inserimento vocale">
+        🎤
+    </button>
+</div>
 		</div>
 
 
@@ -3790,7 +3834,464 @@ window.annullaModificaScadenza = function() {
     }
 };
 
+window.avviaInputVocale = function() {
+    const SpeechRecognition =
+        window.SpeechRecognition || window.webkitSpeechRecognition;
 
+    if (!SpeechRecognition) {
+        alert(
+            "Il riconoscimento vocale non è supportato da questo browser. " +
+            "Prova con Chrome oppure Edge."
+        );
+        return;
+    }
+
+    const recognition = new SpeechRecognition();
+
+    recognition.lang = "it-IT";
+    recognition.interimResults = false;
+    recognition.maxAlternatives = 1;
+    recognition.continuous = false;
+
+    const btn = document.getElementById("btnVocale");
+
+    /* Stato: registrazione in corso */
+    if (btn) {
+        btn.textContent = "🔴";
+        btn.title = "Registrazione in corso...";
+        btn.setAttribute("aria-label", "Registrazione in corso");
+        btn.style.background = "#e53935";
+        btn.style.cursor = "wait";
+    }
+
+    recognition.onresult = function(event) {
+        const frase = event.results[0][0].transcript.trim();
+
+        console.log("Comando vocale riconosciuto:", frase);
+
+        if (typeof window.interpretaECompilaSpesa === "function") {
+            window.interpretaECompilaSpesa(frase);
+        } else {
+            alert("Funzione di interpretazione vocale non trovata.");
+        }
+    };
+
+    recognition.onerror = function(event) {
+        console.error("Errore riconoscimento vocale:", event.error);
+
+        if (event.error !== "aborted") {
+            alert("Non ho riconosciuto il comando. Riprova.");
+        }
+    };
+
+    recognition.onend = function() {
+        /* Stato: pronto, non in ascolto */
+        if (btn) {
+            btn.textContent = "🎤";
+            btn.title = "Inserimento vocale";
+            btn.setAttribute("aria-label", "Inserimento vocale");
+            btn.style.background = "#4caf50";
+            btn.style.cursor = "pointer";
+        }
+    };
+
+    recognition.start();
+};
+
+window.interpretaECompilaSpesa = function(testo) {
+    /* Normalizza il testo proveniente dal microfono */
+    let pulito = (testo || "")
+        .toLowerCase()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .replace(/\beuro\b/g, "")
+        .replace(/\s+/g, " ")
+        .trim();
+
+    /*
+      Cerca un importo in cifre: 7,80 / 7.80 / 12 / 12,5.
+      Lo elimina poi dal testo usato per conto e categoria.
+    */
+    let importoVal = "";
+    const matchImporto = pulito.match(/\b\d+(?:[.,]\d{1,2})?\b/);
+
+    if (matchImporto) {
+        importoVal = matchImporto[0].replace(",", ".");
+        pulito = pulito
+            .replace(matchImporto[0], " ")
+            .replace(/\s+/g, " ")
+            .trim();
+    }
+
+    const testoNormalizzato = pulito
+        .replace(/[^\w\s]/g, " ")
+        .replace(/\s+/g, " ")
+        .trim();
+
+    const parole = testoNormalizzato.split(" ").filter(Boolean);
+
+    /* Campi reali del form */
+    const contoSelect = document.getElementById("conto");
+    const categoriaSelect = document.getElementById("categoria");
+    const dataInput = document.getElementById("data");
+    const impInput = document.getElementById("importo");
+
+    let contoTrovato = "";
+    let categoriaTrovata = "";
+    let supermercatoTrovato = "";
+
+    /*
+      =========================
+      1. CHI PAGA
+      =========================
+      Il match viene fatto a parole complete: "ste" non può più
+      finire per trovare un'opzione non correlata.
+    */
+const aliasConti = {
+    cc: ["cc", "c/c", "conto", "comune"],
+    ste: ["io"],
+    vale: ["vale", "valle", "valeria"]
+};
+
+    function parolaPresente(lista) {
+        return lista.some(parola => parole.includes(parola));
+    }
+
+    function trovaOpzioneSelect(select, chiavi) {
+        if (!select) return "";
+
+        for (const chiave of chiavi) {
+            const chiaveNorm = chiave
+                .toLowerCase()
+                .normalize("NFD")
+                .replace(/[\u0300-\u036f]/g, "");
+
+            for (const opt of select.options) {
+                const valoreNorm = (opt.value || "")
+                    .toLowerCase()
+                    .normalize("NFD")
+                    .replace(/[\u0300-\u036f]/g, "")
+                    .trim();
+
+                const testoOptNorm = (opt.text || "")
+                    .toLowerCase()
+                    .normalize("NFD")
+                    .replace(/[\u0300-\u036f]/g, "")
+                    .trim();
+
+                if (
+                    valoreNorm === chiaveNorm ||
+                    testoOptNorm === chiaveNorm ||
+                    testoOptNorm.split(/\s+/).includes(chiaveNorm)
+                ) {
+                    return opt.value;
+                }
+            }
+        }
+
+        return "";
+    }
+
+    /*
+      PRIMA riconosce le parole vocali esatte.
+      Non fa più la ricerca generica su ogni opzione, che poteva
+      associare in modo errato Ste a CC.
+    */
+    if (parolaPresente(aliasConti.ste)) {
+        contoTrovato = trovaOpzioneSelect(contoSelect, ["ste"]);
+    } else if (parolaPresente(aliasConti.vale)) {
+        contoTrovato = trovaOpzioneSelect(contoSelect, ["vale"]);
+    } else if (parolaPresente(aliasConti.cc)) {
+        contoTrovato = trovaOpzioneSelect(contoSelect, ["cc"]);
+    }
+
+    /*
+      Fallback: utile se nel menu sono presenti testi più lunghi,
+      ad esempio "Carta Ste" oppure "Conto CC".
+    */
+    if (!contoTrovato && contoSelect) {
+        for (const opt of contoSelect.options) {
+            const valoreNorm = (opt.value || "")
+                .toLowerCase()
+                .normalize("NFD")
+                .replace(/[\u0300-\u036f]/g, "");
+
+            const testoOptNorm = (opt.text || "")
+                .toLowerCase()
+                .normalize("NFD")
+                .replace(/[\u0300-\u036f]/g, "");
+
+            if (
+                (parole.includes("ste") && (
+                    valoreNorm.includes("ste") ||
+                    testoOptNorm.includes("ste")
+                )) ||
+                (parole.includes("vale") && (
+                    valoreNorm.includes("vale") ||
+                    testoOptNorm.includes("vale")
+                )) ||
+                (parole.includes("cc") && (
+                    valoreNorm === "cc" ||
+                    testoOptNorm === "cc" ||
+                    testoOptNorm.includes("cc")
+                ))
+            ) {
+                contoTrovato = opt.value;
+                break;
+            }
+        }
+    }
+
+    /*
+      =========================
+      2. SUPERMERCATI
+      =========================
+    */
+    const supermercati = [
+        "italmark",
+        "conad",
+        "coop",
+        "lidl",
+        "tosano",
+        "eurospin",
+        "esselunga",
+        "carrefour",
+        "penny",
+        "md",
+        "tedi",
+        "baselli",
+        "fiordaliso",
+        "bennet",
+        "ortomercato"
+    ];
+
+    const selectSuperIniziale = document.getElementById("selectSuper");
+
+    for (const supermercato of supermercati) {
+        if (!parole.includes(supermercato)) continue;
+
+        supermercatoTrovato = trovaOpzioneSelect(
+            selectSuperIniziale,
+            [supermercato]
+        );
+
+        if (!supermercatoTrovato) {
+            supermercatoTrovato =
+                supermercato.charAt(0).toUpperCase() + supermercato.slice(1);
+        }
+
+        break;
+    }
+
+    /*
+      =========================
+      3. CATEGORIA
+      =========================
+    */
+/*
+  Categoria Ape-Cola:
+  viene riconosciuta se dici "ape", "aperitivo" oppure "colazione".
+*/
+const eApeCola =
+    parole.includes("ape") ||
+    parole.includes("aperitivo") ||
+    parole.includes("colazione");
+
+    if (supermercatoTrovato) {
+        categoriaTrovata = trovaOpzioneSelect(
+            categoriaSelect,
+            ["supermercato"]
+        );
+
+        /*
+          Se la select contiene davvero "Supermercato" come opzione,
+          ne usa il suo value; in alternativa mantiene il testo.
+        */
+        if (!categoriaTrovata && categoriaSelect) {
+            for (const opt of categoriaSelect.options) {
+                const confronta = (
+                    (opt.value || "") + " " + (opt.text || "")
+                )
+                    .toLowerCase()
+                    .normalize("NFD")
+                    .replace(/[\u0300-\u036f]/g, "")
+                    .replace(/[-\s]/g, "");
+
+                if (confronta.includes("supermercato")) {
+                    categoriaTrovata = opt.value;
+                    break;
+                }
+            }
+        }
+    } else if (eApeCola) {
+        /*
+          Se dici soltanto "ape" o soltanto "cola",
+          cerca nel menu l'opzione Ape-Cola.
+        */
+        if (categoriaSelect) {
+            for (const opt of categoriaSelect.options) {
+                const valoreNorm = (opt.value || "")
+                    .toLowerCase()
+                    .normalize("NFD")
+                    .replace(/[\u0300-\u036f]/g, "")
+                    .replace(/[-\s]/g, "");
+
+                const testoOptNorm = (opt.text || "")
+                    .toLowerCase()
+                    .normalize("NFD")
+                    .replace(/[\u0300-\u036f]/g, "")
+                    .replace(/[-\s]/g, "");
+
+                if (
+                    valoreNorm === "apecola" ||
+                    testoOptNorm === "apecola" ||
+                    valoreNorm.includes("apecola") ||
+                    testoOptNorm.includes("apecola")
+                ) {
+                    categoriaTrovata = opt.value;
+                    break;
+                }
+            }
+        }
+    } else if (categoriaSelect) {
+        /*
+          Tutte le altre categorie: cerca una corrispondenza
+          soltanto con parole complete.
+        */
+        for (const opt of categoriaSelect.options) {
+            const valoreNorm = (opt.value || "")
+                .toLowerCase()
+                .normalize("NFD")
+                .replace(/[\u0300-\u036f]/g, "")
+                .trim();
+
+            const testoOptNorm = (opt.text || "")
+                .toLowerCase()
+                .normalize("NFD")
+                .replace(/[\u0300-\u036f]/g, "")
+                .trim();
+
+            if (
+                parole.includes(valoreNorm) ||
+                parole.includes(testoOptNorm)
+            ) {
+                categoriaTrovata = opt.value;
+                break;
+            }
+        }
+    }
+
+    /*
+      =========================
+      4. COMPILAZIONE CAMPI
+      =========================
+    */
+
+    /* Data odierna locale */
+    if (dataInput) {
+        const oggi = new Date();
+
+        dataInput.value =
+            oggi.getFullYear() + "-" +
+            String(oggi.getMonth() + 1).padStart(2, "0") + "-" +
+            String(oggi.getDate()).padStart(2, "0");
+    }
+
+    /* Chi paga */
+    if (contoSelect && contoTrovato) {
+        contoSelect.value = contoTrovato;
+    }
+
+    /* Categoria e visualizzazione dei relativi campi */
+    if (categoriaSelect && categoriaTrovata) {
+        categoriaSelect.value = categoriaTrovata;
+
+        if (typeof window.gestisciCategoria === "function") {
+            window.gestisciCategoria();
+        }
+    }
+
+    /* Supermercato: lo cerca di nuovo dopo gestisciCategoria() */
+    if (supermercatoTrovato) {
+        const selectSuper = document.getElementById("selectSuper");
+
+        if (selectSuper) {
+            const opzioneSuper = Array.from(selectSuper.options).find(opt => {
+                const valoreNorm = (opt.value || "")
+                    .toLowerCase()
+                    .normalize("NFD")
+                    .replace(/[\u0300-\u036f]/g, "");
+
+                const testoNorm = (opt.text || "")
+                    .toLowerCase()
+                    .normalize("NFD")
+                    .replace(/[\u0300-\u036f]/g, "");
+
+                const superNorm = supermercatoTrovato
+                    .toLowerCase()
+                    .normalize("NFD")
+                    .replace(/[\u0300-\u036f]/g, "");
+
+                return valoreNorm === superNorm || testoNorm === superNorm;
+            });
+
+            if (opzioneSuper) {
+                selectSuper.value = opzioneSuper.value;
+            }
+        }
+    }
+
+    /* Importo */
+    const numeroImporto = parseFloat(importoVal);
+
+    if (
+        impInput &&
+        !Number.isNaN(numeroImporto) &&
+        numeroImporto > 0
+    ) {
+        impInput.value = numeroImporto.toFixed(2);
+    }
+
+    /*
+      =========================
+      5. CONTROLLO E SALVATAGGIO
+      =========================
+      Legge i valori effettivi presenti nel form, non soltanto le
+      variabili interne: così, se Ape-Cola è selezionata nel menu,
+      viene considerata valida anche per il salvataggio automatico.
+    */
+    const contoFinale = contoSelect ? contoSelect.value : "";
+    const categoriaFinale = categoriaSelect ? categoriaSelect.value : "";
+    const importoFinale = impInput ? parseFloat(impInput.value) : NaN;
+
+    const importoValido =
+        !Number.isNaN(importoFinale) &&
+        importoFinale > 0;
+
+    if (contoFinale && categoriaFinale && importoValido) {
+        setTimeout(() => {
+            const btnUscita = document.getElementById("btnUscita");
+
+            if (btnUscita) {
+                btnUscita.click();
+            } else {
+                alert("Campi compilati, ma non trovo il pulsante - Uscita.");
+            }
+        }, 350);
+    } else {
+        const mancanti = [];
+
+        if (!contoFinale) mancanti.push("chi paga");
+        if (!categoriaFinale) mancanti.push("categoria");
+        if (!importoValido) mancanti.push("importo");
+
+        alert(
+            "Dati vocali incompleti: manca " +
+            mancanti.join(", ") +
+            ". I campi riconosciuti restano compilati per la correzione manuale."
+        );
+    }
+};
 window.renderSpese = function() {
     const div = document.getElementById('listSpese');
     if(!div) {
