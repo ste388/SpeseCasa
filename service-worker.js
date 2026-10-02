@@ -3,8 +3,8 @@ const ASSETS = [
   './',
   './index.html',
   './manifest.json',
-  './icons/192.png',
-  './icons/512.png'
+  './icons/192b.png',
+  './icons/512b.png'
   // Se hai un file style.css o script.js separati, aggiungili qui:
   // './style.css',
   // './script.js'
